@@ -213,12 +213,12 @@ function ToursPageContent() {
   const statusOptions = ['planning', 'booking', 'confirmed', 'active', 'completed', 'cancelled'];
 
   if (loading) {
-    return <div className="min-h-screen bg-[#0F1113] flex items-center justify-center text-white">Loading...</div>;
+    return <div className="min-h-screen bg-[#1140F0] flex items-center justify-center text-white">Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-[#0F1113]">
-      <div className="bg-[#1A1F1E] border-b border-gray-800">
+    <div className="min-h-screen bg-[#1140F0]">
+      <div className="bg-[#14171E] border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -227,7 +227,7 @@ function ToursPageContent() {
             </div>
             <button
               onClick={() => navigate('/tours/create')}
-              className="flex items-center gap-2 px-4 py-2 bg-[#C4FF0D] hover:bg-[#A3D60A] text-black rounded-2xl font-bold transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-2xl font-bold transition-colors"
             >
               <Plus className="h-5 w-5" />
               Create Tour
@@ -238,17 +238,17 @@ function ToursPageContent() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="p-4 bg-[#1A1F1E] border border-gray-800 text-white rounded-2xl hover:border-[#C4FF0D]/50 transition-colors">
+          <div className="p-4 bg-[#14171E] border border-gray-800 text-white rounded-2xl hover:border-[#8FD3FF]/50 transition-colors">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-[#C4FF0D]/10 rounded-xl">
-                <Music2 className="h-6 w-6 text-[#C4FF0D]" />
+              <div className="p-2 bg-[#8FD3FF]/10 rounded-xl">
+                <Music2 className="h-6 w-6 text-[#8FD3FF]" />
               </div>
               <div className="text-3xl font-bold text-white">{tours.length}</div>
             </div>
             <div className="text-sm text-gray-400">Active Tours</div>
           </div>
 
-          <div className="p-4 bg-[#1A1F1E] border border-gray-800 text-white rounded-2xl hover:border-blue-500/50 transition-colors">
+          <div className="p-4 bg-[#14171E] border border-gray-800 text-white rounded-2xl hover:border-blue-500/50 transition-colors">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-blue-500/10 rounded-xl">
                 <Calendar className="h-6 w-6 text-blue-400" />
@@ -258,7 +258,7 @@ function ToursPageContent() {
             <div className="text-sm text-gray-400">Total Shows</div>
           </div>
 
-          <div className="p-4 bg-[#1A1F1E] border border-gray-800 text-white rounded-2xl hover:border-green-500/50 transition-colors">
+          <div className="p-4 bg-[#14171E] border border-gray-800 text-white rounded-2xl hover:border-green-500/50 transition-colors">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-green-500/10 rounded-xl">
                 <DollarSign className="h-6 w-6 text-green-400" />
@@ -270,7 +270,7 @@ function ToursPageContent() {
             <div className="text-sm text-gray-400">Projected Profit</div>
           </div>
 
-          <div className="p-4 bg-[#1A1F1E] border border-gray-800 text-white rounded-2xl hover:border-orange-500/50 transition-colors">
+          <div className="p-4 bg-[#14171E] border border-gray-800 text-white rounded-2xl hover:border-orange-500/50 transition-colors">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-orange-500/10 rounded-xl">
                 <MapPin className="h-6 w-6 text-orange-400" />
@@ -282,8 +282,8 @@ function ToursPageContent() {
         </div>
 
         {tours.length === 0 ? (
-          <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-12 text-center">
-            <div className="w-20 h-20 bg-[#141716] border border-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-12 text-center">
+            <div className="w-20 h-20 bg-[#0B0D12] border border-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
               <Music2 className="h-10 w-10 text-gray-600" />
             </div>
             <h3 className="text-xl font-bold text-white mb-2">No Tours Yet</h3>
@@ -292,7 +292,7 @@ function ToursPageContent() {
             </p>
             <button
               onClick={() => navigate('/tours/create')}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#C4FF0D] hover:bg-[#A3D60A] text-black rounded-2xl font-bold transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-2xl font-bold transition-colors"
             >
               <Plus className="h-5 w-5" />
               Create Tour
@@ -303,11 +303,11 @@ function ToursPageContent() {
             {tours.map((tour) => (
               <div
                 key={tour.id}
-                className="bg-[#1A1F1E] border-2 border-gray-700 rounded-3xl p-6 hover:shadow-xl hover:border-[#C4FF0D]/50 transition-all cursor-pointer"
+                className="bg-[#14171E] border-2 border-gray-700 rounded-3xl p-6 hover:shadow-xl hover:border-[#8FD3FF]/50 transition-all cursor-pointer"
                 onClick={() => navigate(`/tours/${tour.id}`)}
               >
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#C4FF0D] to-[#A3D60A] rounded-2xl flex items-center justify-center text-black text-2xl font-bold flex-shrink-0">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#8FD3FF] to-[#6FB8F2] rounded-2xl flex items-center justify-center text-[#04214D] text-2xl font-bold flex-shrink-0">
                     {tour.artist_name.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -331,7 +331,7 @@ function ToursPageContent() {
                       {tour.status}
                     </button>
                     {statusMenuOpen === tour.id && (
-                      <div className="absolute right-0 top-full mt-2 bg-[#1A1F1E] border border-gray-700 rounded-xl shadow-xl z-10 min-w-[140px]">
+                      <div className="absolute right-0 top-full mt-2 bg-[#14171E] border border-gray-700 rounded-xl shadow-xl z-10 min-w-[140px]">
                         {statusOptions.map((status) => (
                           <button
                             key={status}
@@ -371,7 +371,7 @@ function ToursPageContent() {
                   </div>
                   <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-3 text-center">
                     <div className={`text-lg font-bold ${
-                      (tour.net_profit || 0) >= 0 ? 'text-[#C4FF0D]' : 'text-red-500'
+                      (tour.net_profit || 0) >= 0 ? 'text-[#8FD3FF]' : 'text-red-500'
                     }`}>
                       ${Math.round((tour.net_profit || 0) / 1000)}K
                     </div>
@@ -384,9 +384,9 @@ function ToursPageContent() {
                     <span>Tour Progress</span>
                     <span>{getTourProgress(tour)}%</span>
                   </div>
-                  <div className="w-full h-2 bg-[#141716] border border-gray-700 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-[#0B0D12] border border-gray-700 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#C4FF0D] to-[#A3D60A] transition-all"
+                      className="h-full bg-gradient-to-r from-[#8FD3FF] to-[#6FB8F2] transition-all"
                       style={{ width: `${getTourProgress(tour)}%` }}
                     />
                   </div>

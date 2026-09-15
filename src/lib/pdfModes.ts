@@ -36,6 +36,6 @@ export const PDF_MODES: Record<PDFMode, PDFModeConfig> = {
     showExpenseBreakdown: false,
     showMargins: false,
     watermark: null,
-    color: '#C4FF0D'
+    color: '#8FD3FF'
   }
 } as const;

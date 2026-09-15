@@ -87,17 +87,17 @@ export function SummaryTab({
               </span>
             </div>
 
-            <div className="border-t border-gray-700 pt-4 mt-4 bg-[#1A1F1E] -mx-6 px-6 py-4 -mb-6 rounded-b-2xl">
+            <div className="border-t border-gray-700 pt-4 mt-4 bg-[#14171E] -mx-6 px-6 py-4 -mb-6 rounded-b-2xl">
               <div className="text-sm text-gray-400 mb-2">Deposit Due (30 days before)</div>
               <div className="font-bold text-white text-xl">{formatCurrency(depositAmount)}</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-[#C4FF0D]/10 to-green-500/10 border-2 border-[#C4FF0D]/30 rounded-2xl p-6">
+        <div className="bg-gradient-to-br from-[#8FD3FF]/10 to-green-500/10 border-2 border-[#8FD3FF]/30 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-[#C4FF0D]/20 rounded-lg flex items-center justify-center">
-              <TrendingUp className="h-5 w-5 text-[#C4FF0D]" />
+            <div className="w-10 h-10 bg-[#8FD3FF]/20 rounded-lg flex items-center justify-center">
+              <TrendingUp className="h-5 w-5 text-[#8FD3FF]" />
             </div>
             <h3 className="text-xl font-bold text-white">Financial Summary</h3>
           </div>
@@ -134,10 +134,10 @@ export function SummaryTab({
               </>
             )}
 
-            <div className={`border-t-2 border-[#C4FF0D]/30 pt-4 flex justify-between items-center`}>
+            <div className={`border-t-2 border-[#8FD3FF]/30 pt-4 flex justify-between items-center`}>
               <span className="font-bold text-lg text-white">NET PROFIT</span>
               <span className={`font-bold text-2xl ${
-                calculations.netProfit >= 0 ? 'text-[#C4FF0D]' : 'text-red-400'
+                calculations.netProfit >= 0 ? 'text-[#8FD3FF]' : 'text-red-400'
               }`}>
                 {formatCurrency(calculations.netProfit)}
               </span>
@@ -197,7 +197,7 @@ export function SummaryTab({
       />
 
       {mode === 'estimate' && calculations.projections && (
-        <div className="bg-[#141716] border border-gray-700 rounded-2xl p-6">
+        <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
               <Users className="h-5 w-5 text-purple-400" />

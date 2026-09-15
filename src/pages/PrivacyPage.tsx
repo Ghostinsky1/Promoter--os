@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[#0F1113]">
+    <div className="min-h-screen bg-[#1140F0]">
       <div className="max-w-4xl mx-auto px-6 py-12">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-[#C4FF0D] hover:text-[#A3D60A] transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-[#8FD3FF] hover:text-[#6FB8F2] transition-colors mb-8"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Home
@@ -15,7 +15,7 @@ export default function PrivacyPage() {
 
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-8">Privacy Policy</h1>
 
-        <div className="prose prose-invert max-w-none space-y-8 text-[#A8B3B8]">
+        <div className="prose prose-invert max-w-none space-y-8 text-[#A8B2C1]">
           <section>
             <p className="text-lg mb-6">
               Last Updated: December 2024

@@ -305,15 +305,15 @@ export function CompanySettings() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0F1113] flex items-center justify-center">
+      <div className="min-h-screen bg-[#1140F0] flex items-center justify-center">
         <div className="text-gray-400">Loading settings...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0F1113]">
-      <div className="bg-[#1A1F1E] border-b border-gray-800">
+    <div className="min-h-screen bg-[#1140F0]">
+      <div className="bg-[#14171E] border-b border-gray-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <button
             onClick={() => navigate('/dashboard')}
@@ -330,8 +330,8 @@ export function CompanySettings() {
               onClick={() => setActiveTab('company')}
               className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
                 activeTab === 'company'
-                  ? 'bg-[#C4FF0D] text-black'
-                  : 'bg-[#252A29] text-gray-400 hover:text-white hover:bg-[#2D3331]'
+                  ? 'bg-[#8FD3FF] text-[#04214D]'
+                  : 'bg-[#22262F] text-gray-400 hover:text-white hover:bg-[#2A3040]'
               }`}
             >
               <Building2 className="h-5 w-5" />
@@ -341,8 +341,8 @@ export function CompanySettings() {
               onClick={() => setActiveTab('team')}
               className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
                 activeTab === 'team'
-                  ? 'bg-[#C4FF0D] text-black'
-                  : 'bg-[#252A29] text-gray-400 hover:text-white hover:bg-[#2D3331]'
+                  ? 'bg-[#8FD3FF] text-[#04214D]'
+                  : 'bg-[#22262F] text-gray-400 hover:text-white hover:bg-[#2A3040]'
               }`}
             >
               <Users className="h-5 w-5" />
@@ -354,7 +354,7 @@ export function CompanySettings() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'company' && (
-          <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-8">
+          <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-8">
           <h2 className="text-2xl font-bold mb-8 text-white">Company Information</h2>
 
           <div className="mb-8">
@@ -367,8 +367,8 @@ export function CompanySettings() {
               <div
                 className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${
                   isDragging
-                    ? 'border-[#C4FF0D] bg-[#C4FF0D]/10'
-                    : 'border-gray-700 hover:border-[#C4FF0D] hover:bg-[#C4FF0D]/5'
+                    ? 'border-[#8FD3FF] bg-[#8FD3FF]/10'
+                    : 'border-gray-700 hover:border-[#8FD3FF] hover:bg-[#8FD3FF]/5'
                 }`}
                 onDragOver={(e) => {
                   e.preventDefault();
@@ -378,7 +378,7 @@ export function CompanySettings() {
                 onDrop={handleDrop}
                 onClick={() => document.getElementById('logo-upload')?.click()}
               >
-                <div className="w-16 h-16 bg-[#252A29] rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-[#22262F] rounded-full flex items-center justify-center mx-auto mb-4">
                   <Upload className="h-8 w-8 text-gray-400" />
                 </div>
                 <div className="font-semibold mb-1 text-white">
@@ -396,9 +396,9 @@ export function CompanySettings() {
               </div>
 
               {logoUrl ? (
-                <div className="border-2 border-gray-700 rounded-2xl p-6 bg-[#141716] relative">
+                <div className="border-2 border-gray-700 rounded-2xl p-6 bg-[#0B0D12] relative">
                   <button
-                    className="absolute top-2 right-2 bg-[#252A29] shadow-md p-2 rounded-full hover:bg-[#2D3331] transition-colors z-10"
+                    className="absolute top-2 right-2 bg-[#22262F] shadow-md p-2 rounded-full hover:bg-[#2A3040] transition-colors z-10"
                     onClick={(e) => {
                       e.stopPropagation();
                       setLogoUrl('');
@@ -433,7 +433,7 @@ export function CompanySettings() {
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="Goza Entertainment"
-                className="w-full text-lg px-4 py-3 bg-[#141716] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all"
+                className="w-full text-lg px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all"
               />
             </div>
 
@@ -446,7 +446,7 @@ export function CompanySettings() {
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
                   placeholder="Jose Huaroco"
-                  className="w-full px-4 py-3 bg-[#141716] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all"
+                  className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all"
                 />
               </div>
 
@@ -457,7 +457,7 @@ export function CompanySettings() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="jhuaroco@gozaentertainment.com"
-                  className="w-full px-4 py-3 bg-[#141716] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all"
+                  className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all"
                 />
               </div>
             </div>
@@ -470,7 +470,7 @@ export function CompanySettings() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="(555) 123-4567"
-                  className="w-full px-4 py-3 bg-[#141716] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all"
+                  className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all"
                 />
               </div>
 
@@ -481,7 +481,7 @@ export function CompanySettings() {
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://gozaentertainment.com"
-                  className="w-full px-4 py-3 bg-[#141716] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all"
+                  className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all"
                 />
               </div>
             </div>
@@ -495,7 +495,7 @@ export function CompanySettings() {
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="123 Main St&#10;Suite 100&#10;City, State 12345"
                 rows={4}
-                className="w-full px-4 py-3 bg-[#141716] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all"
+                className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all"
               />
             </div>
 
@@ -511,7 +511,7 @@ export function CompanySettings() {
                 onChange={(e) => setLegalTerms(e.target.value)}
                 rows={8}
                 placeholder="Enter your terms and conditions here...&#10;&#10;Example:&#10;- Offer expires 15 days from submission&#10;- Artist responsible for travel/hotel/backline&#10;- Performance minimum 75 minutes&#10;- Meet & greet for radio winners..."
-                className="w-full px-4 py-3 bg-[#141716] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all font-mono text-sm"
+                className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all font-mono text-sm"
               />
             </div>
           </div>
@@ -519,14 +519,14 @@ export function CompanySettings() {
           <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-800">
             <button
               onClick={() => navigate('/dashboard')}
-              className="px-6 py-3 border border-gray-700 text-gray-300 rounded-2xl font-semibold hover:bg-[#252A29] hover:border-gray-600 transition-colors"
+              className="px-6 py-3 border border-gray-700 text-gray-300 rounded-2xl font-semibold hover:bg-[#22262F] hover:border-gray-600 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="px-8 py-3 bg-[#C4FF0D] hover:bg-[#A3D60A] text-black rounded-2xl font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+              className="px-8 py-3 bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-2xl font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
               {isSaving ? 'Saving...' : 'Save Changes'}
@@ -536,7 +536,7 @@ export function CompanySettings() {
         )}
 
         {activeTab === 'team' && (
-          <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-8">
+          <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-8">
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h2 className="text-2xl font-bold text-white">Team Management</h2>
@@ -555,7 +555,7 @@ export function CompanySettings() {
             </div>
 
             {organization && teamMembers.length < organization.max_seats && (
-              <div className="bg-[#252A29] border border-gray-700 rounded-2xl p-6 mb-8">
+              <div className="bg-[#22262F] border border-gray-700 rounded-2xl p-6 mb-8">
                 <h3 className="text-lg font-semibold text-white mb-4">Add Team Member</h3>
                 <div className="flex gap-3">
                   <input
@@ -563,13 +563,13 @@ export function CompanySettings() {
                     value={newMemberEmail}
                     onChange={(e) => setNewMemberEmail(e.target.value)}
                     placeholder="teammate@email.com"
-                    className="flex-1 px-4 py-3 bg-[#141716] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all"
+                    className="flex-1 px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all"
                     onKeyPress={(e) => e.key === 'Enter' && handleAddMember()}
                   />
                   <button
                     onClick={handleAddMember}
                     disabled={isAddingMember}
-                    className="px-6 py-3 bg-[#C4FF0D] hover:bg-[#A3D60A] text-black rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                    className="px-6 py-3 bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                   >
                     <UserPlus className="h-5 w-5" />
                     Add Member
@@ -597,11 +597,11 @@ export function CompanySettings() {
               {teamMembers.map((member, index) => (
                 <div
                   key={member.id}
-                  className="bg-[#252A29] border border-gray-700 rounded-xl p-5 flex items-center justify-between hover:bg-[#2D3331] transition-colors"
+                  className="bg-[#22262F] border border-gray-700 rounded-xl p-5 flex items-center justify-between hover:bg-[#2A3040] transition-colors"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-[#C4FF0D] rounded-full flex items-center justify-center">
-                      <span className="text-black font-bold text-lg">
+                    <div className="w-12 h-12 bg-[#8FD3FF] rounded-full flex items-center justify-center">
+                      <span className="text-[#04214D] font-bold text-lg">
                         {member.email?.charAt(0).toUpperCase() || '?'}
                       </span>
                     </div>
@@ -612,7 +612,7 @@ export function CompanySettings() {
                   </div>
                   <div className="flex items-center gap-3">
                     {index === 0 ? (
-                      <span className="px-3 py-1 bg-[#C4FF0D]/20 text-[#C4FF0D] rounded-lg text-sm font-medium">
+                      <span className="px-3 py-1 bg-[#8FD3FF]/20 text-[#8FD3FF] rounded-lg text-sm font-medium">
                         Owner
                       </span>
                     ) : (

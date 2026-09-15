@@ -24,7 +24,7 @@ export function Pricing() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1113] py-12 px-4">
+    <div className="min-h-screen bg-[#1140F0] py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-3 mb-6">
@@ -42,7 +42,7 @@ export function Pricing() {
             Select the perfect plan for your concert promotion business.
             All plans include professional features to streamline your workflow.
           </p>
-          <p className="text-lg text-[#C4FF0D] font-semibold">
+          <p className="text-lg text-[#8FD3FF] font-semibold">
             14-day free trial included with all plans
           </p>
         </div>
@@ -62,7 +62,7 @@ export function Pricing() {
           <div className="text-center mt-16">
             <button
               onClick={() => navigate('/dashboard')}
-              className="text-[#C4FF0D] hover:text-[#A8D90B] font-medium text-lg transition-colors"
+              className="text-[#8FD3FF] hover:text-[#6FB8F2] font-medium text-lg transition-colors"
             >
               ← Back to Dashboard
             </button>

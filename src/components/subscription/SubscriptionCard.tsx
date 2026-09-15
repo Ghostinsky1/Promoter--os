@@ -7,7 +7,7 @@ export function SubscriptionCard() {
 
   if (loading) {
     return (
-      <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-6 animate-pulse">
+      <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-6 animate-pulse">
         <div className="h-4 bg-gray-700 rounded w-1/3 mb-4"></div>
         <div className="h-6 bg-gray-700 rounded w-1/2 mb-2"></div>
         <div className="h-4 bg-gray-700 rounded w-2/3"></div>
@@ -19,7 +19,7 @@ export function SubscriptionCard() {
 
   if (!subscription || !isActive()) {
     return (
-      <div className="bg-[#1A1F1E] rounded-2xl border-2 border-dashed border-gray-700 p-6">
+      <div className="bg-[#14171E] rounded-2xl border-2 border-dashed border-gray-700 p-6">
         <div className="text-center">
           <Crown className="mx-auto h-12 w-12 text-gray-600" />
           <h3 className="mt-2 text-sm font-medium text-white">No Active Subscription</h3>
@@ -36,10 +36,10 @@ export function SubscriptionCard() {
   };
 
   return (
-    <div className="bg-[#1A1F1E] rounded-2xl shadow-lg p-6 border-l-4 border-[#C4FF0D]">
+    <div className="bg-[#14171E] rounded-2xl shadow-lg p-6 border-l-4 border-[#8FD3FF]">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <Crown className="h-6 w-6 text-[#C4FF0D] mr-2" />
+          <Crown className="h-6 w-6 text-[#8FD3FF] mr-2" />
           <h3 className="text-lg font-semibold text-white">
             {activeProduct?.name || 'Premium Subscription'}
           </h3>
@@ -56,14 +56,14 @@ export function SubscriptionCard() {
       <div className="space-y-3">
         {subscription.current_period_end && (
           <div className="flex items-center text-sm text-gray-300">
-            <Calendar className="h-4 w-4 mr-2 text-[#C4FF0D]" />
+            <Calendar className="h-4 w-4 mr-2 text-[#8FD3FF]" />
             <span>Renews on {formatDate(subscription.current_period_end)}</span>
           </div>
         )}
 
         {subscription.payment_method_brand && subscription.payment_method_last4 && (
           <div className="flex items-center text-sm text-gray-300">
-            <CreditCard className="h-4 w-4 mr-2 text-[#C4FF0D]" />
+            <CreditCard className="h-4 w-4 mr-2 text-[#8FD3FF]" />
             <span>
               {subscription.payment_method_brand.toUpperCase()} ending in {subscription.payment_method_last4}
             </span>

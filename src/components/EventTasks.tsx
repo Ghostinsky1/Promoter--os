@@ -67,29 +67,29 @@ export function EventTasks({ tasks, onAdd, onUpdate, onDelete }: EventTasksProps
   };
 
   return (
-    <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-4">
+    <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <ListChecks className="w-4 h-4 text-[#C4FF0D]" />
+          <ListChecks className="w-4 h-4 text-[#8FD3FF]" />
           <h2 className="text-base font-bold text-white">Tasks</h2>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#252A29] text-gray-400 font-medium">
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#22262F] text-gray-400 font-medium">
             {doneCount}/{tasks.length}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex bg-[#252A29] rounded-lg p-0.5">
+          <div className="flex bg-[#22262F] rounded-lg p-0.5">
             <button
               onClick={() => setFilter('all')}
-              className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors ${filter === 'all' ? 'bg-[#1A1F1E] text-white' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors ${filter === 'all' ? 'bg-[#14171E] text-white' : 'text-gray-500 hover:text-gray-300'}`}
             >All</button>
             <button
               onClick={() => setFilter('incomplete')}
-              className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors ${filter === 'incomplete' ? 'bg-[#1A1F1E] text-white' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors ${filter === 'incomplete' ? 'bg-[#14171E] text-white' : 'text-gray-500 hover:text-gray-300'}`}
             >To-Do</button>
           </div>
           <button
             onClick={() => setAdding(!adding)}
-            className="text-xs text-[#C4FF0D] hover:text-[#A3D60A] flex items-center gap-1 transition-colors"
+            className="text-xs text-[#8FD3FF] hover:text-[#6FB8F2] flex items-center gap-1 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />Add
           </button>
@@ -99,9 +99,9 @@ export function EventTasks({ tasks, onAdd, onUpdate, onDelete }: EventTasksProps
       {/* Progress Bar */}
       {tasks.length > 0 && (
         <div className="mb-3">
-          <div className="w-full bg-[#252A29] rounded-full h-1.5 overflow-hidden">
+          <div className="w-full bg-[#22262F] rounded-full h-1.5 overflow-hidden">
             <div
-              className="h-full bg-[#C4FF0D] transition-all duration-300"
+              className="h-full bg-[#8FD3FF] transition-all duration-300"
               style={{ width: `${tasks.length > 0 ? (doneCount / tasks.length) * 100 : 0}%` }}
             />
           </div>
@@ -110,13 +110,13 @@ export function EventTasks({ tasks, onAdd, onUpdate, onDelete }: EventTasksProps
 
       {/* Add Row */}
       {adding && (
-        <div className="mb-3 p-3 bg-[#141918] border border-[#2A3330] rounded-lg space-y-2">
+        <div className="mb-3 p-3 bg-[#0B0D12] border border-[#2A3040] rounded-lg space-y-2">
           <input
             type="text"
             value={newTitle}
             onChange={e => setNewTitle(e.target.value)}
             placeholder="Task description..."
-            className="w-full bg-[#1A2220] border border-[#2A3330] rounded-md px-2.5 py-1.5 text-xs text-white placeholder-gray-500 outline-none focus:border-[#C4FF0D]/50"
+            className="w-full bg-[#2A3040] border border-[#2A3040] rounded-md px-2.5 py-1.5 text-xs text-white placeholder-gray-500 outline-none focus:border-[#8FD3FF]/50"
             autoFocus
             onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }}
           />
@@ -124,7 +124,7 @@ export function EventTasks({ tasks, onAdd, onUpdate, onDelete }: EventTasksProps
             <select
               value={newPriority}
               onChange={e => setNewPriority(e.target.value as OfferTask['priority'])}
-              className="bg-[#1A2220] border border-[#2A3330] rounded-md px-2 py-1.5 text-xs text-gray-300 outline-none focus:border-[#C4FF0D]/50"
+              className="bg-[#2A3040] border border-[#2A3040] rounded-md px-2 py-1.5 text-xs text-gray-300 outline-none focus:border-[#8FD3FF]/50"
             >
               <option value="high">High</option>
               <option value="med">Medium</option>
@@ -134,11 +134,11 @@ export function EventTasks({ tasks, onAdd, onUpdate, onDelete }: EventTasksProps
               type="date"
               value={newDueDate}
               onChange={e => setNewDueDate(e.target.value)}
-              className="bg-[#1A2220] border border-[#2A3330] rounded-md px-2 py-1.5 text-xs text-gray-300 outline-none focus:border-[#C4FF0D]/50"
+              className="bg-[#2A3040] border border-[#2A3040] rounded-md px-2 py-1.5 text-xs text-gray-300 outline-none focus:border-[#8FD3FF]/50"
             />
             <div className="flex-1" />
             <button onClick={() => setAdding(false)} className="px-3 py-1 text-xs text-gray-400 hover:text-white transition-colors">Cancel</button>
-            <button onClick={handleAdd} className="px-3 py-1 bg-[#C4FF0D] text-black text-xs font-bold rounded-md hover:bg-[#A3D60A] transition-colors">Add</button>
+            <button onClick={handleAdd} className="px-3 py-1 bg-[#8FD3FF] text-[#04214D] text-xs font-bold rounded-md hover:bg-[#6FB8F2] transition-colors">Add</button>
           </div>
         </div>
       )}
@@ -154,12 +154,12 @@ export function EventTasks({ tasks, onAdd, onUpdate, onDelete }: EventTasksProps
             const cfg = PRIORITY_CONFIG[task.priority];
             return (
               <div key={task.id} className="group">
-                <div className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-[#252A29]/60 transition-colors">
+                <div className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-[#22262F]/60 transition-colors">
                   <button
                     onClick={() => toggleComplete(task)}
                     className={`w-4 h-4 rounded flex-shrink-0 border transition-all flex items-center justify-center ${
                       task.completed
-                        ? 'bg-[#C4FF0D]/20 border-[#C4FF0D] text-[#C4FF0D]'
+                        ? 'bg-[#8FD3FF]/20 border-[#8FD3FF] text-[#8FD3FF]'
                         : 'border-gray-600 hover:border-gray-400'
                     }`}
                   >
@@ -169,7 +169,7 @@ export function EventTasks({ tasks, onAdd, onUpdate, onDelete }: EventTasksProps
                     <div className="flex items-center gap-1.5">
                       <span className={`text-xs truncate ${task.completed ? 'text-gray-500 line-through' : 'text-white'}`}>{task.title}</span>
                       <span className={`text-[9px] px-1 py-0.5 rounded font-medium flex-shrink-0 ${cfg.bg} ${cfg.color}`}>{cfg.label}</span>
-                      {task.note && <span className="text-[10px] text-[#C4FF0D]/50 flex-shrink-0">*</span>}
+                      {task.note && <span className="text-[10px] text-[#8FD3FF]/50 flex-shrink-0">*</span>}
                     </div>
                     {task.due_date && (
                       <div className="flex items-center gap-1 mt-0.5">
@@ -184,7 +184,7 @@ export function EventTasks({ tasks, onAdd, onUpdate, onDelete }: EventTasksProps
                         if (expandedTask === task.id) { setExpandedTask(null); setNoteText(''); }
                         else { setExpandedTask(task.id); setNoteText(task.note || ''); }
                       }}
-                      className={`p-0.5 rounded hover:bg-[#252A29] transition-colors ${task.note ? 'text-[#C4FF0D]' : 'text-gray-500'}`}
+                      className={`p-0.5 rounded hover:bg-[#22262F] transition-colors ${task.note ? 'text-[#8FD3FF]' : 'text-gray-500'}`}
                     >
                       {expandedTask === task.id ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
                     </button>
@@ -200,10 +200,10 @@ export function EventTasks({ tasks, onAdd, onUpdate, onDelete }: EventTasksProps
                       value={noteText}
                       onChange={e => setNoteText(e.target.value)}
                       placeholder="Add a note..."
-                      className="flex-1 bg-[#141918] border border-[#2A3330] rounded-md px-2 py-1 text-[10px] text-gray-300 outline-none focus:border-[#C4FF0D]/50"
+                      className="flex-1 bg-[#0B0D12] border border-[#2A3040] rounded-md px-2 py-1 text-[10px] text-gray-300 outline-none focus:border-[#8FD3FF]/50"
                       onKeyDown={e => { if (e.key === 'Enter') saveTaskNote(task.id); }}
                     />
-                    <button onClick={() => saveTaskNote(task.id)} className="px-2 py-1 bg-[#C4FF0D]/20 text-[#C4FF0D] text-[10px] rounded-md hover:bg-[#C4FF0D]/30 transition-colors">Save</button>
+                    <button onClick={() => saveTaskNote(task.id)} className="px-2 py-1 bg-[#8FD3FF]/20 text-[#8FD3FF] text-[10px] rounded-md hover:bg-[#8FD3FF]/30 transition-colors">Save</button>
                   </div>
                 )}
               </div>

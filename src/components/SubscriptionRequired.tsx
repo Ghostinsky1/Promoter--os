@@ -69,9 +69,9 @@ export function SubscriptionRequired() {
   const Icon = message.icon;
 
   return (
-    <div className="min-h-screen bg-[#0F1113] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#1140F0] flex items-center justify-center p-4">
       <div className="max-w-2xl w-full">
-        <div className="bg-[#1A1D1F] border-2 border-red-900/50 rounded-3xl p-8 md:p-12 text-center">
+        <div className="bg-[#14171E] border-2 border-red-900/50 rounded-3xl p-8 md:p-12 text-center">
           <div className="w-20 h-20 bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Icon className="h-10 w-10 text-red-500" />
           </div>
@@ -109,43 +109,43 @@ export function SubscriptionRequired() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <button
               onClick={() => navigate('/pricing')}
-              className="bg-[#C4FF0D] text-black hover:bg-[#A3D60A] px-8 py-4 rounded-2xl font-bold transition-colors"
+              className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] px-8 py-4 rounded-2xl font-bold transition-colors"
             >
               {organization?.subscription_status === 'past_due' ? 'Update Payment' : 'View Plans'}
             </button>
             <button
               onClick={() => navigate('/')}
-              className="border-2 border-gray-700 text-white hover:bg-[#252A2E] px-8 py-4 rounded-2xl font-semibold transition-colors"
+              className="border-2 border-gray-700 text-white hover:bg-[#22262F] px-8 py-4 rounded-2xl font-semibold transition-colors"
             >
               Go to Dashboard
             </button>
           </div>
 
-          <div className="bg-[#252A2E] border border-gray-800 rounded-2xl p-6">
+          <div className="bg-[#22262F] border border-gray-800 rounded-2xl p-6">
             <h3 className="text-white font-semibold mb-4">What You Get With Pro:</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
               <div className="flex items-start gap-2">
-                <span className="text-[#C4FF0D] mt-1">✓</span>
+                <span className="text-[#8FD3FF] mt-1">✓</span>
                 <span className="text-gray-400 text-sm">Unlimited events & offers</span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-[#C4FF0D] mt-1">✓</span>
+                <span className="text-[#8FD3FF] mt-1">✓</span>
                 <span className="text-gray-400 text-sm">Tour management</span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-[#C4FF0D] mt-1">✓</span>
+                <span className="text-[#8FD3FF] mt-1">✓</span>
                 <span className="text-gray-400 text-sm">AI insights & deal analyzer</span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-[#C4FF0D] mt-1">✓</span>
+                <span className="text-[#8FD3FF] mt-1">✓</span>
                 <span className="text-gray-400 text-sm">Advanced analytics</span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-[#C4FF0D] mt-1">✓</span>
+                <span className="text-[#8FD3FF] mt-1">✓</span>
                 <span className="text-gray-400 text-sm">Settlement tracking</span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-[#C4FF0D] mt-1">✓</span>
+                <span className="text-[#8FD3FF] mt-1">✓</span>
                 <span className="text-gray-400 text-sm">Priority support</span>
               </div>
             </div>

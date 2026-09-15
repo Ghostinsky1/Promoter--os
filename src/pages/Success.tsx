@@ -27,9 +27,9 @@ export function Success() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F1113] flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-[#1A1D1F] border border-gray-800 rounded-3xl p-8 text-center">
-          <Loader2 className="w-16 h-16 text-[#C4FF0D] mx-auto mb-6 animate-spin" />
+      <div className="min-h-screen bg-[#1140F0] flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-[#14171E] border border-gray-800 rounded-3xl p-8 text-center">
+          <Loader2 className="w-16 h-16 text-[#8FD3FF] mx-auto mb-6 animate-spin" />
           <h1 className="text-2xl font-bold text-white mb-4">
             Processing Your Subscription
           </h1>
@@ -43,8 +43,8 @@ export function Success() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0F1113] flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-[#1A1D1F] border border-gray-800 rounded-3xl p-8 text-center">
+      <div className="min-h-screen bg-[#1140F0] flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-[#14171E] border border-gray-800 rounded-3xl p-8 text-center">
           <div className="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-red-500" />
           </div>
@@ -56,7 +56,7 @@ export function Success() {
           </p>
           <button
             onClick={() => navigate('/pricing')}
-            className="bg-[#C4FF0D] hover:bg-[#A3D60A] text-black font-bold py-3 px-6 rounded-2xl transition-colors inline-flex items-center"
+            className="bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] font-bold py-3 px-6 rounded-2xl transition-colors inline-flex items-center"
           >
             Go to Pricing
             <ArrowRight className="w-4 h-4 ml-2" />
@@ -67,10 +67,10 @@ export function Success() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F1113] flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-[#1A1D1F] border border-gray-800 rounded-3xl p-8 text-center">
-        <div className="w-16 h-16 bg-[#C4FF0D]/20 rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle className="w-8 h-8 text-[#C4FF0D]" />
+    <div className="min-h-screen bg-[#1140F0] flex items-center justify-center px-4">
+      <div className="max-w-md w-full bg-[#14171E] border border-gray-800 rounded-3xl p-8 text-center">
+        <div className="w-16 h-16 bg-[#8FD3FF]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+          <CheckCircle className="w-8 h-8 text-[#8FD3FF]" />
         </div>
         <h1 className="text-2xl font-bold text-white mb-4">
           Subscription Activated!
@@ -80,7 +80,7 @@ export function Success() {
         </p>
         <button
           onClick={() => navigate('/dashboard')}
-          className="bg-[#C4FF0D] hover:bg-[#A3D60A] text-black font-bold py-3 px-6 rounded-2xl transition-colors inline-flex items-center"
+          className="bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] font-bold py-3 px-6 rounded-2xl transition-colors inline-flex items-center"
         >
           Go to Dashboard
           <ArrowRight className="w-4 h-4 ml-2" />

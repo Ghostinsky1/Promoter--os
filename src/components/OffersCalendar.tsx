@@ -90,8 +90,8 @@ export function OffersCalendar({ offers }: OffersCalendarProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-[#1A1F1E] rounded-3xl shadow-sm border border-gray-800 overflow-hidden">
-        <div className="bg-gradient-to-r from-[#1A1F1E] to-[#252A29] text-white p-6 border-b border-gray-800">
+      <div className="bg-[#14171E] rounded-3xl shadow-sm border border-gray-800 overflow-hidden">
+        <div className="bg-gradient-to-r from-[#14171E] to-[#22262F] text-white p-6 border-b border-gray-800">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-3xl font-bold text-white">
               {monthNames[month]} {year}
@@ -100,21 +100,21 @@ export function OffersCalendar({ offers }: OffersCalendarProps) {
             <div className="flex items-center gap-2">
               <button
                 onClick={today}
-                className="bg-[#C4FF0D] hover:bg-[#A3D60A] text-black px-4 py-2 rounded-xl font-medium transition-colors"
+                className="bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] px-4 py-2 rounded-xl font-medium transition-colors"
               >
                 Today
               </button>
 
-              <div className="flex items-center gap-1 bg-[#141716] rounded-xl p-1 border border-gray-700">
+              <div className="flex items-center gap-1 bg-[#0B0D12] rounded-xl p-1 border border-gray-700">
                 <button
                   onClick={previousMonth}
-                  className="text-gray-400 hover:text-white hover:bg-[#252A29] p-2 rounded-lg transition-colors"
+                  className="text-gray-400 hover:text-white hover:bg-[#22262F] p-2 rounded-lg transition-colors"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 <button
                   onClick={nextMonth}
-                  className="text-gray-400 hover:text-white hover:bg-[#252A29] p-2 rounded-lg transition-colors"
+                  className="text-gray-400 hover:text-white hover:bg-[#22262F] p-2 rounded-lg transition-colors"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -131,7 +131,7 @@ export function OffersCalendar({ offers }: OffersCalendarProps) {
           </div>
         </div>
 
-        <div className="p-6 bg-[#0F1113]">
+        <div className="p-6 bg-[#1140F0]">
           <div className="grid grid-cols-7 gap-3">
             {Array.from({ length: startingDayOfWeek }).map((_, index) => (
               <div key={`empty-${index}`} className="aspect-square" />
@@ -151,16 +151,16 @@ export function OffersCalendar({ offers }: OffersCalendarProps) {
                   key={day}
                   className={`aspect-square border-2 rounded-2xl p-2 transition-all ${
                     isToday
-                      ? 'bg-[#C4FF0D]/10 border-[#C4FF0D] shadow-lg ring-2 ring-[#C4FF0D]/30'
+                      ? 'bg-[#8FD3FF]/10 border-[#8FD3FF] shadow-lg ring-2 ring-[#8FD3FF]/30'
                       : dayOffers.length > 0
-                      ? 'bg-[#1A1F1E] border-gray-700 hover:border-[#C4FF0D]/50 hover:shadow-md cursor-pointer'
-                      : 'bg-[#141716] border-gray-800'
+                      ? 'bg-[#14171E] border-gray-700 hover:border-[#8FD3FF]/50 hover:shadow-md cursor-pointer'
+                      : 'bg-[#0B0D12] border-gray-800'
                   }`}
                 >
                   <div className="flex flex-col h-full">
                     <div className={`text-sm font-bold mb-1 ${
                       isToday
-                        ? 'text-[#C4FF0D]'
+                        ? 'text-[#8FD3FF]'
                         : dayOffers.length > 0
                         ? 'text-white'
                         : 'text-gray-600'
@@ -186,7 +186,7 @@ export function OffersCalendar({ offers }: OffersCalendarProps) {
                         );
                       })}
                       {dayOffers.length > 2 && (
-                        <div className="text-xs text-[#C4FF0D] font-bold px-2">
+                        <div className="text-xs text-[#8FD3FF] font-bold px-2">
                           +{dayOffers.length - 2} more
                         </div>
                       )}
@@ -200,7 +200,7 @@ export function OffersCalendar({ offers }: OffersCalendarProps) {
       </div>
 
       {monthOffers.length > 0 && (
-        <div className="bg-[#1A1F1E] rounded-3xl shadow-sm border border-gray-800 p-6">
+        <div className="bg-[#14171E] rounded-3xl shadow-sm border border-gray-800 p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-bold text-white">
               Offers This Month ({monthOffers.length})
@@ -229,7 +229,7 @@ export function OffersCalendar({ offers }: OffersCalendarProps) {
                 return (
                   <div
                     key={offer.id}
-                    className={`bg-[#141716] border-2 border-gray-700 hover:border-[#C4FF0D]/50 rounded-2xl p-4 hover:shadow-lg transition-all cursor-pointer border-l-4 border-l-[#C4FF0D] ${
+                    className={`bg-[#0B0D12] border-2 border-gray-700 hover:border-[#8FD3FF]/50 rounded-2xl p-4 hover:shadow-lg transition-all cursor-pointer border-l-4 border-l-[#8FD3FF] ${
                       isCancelled ? 'opacity-40 hover:opacity-60' : ''
                     }`}
                     onClick={() => navigate(`/offers/${offer.id}`)}
@@ -254,7 +254,7 @@ export function OffersCalendar({ offers }: OffersCalendarProps) {
                     <div className="pt-3 border-t border-gray-700 flex items-center justify-between">
                       <div className="text-sm text-gray-400">Net Profit</div>
                       <div className={`text-xl font-bold ${
-                        offer.calculations.netProfit >= 0 ? 'text-[#C4FF0D]' : 'text-red-500'
+                        offer.calculations.netProfit >= 0 ? 'text-[#8FD3FF]' : 'text-red-500'
                       }`}>
                         {formatCurrency(offer.calculations.netProfit)}
                       </div>
@@ -267,15 +267,15 @@ export function OffersCalendar({ offers }: OffersCalendarProps) {
       )}
 
       {monthOffers.length === 0 && (
-        <div className="bg-[#1A1F1E] rounded-3xl shadow-sm border border-gray-800 p-12 text-center">
-          <div className="w-20 h-20 bg-[#141716] border border-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="bg-[#14171E] rounded-3xl shadow-sm border border-gray-800 p-12 text-center">
+          <div className="w-20 h-20 bg-[#0B0D12] border border-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
             <Calendar className="h-10 w-10 text-gray-600" />
           </div>
           <h3 className="text-xl font-bold text-white mb-2">No Offers in {monthNames[month]}</h3>
           <p className="text-gray-400 mb-6">Create your first offer for this month</p>
           <button
             onClick={() => navigate('/offers/create')}
-            className="bg-[#C4FF0D] hover:bg-[#A3D60A] text-black px-6 py-3 rounded-2xl font-bold hover:shadow-lg transition-all inline-flex items-center gap-2"
+            className="bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] px-6 py-3 rounded-2xl font-bold hover:shadow-lg transition-all inline-flex items-center gap-2"
           >
             <Plus className="h-5 w-5" />
             Create Offer

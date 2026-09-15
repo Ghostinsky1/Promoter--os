@@ -271,7 +271,7 @@ export function RunOfShow() {
       artist: 'bg-pink-900/20 border-pink-800/30',
       performance: 'bg-green-900/20 border-green-800/30',
       venue: 'bg-orange-900/20 border-orange-800/30',
-      other: 'bg-[#252A29] border-gray-800'
+      other: 'bg-[#22262F] border-gray-800'
     };
     return colors[category] || colors.other;
   };
@@ -283,22 +283,22 @@ export function RunOfShow() {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-[#0F1413] flex items-center justify-center text-gray-400">Loading...</div>;
+    return <div className="min-h-screen bg-[#1140F0] flex items-center justify-center text-gray-400">Loading...</div>;
   }
 
   if (!offerData) {
-    return <div className="min-h-screen bg-[#0F1413] flex items-center justify-center text-gray-400">Offer not found</div>;
+    return <div className="min-h-screen bg-[#1140F0] flex items-center justify-center text-gray-400">Offer not found</div>;
   }
 
   return (
-    <div className="min-h-screen bg-[#0F1413]">
-      <div className="bg-[#1A1F1E] border-b border-gray-800 sticky top-0 z-10">
+    <div className="min-h-screen bg-[#1140F0]">
+      <div className="bg-[#14171E] border-b border-gray-800 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate(`/offers/${id}`)}
-                className="p-2 hover:bg-[#252A29] rounded-lg transition-colors text-gray-400"
+                className="p-2 hover:bg-[#22262F] rounded-lg transition-colors text-gray-400"
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
@@ -313,21 +313,21 @@ export function RunOfShow() {
               <button
                 onClick={saveSchedule}
                 disabled={saving}
-                className="flex items-center gap-2 px-4 py-2 bg-[#252A29] border border-gray-800 text-white rounded-xl hover:bg-[#2F3532] transition-colors disabled:opacity-50 font-bold"
+                className="flex items-center gap-2 px-4 py-2 bg-[#22262F] border border-gray-800 text-white rounded-xl hover:bg-[#2A3040] transition-colors disabled:opacity-50 font-bold"
               >
                 <Save className="h-4 w-4" />
                 {saving ? 'Saving...' : 'Save'}
               </button>
               <button
                 onClick={() => setShowPreview(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#252A29] border border-gray-800 text-white rounded-xl hover:bg-[#2F3532] transition-colors font-bold"
+                className="flex items-center gap-2 px-4 py-2 bg-[#22262F] border border-gray-800 text-white rounded-xl hover:bg-[#2A3040] transition-colors font-bold"
               >
                 <Eye className="h-4 w-4" />
                 Preview
               </button>
               <button
                 onClick={() => generateRunOfShowPDF(offerData, schedule, venueContact, eventDate, companySettings)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#C4FF0D] text-black rounded-xl hover:bg-[#A3D60A] transition-colors font-bold"
+                className="flex items-center gap-2 px-4 py-2 bg-[#8FD3FF] text-[#04214D] rounded-xl hover:bg-[#6FB8F2] transition-colors font-bold"
               >
                 <Download className="h-4 w-4" />
                 Download PDF
@@ -340,7 +340,7 @@ export function RunOfShow() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-6">
+            <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-6">
               <h3 className="text-lg font-bold text-white mb-4">Event Details</h3>
 
               <div className="space-y-4">
@@ -350,7 +350,7 @@ export function RunOfShow() {
                     type="date"
                     value={eventDate}
                     onChange={(e) => setEventDate(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#252A29] border border-gray-800 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                    className="w-full px-3 py-2 bg-[#22262F] border border-gray-800 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                   />
                 </div>
 
@@ -366,7 +366,7 @@ export function RunOfShow() {
               </div>
             </div>
 
-            <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-6">
+            <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-6">
               <h3 className="text-lg font-bold text-white mb-4">Venue Contact</h3>
 
               <div className="space-y-3">
@@ -377,7 +377,7 @@ export function RunOfShow() {
                     value={venueContact.name}
                     onChange={(e) => setVenueContact({...venueContact, name: e.target.value})}
                     placeholder="Contact name"
-                    className="w-full px-3 py-2 bg-[#252A29] border border-gray-800 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                    className="w-full px-3 py-2 bg-[#22262F] border border-gray-800 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                   />
                 </div>
                 <div>
@@ -387,7 +387,7 @@ export function RunOfShow() {
                     value={venueContact.phone}
                     onChange={(e) => setVenueContact({...venueContact, phone: e.target.value})}
                     placeholder="(555) 123-4567"
-                    className="w-full px-3 py-2 bg-[#252A29] border border-gray-800 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                    className="w-full px-3 py-2 bg-[#22262F] border border-gray-800 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                   />
                 </div>
                 <div>
@@ -397,13 +397,13 @@ export function RunOfShow() {
                     value={venueContact.email}
                     onChange={(e) => setVenueContact({...venueContact, email: e.target.value})}
                     placeholder="contact@venue.com"
-                    className="w-full px-3 py-2 bg-[#252A29] border border-gray-800 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                    className="w-full px-3 py-2 bg-[#22262F] border border-gray-800 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-6">
+            <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-6">
               <h3 className="text-lg font-bold text-white mb-4">Quick Stats</h3>
 
               <div className="space-y-3">
@@ -428,12 +428,12 @@ export function RunOfShow() {
           </div>
 
           <div className="lg:col-span-2">
-            <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-6">
+            <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-white">Event Timeline</h3>
                 <button
                   onClick={addScheduleItem}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#C4FF0D] text-black rounded-xl hover:bg-[#A3D60A] transition-colors text-sm font-bold"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#8FD3FF] text-[#04214D] rounded-xl hover:bg-[#6FB8F2] transition-colors text-sm font-bold"
                 >
                   <Plus className="h-4 w-4" />
                   Add Item
@@ -454,7 +454,7 @@ export function RunOfShow() {
                             type="time"
                             value={item.time}
                             onChange={(e) => updateScheduleItem(index, 'time', e.target.value)}
-                            className="w-full px-2 py-1 bg-[#252A29] border border-gray-800 text-white rounded text-sm focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                            className="w-full px-2 py-1 bg-[#22262F] border border-gray-800 text-white rounded text-sm focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                           />
                         </div>
                         <div className="text-xs text-gray-400">
@@ -467,14 +467,14 @@ export function RunOfShow() {
                           type="text"
                           value={item.title}
                           onChange={(e) => updateScheduleItem(index, 'title', e.target.value)}
-                          className="w-full font-bold mb-2 text-lg px-2 py-1 bg-transparent text-white border border-transparent hover:border-gray-700 rounded focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                          className="w-full font-bold mb-2 text-lg px-2 py-1 bg-transparent text-white border border-transparent hover:border-gray-700 rounded focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                           placeholder="Event title"
                         />
 
                         <textarea
                           value={item.description}
                           onChange={(e) => updateScheduleItem(index, 'description', e.target.value)}
-                          className="w-full text-sm mb-2 px-2 py-1 bg-transparent text-gray-300 border border-transparent hover:border-gray-700 rounded focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                          className="w-full text-sm mb-2 px-2 py-1 bg-transparent text-gray-300 border border-transparent hover:border-gray-700 rounded focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                           rows={2}
                           placeholder="Description..."
                         />
@@ -485,7 +485,7 @@ export function RunOfShow() {
                             <select
                               value={item.category}
                               onChange={(e) => updateScheduleItem(index, 'category', e.target.value as any)}
-                              className="w-full text-xs px-2 py-1 bg-[#252A29] border border-gray-800 text-white rounded focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                              className="w-full text-xs px-2 py-1 bg-[#22262F] border border-gray-800 text-white rounded focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                             >
                               <option value="production">🔧 Production</option>
                               <option value="technical">🎚️ Technical</option>
@@ -502,7 +502,7 @@ export function RunOfShow() {
                               type="number"
                               value={item.duration}
                               onChange={(e) => updateScheduleItem(index, 'duration', parseInt(e.target.value) || 0)}
-                              className="w-full text-xs px-2 py-1 bg-[#252A29] border border-gray-800 text-white rounded focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                              className="w-full text-xs px-2 py-1 bg-[#22262F] border border-gray-800 text-white rounded focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                             />
                           </div>
 
@@ -512,7 +512,7 @@ export function RunOfShow() {
                               type="text"
                               value={item.responsible}
                               onChange={(e) => updateScheduleItem(index, 'responsible', e.target.value)}
-                              className="w-full text-xs px-2 py-1 bg-[#252A29] border border-gray-800 text-white rounded focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                              className="w-full text-xs px-2 py-1 bg-[#22262F] border border-gray-800 text-white rounded focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                               placeholder="Name/Role"
                             />
                           </div>
@@ -523,14 +523,14 @@ export function RunOfShow() {
                         <button
                           onClick={() => moveScheduleItem(index, 'up')}
                           disabled={index === 0}
-                          className="p-2 hover:bg-[#252A29] rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="p-2 hover:bg-[#22262F] rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           <ArrowUp className="h-4 w-4 text-gray-400" />
                         </button>
                         <button
                           onClick={() => moveScheduleItem(index, 'down')}
                           disabled={index === schedule.length - 1}
-                          className="p-2 hover:bg-[#252A29] rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="p-2 hover:bg-[#22262F] rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           <ArrowDown className="h-4 w-4 text-gray-400" />
                         </button>
@@ -561,8 +561,8 @@ export function RunOfShow() {
 
       {showPreview && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0F1113] border-2 border-gray-800 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-gray-800 bg-gradient-to-r from-[#1A1F1E] to-[#141716]">
+          <div className="bg-[#1140F0] border-2 border-gray-800 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b border-gray-800 bg-gradient-to-r from-[#14171E] to-[#0B0D12]">
               <div>
                 <h2 className="text-2xl font-bold text-white">Run of Show Preview</h2>
                 <p className="text-sm text-gray-400 mt-1">
@@ -571,18 +571,18 @@ export function RunOfShow() {
               </div>
               <button
                 onClick={() => setShowPreview(false)}
-                className="p-2 hover:bg-[#252A29] rounded-xl transition-colors text-gray-400 hover:text-white"
+                className="p-2 hover:bg-[#22262F] rounded-xl transition-colors text-gray-400 hover:text-white"
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
 
-            <div className="overflow-auto p-6 flex-1 bg-[#0F1113]">
-              <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-6 mb-6">
+            <div className="overflow-auto p-6 flex-1 bg-[#1140F0]">
+              <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-6 mb-6">
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <h3 className="font-bold text-white mb-3 flex items-center gap-2">
-                      <Music className="h-4 w-4 text-[#C4FF0D]" />
+                      <Music className="h-4 w-4 text-[#8FD3FF]" />
                       Event Information
                     </h3>
                     <div className="space-y-2 text-sm">
@@ -593,7 +593,7 @@ export function RunOfShow() {
                   </div>
                   <div>
                     <h3 className="font-bold text-white mb-3 flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-[#C4FF0D]" />
+                      <Clock className="h-4 w-4 text-[#8FD3FF]" />
                       Venue Contact
                     </h3>
                     <div className="space-y-2 text-sm">
@@ -609,11 +609,11 @@ export function RunOfShow() {
                 {schedule.map((item, index) => (
                   <div
                     key={item.id}
-                    className={`p-4 border-l-4 rounded-2xl ${getPreviewCategoryBorderColor(item.category)} bg-[#1A1F1E] border border-gray-800`}
+                    className={`p-4 border-l-4 rounded-2xl ${getPreviewCategoryBorderColor(item.category)} bg-[#14171E] border border-gray-800`}
                   >
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-24">
-                        <div className="text-lg font-bold text-[#C4FF0D]">{convertTo12Hour(item.time)}</div>
+                        <div className="text-lg font-bold text-[#8FD3FF]">{convertTo12Hour(item.time)}</div>
                         <div className="text-xs text-gray-500">{item.duration} min</div>
                       </div>
                       <div className="flex-1">
@@ -648,32 +648,32 @@ export function RunOfShow() {
                 ))}
               </div>
 
-              <div className="mt-6 p-4 bg-gradient-to-br from-[#C4FF0D]/10 to-green-500/10 border-2 border-[#C4FF0D]/30 rounded-2xl">
+              <div className="mt-6 p-4 bg-gradient-to-br from-[#8FD3FF]/10 to-green-500/10 border-2 border-[#8FD3FF]/30 rounded-2xl">
                 <div className="flex items-center gap-2 mb-3">
-                  <Clock className="h-4 w-4 text-[#C4FF0D]" />
+                  <Clock className="h-4 w-4 text-[#8FD3FF]" />
                   <h4 className="font-bold text-white">Summary</h4>
                 </div>
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <div className="text-gray-400">Total Duration</div>
-                    <div className="font-bold text-[#C4FF0D] text-lg">{calculateTotalDuration()} hours</div>
+                    <div className="font-bold text-[#8FD3FF] text-lg">{calculateTotalDuration()} hours</div>
                   </div>
                   <div>
                     <div className="text-gray-400">Schedule Items</div>
-                    <div className="font-bold text-[#C4FF0D] text-lg">{schedule.length}</div>
+                    <div className="font-bold text-[#8FD3FF] text-lg">{schedule.length}</div>
                   </div>
                   <div>
                     <div className="text-gray-400">Performers</div>
-                    <div className="font-bold text-[#C4FF0D] text-lg">{1 + (offerData?.support_acts?.length || 0)}</div>
+                    <div className="font-bold text-[#8FD3FF] text-lg">{1 + (offerData?.support_acts?.length || 0)}</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-800 bg-[#1A1F1E] flex gap-3">
+            <div className="p-6 border-t border-gray-800 bg-[#14171E] flex gap-3">
               <button
                 onClick={() => setShowPreview(false)}
-                className="flex-1 px-4 py-2 bg-[#252A29] border border-gray-700 text-white rounded-2xl hover:bg-[#2F3532] transition-colors font-semibold"
+                className="flex-1 px-4 py-2 bg-[#22262F] border border-gray-700 text-white rounded-2xl hover:bg-[#2A3040] transition-colors font-semibold"
               >
                 Close
               </button>
@@ -682,7 +682,7 @@ export function RunOfShow() {
                   setShowPreview(false);
                   generateRunOfShowPDF(offerData!, schedule, venueContact, eventDate, companySettings);
                 }}
-                className="flex-1 px-4 py-2 bg-[#C4FF0D] text-black rounded-2xl hover:bg-[#A3D60A] transition-colors font-bold flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-[#8FD3FF] text-[#04214D] rounded-2xl hover:bg-[#6FB8F2] transition-colors font-bold flex items-center justify-center gap-2"
               >
                 <Download className="h-4 w-4" />
                 Download PDF
@@ -700,7 +700,7 @@ function getPreviewCategoryBorderColor(category: string): string {
     production: 'border-l-blue-500',
     technical: 'border-l-purple-500',
     artist: 'border-l-pink-500',
-    performance: 'border-l-[#C4FF0D]',
+    performance: 'border-l-[#8FD3FF]',
     venue: 'border-l-orange-500',
     other: 'border-l-gray-600'
   };
@@ -712,7 +712,7 @@ function getPreviewCategoryBadgeColor(category: string): string {
     production: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
     technical: 'bg-purple-500/20 text-purple-400 border border-purple-500/30',
     artist: 'bg-pink-500/20 text-pink-400 border border-pink-500/30',
-    performance: 'bg-[#C4FF0D]/20 text-[#C4FF0D] border border-[#C4FF0D]/30',
+    performance: 'bg-[#8FD3FF]/20 text-[#8FD3FF] border border-[#8FD3FF]/30',
     venue: 'bg-orange-500/20 text-orange-400 border border-orange-500/30',
     other: 'bg-gray-700/50 text-gray-400 border border-gray-600'
   };

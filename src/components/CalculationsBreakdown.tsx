@@ -72,9 +72,9 @@ export function CalculationsBreakdown({
   });
 
   return (
-    <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-4">
+    <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
       <div className="flex items-center gap-2 mb-3">
-        <CheckCircle2 className="w-5 h-5 text-[#C4FF0D]" />
+        <CheckCircle2 className="w-5 h-5 text-[#8FD3FF]" />
         <h2 className="text-base font-bold text-white">Verified Calculations</h2>
       </div>
 
@@ -87,8 +87,8 @@ export function CalculationsBreakdown({
                   ? 'bg-green-900/20 border-2 border-green-600'
                   : 'bg-red-900/20 border-2 border-red-600'
                 : step.isSubtotal
-                ? 'bg-[#C4FF0D]/10 border border-[#C4FF0D]/30'
-                : 'bg-[#252A29]'
+                ? 'bg-[#8FD3FF]/10 border border-[#8FD3FF]/30'
+                : 'bg-[#22262F]'
             }`}>
               <div className="flex-1">
                 <div className={`font-semibold ${
@@ -123,7 +123,7 @@ export function CalculationsBreakdown({
                     ? 'text-green-400 text-lg'
                     : 'text-red-400 text-lg'
                   : step.isSubtotal
-                  ? 'text-[#C4FF0D] text-sm'
+                  ? 'text-[#8FD3FF] text-sm'
                   : step.isPositive
                   ? 'text-green-400 text-xs'
                   : 'text-red-400 text-xs'
@@ -142,7 +142,7 @@ export function CalculationsBreakdown({
       </div>
 
       {(depositsPaidTotal > 0 || depositsDueTotal > 0) && (
-        <div className="mt-3 p-3 bg-[#252A29] rounded-xl space-y-1.5">
+        <div className="mt-3 p-3 bg-[#22262F] rounded-xl space-y-1.5">
           <div className="text-xs text-gray-400 font-semibold mb-1">Cash Flow (Deposits)</div>
           <div className="flex justify-between text-xs">
             <span className="text-gray-400">Cash Out So Far (Deposits Paid)</span>
@@ -155,7 +155,7 @@ export function CalculationsBreakdown({
         </div>
       )}
 
-      <div className="mt-4 p-3 bg-[#252A29] rounded-xl">
+      <div className="mt-4 p-3 bg-[#22262F] rounded-xl">
         <div className="text-xs text-gray-400 mb-1">Formula Verification</div>
         <div className="text-[10px] font-mono text-gray-300 space-y-0.5">
           <div>Net Gross = Gross Revenue - Sales Tax</div>

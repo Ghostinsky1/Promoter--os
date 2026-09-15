@@ -17,7 +17,7 @@ const TEMPLATES: {
     name: 'Headliner',
     icon: Crown,
     description: 'Full production: flights, hotel, rider, hospitality buyout',
-    color: 'text-[#C4FF0D]',
+    color: 'text-[#8FD3FF]',
     values: {
       deposit_type: 'percentage',
       deposit_percentage: 50,
@@ -84,7 +84,7 @@ const TEMPLATES: {
 export function ArtistTemplateModal({ onApply, onSkip }: ArtistTemplateModalProps) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#1A1D1F] border border-gray-800 rounded-2xl shadow-2xl max-w-lg w-full">
+      <div className="bg-[#14171E] border border-gray-800 rounded-2xl shadow-2xl max-w-lg w-full">
         <div className="flex items-center justify-between p-5 border-b border-gray-800">
           <div>
             <h2 className="text-lg font-bold text-white">Start from Template</h2>
@@ -102,14 +102,14 @@ export function ArtistTemplateModal({ onApply, onSkip }: ArtistTemplateModalProp
               <button
                 key={t.name}
                 onClick={() => onApply(t.values)}
-                className="w-full text-left p-4 bg-[#252A2E] border border-gray-800 rounded-xl hover:border-[#C4FF0D]/30 hover:bg-[#252A2E]/80 transition-all group"
+                className="w-full text-left p-4 bg-[#22262F] border border-gray-800 rounded-xl hover:border-[#8FD3FF]/30 hover:bg-[#22262F]/80 transition-all group"
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-lg bg-[#1A1D1F] flex items-center justify-center ${t.color}`}>
+                  <div className={`w-9 h-9 rounded-lg bg-[#14171E] flex items-center justify-center ${t.color}`}>
                     <Icon className="w-4.5 h-4.5" />
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-white group-hover:text-[#C4FF0D] transition-colors">
+                    <div className="text-sm font-bold text-white group-hover:text-[#8FD3FF] transition-colors">
                       {t.name} Template
                     </div>
                     <div className="text-[11px] text-gray-500">{t.description}</div>

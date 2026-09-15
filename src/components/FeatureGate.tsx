@@ -17,7 +17,7 @@ export function FeatureGate({ feature, children, fallback, showUpgrade = true }:
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C4FF0D]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8FD3FF]"></div>
       </div>
     );
   }
@@ -34,7 +34,7 @@ export function FeatureGate({ feature, children, fallback, showUpgrade = true }:
     }
 
     return (
-      <div className="p-8 md:p-12 bg-[#1A1D1F] border-2 border-gray-800 rounded-3xl text-center max-w-2xl mx-auto">
+      <div className="p-8 md:p-12 bg-[#14171E] border-2 border-gray-800 rounded-3xl text-center max-w-2xl mx-auto">
         <div className="w-16 h-16 bg-gray-800/50 rounded-2xl flex items-center justify-center mx-auto mb-6">
           <Lock className="h-8 w-8 text-gray-600" />
         </div>
@@ -42,7 +42,7 @@ export function FeatureGate({ feature, children, fallback, showUpgrade = true }:
           Upgrade to Access This Feature
         </h3>
         <p className="text-gray-400 mb-2 text-lg">
-          This feature is available on <span className="text-[#C4FF0D] font-semibold">Pro</span> and above.
+          This feature is available on <span className="text-[#8FD3FF] font-semibold">Pro</span> and above.
         </p>
         <p className="text-gray-500 mb-8">
           Current plan: <span className="text-white font-medium">{organization?.subscription_tier || 'Starter'}</span>
@@ -51,19 +51,19 @@ export function FeatureGate({ feature, children, fallback, showUpgrade = true }:
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => navigate('/pricing')}
-            className="bg-[#C4FF0D] text-black hover:bg-[#A3D60A] px-8 py-4 rounded-2xl font-bold transition-colors inline-flex items-center justify-center gap-2"
+            className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] px-8 py-4 rounded-2xl font-bold transition-colors inline-flex items-center justify-center gap-2"
           >
             View Plans <ArrowRight className="h-5 w-5" />
           </button>
           <button
             onClick={() => navigate('/')}
-            className="border-2 border-gray-700 text-white hover:bg-[#252A2E] px-8 py-4 rounded-2xl font-semibold transition-colors"
+            className="border-2 border-gray-700 text-white hover:bg-[#22262F] px-8 py-4 rounded-2xl font-semibold transition-colors"
           >
             Go Back
           </button>
         </div>
 
-        <div className="mt-8 p-6 bg-[#252A2E] border border-gray-800 rounded-2xl">
+        <div className="mt-8 p-6 bg-[#22262F] border border-gray-800 rounded-2xl">
           <p className="text-sm font-semibold text-white mb-3">Pro Plan Includes:</p>
           <ul className="text-sm text-gray-400 space-y-2">
             <li>✓ Unlimited events & offers</li>

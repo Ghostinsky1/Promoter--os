@@ -149,19 +149,19 @@ export function DealEstimator() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1413] text-white p-4 sm:p-6">
+    <div className="min-h-screen bg-[#1140F0] text-white p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         <button
           onClick={() => window.history.back()}
-          className="flex items-center gap-2 text-gray-400 hover:text-[#C4FF0D] mb-6 transition-colors text-sm group"
+          className="flex items-center gap-2 text-gray-400 hover:text-[#8FD3FF] mb-6 transition-colors text-sm group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Back
         </button>
 
         <div className="mb-8">
-          <div className="inline-block px-4 py-1.5 bg-[#C4FF0D]/10 border border-[#C4FF0D]/30 rounded-full mb-3">
-            <span className="text-[#C4FF0D] text-xs font-bold uppercase tracking-wider">Deal Estimator</span>
+          <div className="inline-block px-4 py-1.5 bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 rounded-full mb-3">
+            <span className="text-[#8FD3FF] text-xs font-bold uppercase tracking-wider">Deal Estimator</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-white">Live Budget Calculator</h1>
           <p className="text-gray-400 text-base">Edit values below to see real-time calculations</p>
@@ -196,31 +196,31 @@ export function DealEstimator() {
 
         {/* Key Metrics - Summary Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-5 border border-[#C4FF0D]/20">
+          <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-5 border border-[#8FD3FF]/20">
             <div className="flex items-center gap-2 mb-3">
-              <DollarSign className="w-5 h-5 text-[#C4FF0D]" />
+              <DollarSign className="w-5 h-5 text-[#8FD3FF]" />
             </div>
-            <div className="text-3xl font-black text-[#C4FF0D] mb-1">
+            <div className="text-3xl font-black text-[#8FD3FF] mb-1">
               ${(calculations.netProfit / 1000).toFixed(1)}K
             </div>
             <div className="text-xs text-gray-400 uppercase tracking-wider font-medium">Net Profit</div>
           </div>
 
-          <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-5 border border-gray-700">
+          <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-5 border border-gray-700">
             <div className="text-3xl font-black text-white mb-1">
               {calculations.profitMargin.toFixed(1)}%
             </div>
             <div className="text-xs text-gray-400 uppercase tracking-wider font-medium">Profit Margin</div>
           </div>
 
-          <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-5 border border-gray-700">
+          <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-5 border border-gray-700">
             <div className="text-3xl font-black text-white mb-1">
               {calculations.totalTickets}
             </div>
             <div className="text-xs text-gray-400 uppercase tracking-wider font-medium">Total Tickets</div>
           </div>
 
-          <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-5 border border-gray-700">
+          <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-5 border border-gray-700">
             <div className="text-3xl font-black text-white mb-1">
               ${(calculations.totalExpenses / 1000).toFixed(1)}K
             </div>
@@ -230,12 +230,12 @@ export function DealEstimator() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Ticket Scaling - Editable */}
-          <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-6 border border-gray-800">
+          <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-6 border border-gray-800">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">Ticket Scaling</h2>
               <button
                 onClick={addTicketTier}
-                className="text-xs bg-[#C4FF0D] text-black px-3 py-1.5 rounded-lg font-bold hover:bg-[#A3D60A] transition-colors"
+                className="text-xs bg-[#8FD3FF] text-[#04214D] px-3 py-1.5 rounded-lg font-bold hover:bg-[#6FB8F2] transition-colors"
               >
                 + Add Tier
               </button>
@@ -248,7 +248,7 @@ export function DealEstimator() {
                       type="text"
                       value={tier.name}
                       onChange={(e) => updateTicketTier(index, 'name', e.target.value)}
-                      className="col-span-3 bg-[#252A29] border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#C4FF0D]"
+                      className="col-span-3 bg-[#22262F] border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#8FD3FF]"
                       placeholder="Tier Name"
                     />
                     <div>
@@ -257,7 +257,7 @@ export function DealEstimator() {
                         type="number"
                         value={tier.sellableQty}
                         onChange={(e) => updateTicketTier(index, 'sellableQty', e.target.value)}
-                        className="w-full bg-[#252A29] border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#C4FF0D]"
+                        className="w-full bg-[#22262F] border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#8FD3FF]"
                         min="0"
                       />
                     </div>
@@ -267,7 +267,7 @@ export function DealEstimator() {
                         type="number"
                         value={tier.price}
                         onChange={(e) => updateTicketTier(index, 'price', e.target.value)}
-                        className="w-full bg-[#252A29] border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#C4FF0D]"
+                        className="w-full bg-[#22262F] border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#8FD3FF]"
                         min="0"
                         step="0.01"
                       />
@@ -284,7 +284,7 @@ export function DealEstimator() {
                   </div>
                   <div className="flex justify-between text-sm pt-2 border-t border-gray-700">
                     <span className="text-gray-400">Subtotal</span>
-                    <span className="font-bold text-[#C4FF0D]">
+                    <span className="font-bold text-[#8FD3FF]">
                       {formatCurrency(tier.sellableQty * tier.price)}
                     </span>
                   </div>
@@ -304,7 +304,7 @@ export function DealEstimator() {
                     type="number"
                     value={(salesTaxRate * 100).toFixed(1)}
                     onChange={(e) => setSalesTaxRate(Math.max(0, Number(e.target.value) || 0) / 100)}
-                    className="w-20 bg-[#252A29] border border-gray-600 rounded-lg px-2 py-1 text-white text-sm focus:outline-none focus:border-[#C4FF0D]"
+                    className="w-20 bg-[#22262F] border border-gray-600 rounded-lg px-2 py-1 text-white text-sm focus:outline-none focus:border-[#8FD3FF]"
                     min="0"
                     max="100"
                     step="0.1"
@@ -317,13 +317,13 @@ export function DealEstimator() {
               </div>
               <div className="flex justify-between pt-2 border-t border-gray-700">
                 <span className="font-bold text-white">Net Gross</span>
-                <span className="font-black text-[#C4FF0D] text-lg">{formatCurrency(calculations.netGross)}</span>
+                <span className="font-black text-[#8FD3FF] text-lg">{formatCurrency(calculations.netGross)}</span>
               </div>
             </div>
           </div>
 
           {/* Artist Deal - Editable */}
-          <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-6 border border-gray-800">
+          <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-6 border border-gray-800">
             <h2 className="text-xl font-bold mb-4">Artist Deal</h2>
             <div className="bg-black/40 rounded-2xl p-4 border border-gray-700">
               <label className="text-sm text-gray-400 mb-2 block">Artist Guarantee ($)</label>
@@ -331,7 +331,7 @@ export function DealEstimator() {
                 type="number"
                 value={artistGuarantee}
                 onChange={(e) => setArtistGuarantee(Math.max(0, Number(e.target.value) || 0))}
-                className="w-full bg-[#252A29] border border-gray-600 rounded-lg px-4 py-3 text-white text-lg font-bold focus:outline-none focus:border-[#C4FF0D]"
+                className="w-full bg-[#22262F] border border-gray-600 rounded-lg px-4 py-3 text-white text-lg font-bold focus:outline-none focus:border-[#8FD3FF]"
                 min="0"
                 step="100"
               />
@@ -342,12 +342,12 @@ export function DealEstimator() {
           </div>
 
           {/* Fixed Expenses - Editable */}
-          <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-6 border border-gray-800">
+          <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-6 border border-gray-800">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">Fixed Expenses</h2>
               <button
                 onClick={addFixedExpense}
-                className="text-xs bg-[#C4FF0D] text-black px-3 py-1.5 rounded-lg font-bold hover:bg-[#A3D60A] transition-colors"
+                className="text-xs bg-[#8FD3FF] text-[#04214D] px-3 py-1.5 rounded-lg font-bold hover:bg-[#6FB8F2] transition-colors"
               >
                 + Add
               </button>
@@ -360,14 +360,14 @@ export function DealEstimator() {
                       type="text"
                       value={exp.category}
                       onChange={(e) => updateFixedExpense(index, 'category', e.target.value)}
-                      className="bg-[#252A29] border border-gray-600 rounded-lg px-2 py-1.5 text-white text-xs focus:outline-none focus:border-[#C4FF0D]"
+                      className="bg-[#22262F] border border-gray-600 rounded-lg px-2 py-1.5 text-white text-xs focus:outline-none focus:border-[#8FD3FF]"
                       placeholder="Category"
                     />
                     <input
                       type="text"
                       value={exp.name}
                       onChange={(e) => updateFixedExpense(index, 'name', e.target.value)}
-                      className="bg-[#252A29] border border-gray-600 rounded-lg px-2 py-1.5 text-white text-xs focus:outline-none focus:border-[#C4FF0D]"
+                      className="bg-[#22262F] border border-gray-600 rounded-lg px-2 py-1.5 text-white text-xs focus:outline-none focus:border-[#8FD3FF]"
                       placeholder="Name"
                     />
                   </div>
@@ -376,7 +376,7 @@ export function DealEstimator() {
                       type="number"
                       value={exp.amount}
                       onChange={(e) => updateFixedExpense(index, 'amount', e.target.value)}
-                      className="flex-1 bg-[#252A29] border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none focus:border-[#C4FF0D]"
+                      className="flex-1 bg-[#22262F] border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none focus:border-[#8FD3FF]"
                       min="0"
                       step="1"
                     />
@@ -397,12 +397,12 @@ export function DealEstimator() {
           </div>
 
           {/* Variable Expenses - Editable */}
-          <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-6 border border-gray-800">
+          <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-6 border border-gray-800">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">Variable Expenses</h2>
               <button
                 onClick={addVariableExpense}
-                className="text-xs bg-[#C4FF0D] text-black px-3 py-1.5 rounded-lg font-bold hover:bg-[#A3D60A] transition-colors"
+                className="text-xs bg-[#8FD3FF] text-[#04214D] px-3 py-1.5 rounded-lg font-bold hover:bg-[#6FB8F2] transition-colors"
               >
                 + Add
               </button>
@@ -414,7 +414,7 @@ export function DealEstimator() {
                     type="text"
                     value={exp.name}
                     onChange={(e) => updateVariableExpense(index, 'name', e.target.value)}
-                    className="w-full bg-[#252A29] border border-gray-600 rounded-lg px-2 py-1.5 text-white text-xs mb-2 focus:outline-none focus:border-[#C4FF0D]"
+                    className="w-full bg-[#22262F] border border-gray-600 rounded-lg px-2 py-1.5 text-white text-xs mb-2 focus:outline-none focus:border-[#8FD3FF]"
                     placeholder="Name (include rate in name)"
                   />
                   <div className="flex gap-2">
@@ -422,7 +422,7 @@ export function DealEstimator() {
                       type="number"
                       value={exp.amount}
                       onChange={(e) => updateVariableExpense(index, 'amount', e.target.value)}
-                      className="flex-1 bg-[#252A29] border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none focus:border-[#C4FF0D]"
+                      className="flex-1 bg-[#22262F] border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none focus:border-[#8FD3FF]"
                       step="0.001"
                     />
                     <button
@@ -442,9 +442,9 @@ export function DealEstimator() {
           </div>
 
           {/* Verified Calculations - Read Only Summary */}
-          <div className="lg:col-span-2 bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-6 border-2 border-[#C4FF0D]/30">
+          <div className="lg:col-span-2 bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-6 border-2 border-[#8FD3FF]/30">
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <CheckCircle2 className="w-6 h-6 text-[#C4FF0D]" />
+              <CheckCircle2 className="w-6 h-6 text-[#8FD3FF]" />
               Verified Calculations
             </h2>
 
@@ -460,9 +460,9 @@ export function DealEstimator() {
                   <div className="text-2xl font-black text-red-400">-{formatCurrency(calculations.salesTax)}</div>
                 </div>
 
-                <div className="bg-black/40 rounded-xl p-4 border border-[#C4FF0D]/30">
+                <div className="bg-black/40 rounded-xl p-4 border border-[#8FD3FF]/30">
                   <div className="text-sm text-gray-400 mb-1">Net Gross</div>
-                  <div className="text-2xl font-black text-[#C4FF0D]">{formatCurrency(calculations.netGross)}</div>
+                  <div className="text-2xl font-black text-[#8FD3FF]">{formatCurrency(calculations.netGross)}</div>
                 </div>
               </div>
 
@@ -486,8 +486,8 @@ export function DealEstimator() {
               </div>
             </div>
 
-            <div className="mt-6 pt-6 border-t-2 border-[#C4FF0D]/30">
-              <div className="bg-gradient-to-r from-[#C4FF0D]/20 to-green-500/20 rounded-2xl p-6 border-2 border-[#C4FF0D]/50">
+            <div className="mt-6 pt-6 border-t-2 border-[#8FD3FF]/30">
+              <div className="bg-gradient-to-r from-[#8FD3FF]/20 to-green-500/20 rounded-2xl p-6 border-2 border-[#8FD3FF]/50">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm text-gray-400 mb-2">NET PROFIT</div>
@@ -495,7 +495,7 @@ export function DealEstimator() {
                   </div>
                   <div className="text-right">
                     <div className={`text-4xl font-black ${
-                      calculations.netProfit >= 0 ? 'text-[#C4FF0D]' : 'text-red-400'
+                      calculations.netProfit >= 0 ? 'text-[#8FD3FF]' : 'text-red-400'
                     }`}>
                       {formatCurrency(calculations.netProfit)}
                     </div>

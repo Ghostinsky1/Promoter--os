@@ -34,7 +34,7 @@ export function TrialBanner() {
             </div>
             <button
               onClick={() => navigate('/pricing')}
-              className={`${isUrgent ? 'bg-red-600 hover:bg-red-700' : 'bg-[#C4FF0D] hover:bg-[#A3D60A]'} ${isUrgent ? 'text-white' : 'text-black'} px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2`}
+              className={`${isUrgent ? 'bg-red-600 hover:bg-red-700' : 'bg-[#8FD3FF] hover:bg-[#6FB8F2]'} ${isUrgent ? 'text-white' : 'text-[#04214D]'} px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2`}
             >
               Subscribe Now <ArrowRight className="h-4 w-4" />
             </button>

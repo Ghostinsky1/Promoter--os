@@ -368,7 +368,7 @@ export function CreateOfferDistrict() {
                     className={`px-4 py-4 rounded-xl border-2 font-semibold transition-all ${
                       dealType === 'flat_guarantee'
                         ? 'bg-black text-white border-black'
-                        : 'bg-white text-black border-gray-300 hover:border-gray-400'
+                        : 'bg-white text-[#04214D] border-gray-300 hover:border-gray-400'
                     }`}
                   >
                     Flat Guarantee
@@ -378,7 +378,7 @@ export function CreateOfferDistrict() {
                     className={`px-4 py-4 rounded-xl border-2 font-semibold transition-all ${
                       dealType === 'promoter_profit'
                         ? 'bg-black text-white border-black'
-                        : 'bg-white text-black border-gray-300 hover:border-gray-400'
+                        : 'bg-white text-[#04214D] border-gray-300 hover:border-gray-400'
                     }`}
                   >
                     Profit Deal (85/15)

@@ -67,7 +67,7 @@ export function Analytics() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F1413] flex items-center justify-center">
+      <div className="min-h-screen bg-[#1140F0] flex items-center justify-center">
         <div className="text-gray-400">Loading analytics...</div>
       </div>
     );
@@ -91,26 +91,26 @@ export function Analytics() {
   const netProfit = offer.calculations.netProfit;
 
   const expenseCategories = [
-    { title: 'Talent', total: Object.values(offer.expenses.talent || {}).reduce((s, v) => s + v, 0), color: '#C4FF0D' },
+    { title: 'Talent', total: Object.values(offer.expenses.talent || {}).reduce((s, v) => s + v, 0), color: '#8FD3FF' },
     { title: 'Production', total: Object.values(offer.expenses.production || {}).reduce((s, v) => s + v, 0), color: '#ffffff' },
     { title: 'Marketing', total: Object.values(offer.expenses.marketing || {}).reduce((s, v) => s + v, 0), color: '#9ca3af' },
     { title: 'General', total: Object.values(offer.expenses.general || {}).reduce((s, v) => s + v, 0), color: '#6b7280' },
   ].filter(cat => cat.total > 0);
 
   return (
-    <div className="min-h-screen bg-[#0F1413] text-white p-4 sm:p-6">
+    <div className="min-h-screen bg-[#1140F0] text-white p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         <button
           onClick={() => navigate(`/offers/${id}`)}
-          className="flex items-center gap-2 text-gray-400 hover:text-[#C4FF0D] mb-6 transition-colors text-sm group"
+          className="flex items-center gap-2 text-gray-400 hover:text-[#8FD3FF] mb-6 transition-colors text-sm group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Back to Offer
         </button>
 
         <div className="mb-8">
-          <div className="inline-block px-4 py-1.5 bg-[#C4FF0D]/10 border border-[#C4FF0D]/30 rounded-full mb-3">
-            <span className="text-[#C4FF0D] text-xs font-bold uppercase tracking-wider">Deal Analytics</span>
+          <div className="inline-block px-4 py-1.5 bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 rounded-full mb-3">
+            <span className="text-[#8FD3FF] text-xs font-bold uppercase tracking-wider">Deal Analytics</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-white">{offer.show.artist_name}</h1>
           <p className="text-gray-400 text-base flex items-center gap-2">
@@ -129,20 +129,20 @@ export function Analytics() {
         {/* Key Metrics - Full Width */}
         <div className="lg:col-span-3">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-5 border border-[#C4FF0D]/20 hover:border-[#C4FF0D]/40 transition-all group">
+            <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-5 border border-[#8FD3FF]/20 hover:border-[#8FD3FF]/40 transition-all group">
               <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 bg-[#C4FF0D]/10 rounded-xl group-hover:bg-[#C4FF0D]/20 transition-colors">
-                  <DollarSign className="w-5 h-5 text-[#C4FF0D]" />
+                <div className="p-2 bg-[#8FD3FF]/10 rounded-xl group-hover:bg-[#8FD3FF]/20 transition-colors">
+                  <DollarSign className="w-5 h-5 text-[#8FD3FF]" />
                 </div>
               </div>
-              <div className="text-3xl font-black text-[#C4FF0D] mb-1">
+              <div className="text-3xl font-black text-[#8FD3FF] mb-1">
                 ${(netProfit / 1000).toFixed(1)}K
               </div>
               <div className="text-xs text-gray-400 uppercase tracking-wider font-medium">Net Profit</div>
               <div className="text-[10px] text-gray-600 mt-1">at 100% sold</div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-5 border border-gray-700 hover:border-gray-600 transition-all group">
+            <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-5 border border-gray-700 hover:border-gray-600 transition-all group">
               <div className="flex items-center gap-2 mb-3">
                 <div className="p-2 bg-white/5 rounded-xl group-hover:bg-white/10 transition-colors">
                   <Target className="w-5 h-5 text-gray-300" />
@@ -155,7 +155,7 @@ export function Analytics() {
               <div className="text-[10px] text-gray-600 mt-1">{breakEven.tickets} tickets</div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-5 border border-gray-700 hover:border-gray-600 transition-all group">
+            <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-5 border border-gray-700 hover:border-gray-600 transition-all group">
               <div className="flex items-center gap-2 mb-3">
                 <div className="p-2 bg-white/5 rounded-xl group-hover:bg-white/10 transition-colors">
                   <Wallet className="w-5 h-5 text-gray-300" />
@@ -168,7 +168,7 @@ export function Analytics() {
               <div className="text-[10px] text-gray-600 mt-1">upfront needed</div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-5 border border-gray-700 hover:border-gray-600 transition-all group">
+            <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-5 border border-gray-700 hover:border-gray-600 transition-all group">
               <div className="flex items-center gap-2 mb-3">
                 <div className="p-2 bg-white/5 rounded-xl group-hover:bg-white/10 transition-colors">
                   <Users className="w-5 h-5 text-gray-300" />
@@ -181,7 +181,7 @@ export function Analytics() {
               <div className="text-[10px] text-gray-600 mt-1">sellable tickets</div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-5 border border-gray-700 hover:border-gray-600 transition-all group">
+            <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-5 border border-gray-700 hover:border-gray-600 transition-all group">
               <div className="flex items-center gap-2 mb-3">
                 <div className="p-2 bg-white/5 rounded-xl group-hover:bg-white/10 transition-colors">
                   <Calendar className="w-5 h-5 text-gray-300" />
@@ -197,10 +197,10 @@ export function Analytics() {
         </div>
 
         {/* Break-Even Analysis */}
-        <div className="lg:col-span-2 bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-6 border border-gray-800">
+        <div className="lg:col-span-2 bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-6 border border-gray-800">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2.5 bg-[#C4FF0D]/10 rounded-xl">
-              <Target className="h-6 w-6 text-[#C4FF0D]" />
+            <div className="p-2.5 bg-[#8FD3FF]/10 rounded-xl">
+              <Target className="h-6 w-6 text-[#8FD3FF]" />
             </div>
             <div>
               <h2 className="text-xl font-bold">Break-Even Analysis</h2>
@@ -224,7 +224,7 @@ export function Analytics() {
                   cy="100"
                   r="80"
                   fill="none"
-                  stroke="#C4FF0D"
+                  stroke="#8FD3FF"
                   strokeWidth="24"
                   strokeDasharray={`${(breakEven.tickets / totalSellable) * 502} 502`}
                   strokeLinecap="round"
@@ -242,9 +242,9 @@ export function Analytics() {
           </div>
 
           <div className="grid grid-cols-3 gap-4">
-            <div className="bg-black/40 rounded-2xl p-4 border border-[#C4FF0D]/20">
+            <div className="bg-black/40 rounded-2xl p-4 border border-[#8FD3FF]/20">
               <div className="text-sm text-gray-400 mb-1 uppercase tracking-wide font-medium">Break-Even</div>
-              <div className="text-2xl font-black text-[#C4FF0D]">
+              <div className="text-2xl font-black text-[#8FD3FF]">
                 {breakEven.percentage.toFixed(0)}%
               </div>
             </div>
@@ -273,10 +273,10 @@ export function Analytics() {
         </div>
 
         {/* Profit Forecast */}
-        <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-6 border border-gray-800">
+        <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-6 border border-gray-800">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2.5 bg-[#C4FF0D]/10 rounded-xl">
-              <TrendingUp className="h-6 w-6 text-[#C4FF0D]" />
+            <div className="p-2.5 bg-[#8FD3FF]/10 rounded-xl">
+              <TrendingUp className="h-6 w-6 text-[#8FD3FF]" />
             </div>
             <div>
               <h2 className="text-xl font-bold">Profit Forecast</h2>
@@ -284,8 +284,8 @@ export function Analytics() {
             </div>
           </div>
 
-          <div className="text-center mb-6 py-6 bg-black/40 rounded-2xl border border-[#C4FF0D]/20">
-            <div className="text-5xl font-black text-[#C4FF0D] mb-2">
+          <div className="text-center mb-6 py-6 bg-black/40 rounded-2xl border border-[#8FD3FF]/20">
+            <div className="text-5xl font-black text-[#8FD3FF] mb-2">
               ${(netProfit / 1000).toFixed(1)}K
             </div>
             <div className="text-sm text-gray-400 uppercase tracking-wider">Projected Net Profit</div>
@@ -306,7 +306,7 @@ export function Analytics() {
             </div>
             <div className="flex justify-between items-center p-4 bg-black/40 rounded-2xl border border-gray-700">
               <span className="text-gray-300 text-sm font-medium">Risk Score</span>
-              <span className={`font-black text-lg ${riskScore < 40 ? 'text-[#C4FF0D]' : riskScore < 70 ? 'text-yellow-400' : 'text-red-400'}`}>
+              <span className={`font-black text-lg ${riskScore < 40 ? 'text-[#8FD3FF]' : riskScore < 70 ? 'text-yellow-400' : 'text-red-400'}`}>
                 {riskScore.toFixed(0)}/100
               </span>
             </div>
@@ -314,10 +314,10 @@ export function Analytics() {
         </div>
 
         {/* Revenue Split */}
-        <div className="lg:col-span-3 bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-6 border border-gray-800">
+        <div className="lg:col-span-3 bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-6 border border-gray-800">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2.5 bg-[#C4FF0D]/10 rounded-xl">
-              <PieChart className="h-6 w-6 text-[#C4FF0D]" />
+            <div className="p-2.5 bg-[#8FD3FF]/10 rounded-xl">
+              <PieChart className="h-6 w-6 text-[#8FD3FF]" />
             </div>
             <div>
               <h2 className="text-xl font-bold">Revenue Split</h2>
@@ -334,7 +334,7 @@ export function Analytics() {
                     cy="100"
                     r="70"
                     fill="none"
-                    stroke="#C4FF0D"
+                    stroke="#8FD3FF"
                     strokeWidth="48"
                     strokeDasharray={`${(artistTotal / grossRevenue) * 440} 440`}
                     className="drop-shadow-[0_0_8px_rgba(196,255,13,0.5)]"
@@ -359,7 +359,7 @@ export function Analytics() {
                     strokeDasharray={`${(netProfit / grossRevenue) * 440} 440`}
                     strokeDashoffset={`-${((artistTotal + totalExpenses) / grossRevenue) * 440}`}
                   />
-                  <circle cx="100" cy="100" r="46" fill="#0F1413" />
+                  <circle cx="100" cy="100" r="46" fill="#1140F0" />
                 </svg>
 
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -374,13 +374,13 @@ export function Analytics() {
             </div>
 
             <div className="flex flex-col justify-center space-y-4">
-              <div className="flex items-center justify-between p-5 bg-black/40 rounded-2xl border border-[#C4FF0D]/20">
+              <div className="flex items-center justify-between p-5 bg-black/40 rounded-2xl border border-[#8FD3FF]/20">
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-lg bg-[#C4FF0D] shadow-[0_0_12px_rgba(196,255,13,0.5)]"></div>
+                  <div className="w-5 h-5 rounded-lg bg-[#8FD3FF] shadow-[0_0_12px_rgba(196,255,13,0.5)]"></div>
                   <span className="text-white font-bold">Artist Payout</span>
                 </div>
                 <div className="text-right">
-                  <div className="font-black text-[#C4FF0D] text-xl">
+                  <div className="font-black text-[#8FD3FF] text-xl">
                     ${(artistTotal / 1000).toFixed(1)}K
                   </div>
                   <div className="text-xs text-gray-500 font-medium">
@@ -423,10 +423,10 @@ export function Analytics() {
         </div>
 
         {/* Sell-Through Scenarios */}
-        <div className="lg:col-span-3 bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-6 border border-gray-800">
+        <div className="lg:col-span-3 bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-6 border border-gray-800">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2.5 bg-[#C4FF0D]/10 rounded-xl">
-              <BarChart3 className="h-6 w-6 text-[#C4FF0D]" />
+            <div className="p-2.5 bg-[#8FD3FF]/10 rounded-xl">
+              <BarChart3 className="h-6 w-6 text-[#8FD3FF]" />
             </div>
             <div>
               <h2 className="text-xl font-bold">Sell-Through Scenarios</h2>
@@ -460,7 +460,7 @@ export function Analytics() {
                 ))}
 
                 {scenarios.map((scenario, index) => {
-                  const colors = ['#ef4444', '#f59e0b', '#ffffff', '#C4FF0D'];
+                  const colors = ['#ef4444', '#f59e0b', '#ffffff', '#8FD3FF'];
                   const xPos = 100 + (index * 120);
                   const height = scenario.percentage * 1.3;
                   const yPos = 165 - height;
@@ -522,9 +522,9 @@ export function Analytics() {
                 'border-red-500/30 bg-red-500/5',
                 'border-orange-500/30 bg-orange-500/5',
                 'border-gray-700 bg-black/20',
-                'border-[#C4FF0D]/30 bg-[#C4FF0D]/5'
+                'border-[#8FD3FF]/30 bg-[#8FD3FF]/5'
               ];
-              const textColors = ['text-red-400', 'text-orange-400', 'text-white', 'text-[#C4FF0D]'];
+              const textColors = ['text-red-400', 'text-orange-400', 'text-white', 'text-[#8FD3FF]'];
 
               return (
                 <div key={i} className={`rounded-2xl p-4 border ${colors[i]}`}>
@@ -540,10 +540,10 @@ export function Analytics() {
         </div>
 
         {/* Capital Required */}
-        <div className="lg:col-span-2 bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-6 border border-gray-800">
+        <div className="lg:col-span-2 bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-6 border border-gray-800">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2.5 bg-[#C4FF0D]/10 rounded-xl">
-              <Wallet className="h-6 w-6 text-[#C4FF0D]" />
+            <div className="p-2.5 bg-[#8FD3FF]/10 rounded-xl">
+              <Wallet className="h-6 w-6 text-[#8FD3FF]" />
             </div>
             <div>
               <h2 className="text-xl font-bold">Capital Required</h2>
@@ -551,18 +551,18 @@ export function Analytics() {
             </div>
           </div>
 
-          <div className="text-center mb-6 py-8 bg-black/40 rounded-2xl border border-[#C4FF0D]/20">
-            <div className="text-5xl font-black text-[#C4FF0D] mb-2">
+          <div className="text-center mb-6 py-8 bg-black/40 rounded-2xl border border-[#8FD3FF]/20">
+            <div className="text-5xl font-black text-[#8FD3FF] mb-2">
               ${(capital.total / 1000).toFixed(1)}K
             </div>
             <div className="text-sm text-gray-400 uppercase tracking-wider">Total Needed</div>
           </div>
 
           <div className="space-y-3">
-            <div className="bg-[#C4FF0D]/10 border border-[#C4FF0D]/30 rounded-2xl p-4">
+            <div className="bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 rounded-2xl p-4">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm text-gray-300 font-bold">Artist Deposit</span>
-                <span className="font-black text-[#C4FF0D] text-lg">
+                <span className="font-black text-[#8FD3FF] text-lg">
                   {formatCurrency(capital.artistDeposit)}
                 </span>
               </div>
@@ -604,10 +604,10 @@ export function Analytics() {
         </div>
 
         {/* Risk Gauge */}
-        <div className="bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-6 border border-gray-800">
+        <div className="bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-6 border border-gray-800">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2.5 bg-[#C4FF0D]/10 rounded-xl">
-              <AlertCircle className="h-6 w-6 text-[#C4FF0D]" />
+            <div className="p-2.5 bg-[#8FD3FF]/10 rounded-xl">
+              <AlertCircle className="h-6 w-6 text-[#8FD3FF]" />
             </div>
             <div>
               <h2 className="text-xl font-bold">Risk Gauge</h2>
@@ -620,8 +620,8 @@ export function Analytics() {
               <svg viewBox="0 0 200 120" className="w-full" style={{ height: '120px' }}>
                 <defs>
                   <linearGradient id="gauge-gradient-green" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#C4FF0D" />
-                    <stop offset="100%" stopColor="#A3D60A" />
+                    <stop offset="0%" stopColor="#8FD3FF" />
+                    <stop offset="100%" stopColor="#6FB8F2" />
                   </linearGradient>
                   <linearGradient id="gauge-gradient-white" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stopColor="#ffffff" />
@@ -704,7 +704,7 @@ export function Analytics() {
             </div>
             <div className="text-center p-4 bg-black/40 rounded-2xl border border-gray-700">
               <div className={`text-2xl font-black ${
-                (capital.marketing / totalExpenses * 100) >= 15 ? 'text-[#C4FF0D]' : 'text-yellow-400'
+                (capital.marketing / totalExpenses * 100) >= 15 ? 'text-[#8FD3FF]' : 'text-yellow-400'
               }`}>
                 {(capital.marketing / totalExpenses * 100).toFixed(0)}%
               </div>
@@ -715,10 +715,10 @@ export function Analytics() {
 
         {/* Expense Breakdown */}
         {expenseCategories.length > 0 && (
-          <div className="lg:col-span-3 bg-gradient-to-br from-[#1A1F1E] to-[#141716] rounded-3xl p-6 border border-gray-800">
+          <div className="lg:col-span-3 bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-6 border border-gray-800">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 bg-[#C4FF0D]/10 rounded-xl">
-                <BarChart3 className="h-6 w-6 text-[#C4FF0D]" />
+              <div className="p-2.5 bg-[#8FD3FF]/10 rounded-xl">
+                <BarChart3 className="h-6 w-6 text-[#8FD3FF]" />
               </div>
               <div>
                 <h2 className="text-xl font-bold">Expense Breakdown</h2>
@@ -744,7 +744,7 @@ export function Analytics() {
                         style={{
                           width: `${percentage}%`,
                           backgroundColor: category.color,
-                          boxShadow: category.color === '#C4FF0D' ? '0 0 12px rgba(196, 255, 13, 0.5)' : 'none'
+                          boxShadow: category.color === '#8FD3FF' ? '0 0 12px rgba(196, 255, 13, 0.5)' : 'none'
                         }}
                       />
                     </div>
@@ -764,7 +764,7 @@ export function Analytics() {
       <div className="max-w-7xl mx-auto mt-8">
         <button
           onClick={() => navigate(`/offers/${id}`)}
-          className="w-full bg-[#C4FF0D] hover:bg-[#A3D60A] text-black py-5 rounded-2xl font-black text-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(196,255,13,0.3)] hover:shadow-[0_0_30px_rgba(196,255,13,0.5)]"
+          className="w-full bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] py-5 rounded-2xl font-black text-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(196,255,13,0.3)] hover:shadow-[0_0_30px_rgba(196,255,13,0.5)]"
         >
           BACK TO OFFER
         </button>

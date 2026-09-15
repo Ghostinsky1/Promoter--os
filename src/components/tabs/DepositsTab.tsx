@@ -67,7 +67,7 @@ export function DepositsTab(props: DepositsTabProps) {
       </div>
 
       {/* Tax Withholding Section */}
-      <div className="bg-[#141716] border border-gray-700 rounded-2xl p-6">
+      <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center">
             <DollarSign className="h-5 w-5 text-red-500" />
@@ -88,7 +88,7 @@ export function DepositsTab(props: DepositsTabProps) {
                 }}
                 placeholder="2"
                 step="0.1"
-                className="flex-1 py-3 px-4 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                className="flex-1 py-3 px-4 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
               />
               <span className="text-gray-400 text-lg font-medium">%</span>
             </div>
@@ -124,7 +124,7 @@ export function DepositsTab(props: DepositsTabProps) {
                     setDepositPct(isNaN(val) ? 0 : val);
                   }}
                   placeholder="20"
-                  className="w-full text-center text-lg font-bold py-3 px-4 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full text-center text-lg font-bold py-3 px-4 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <span className="text-gray-400 text-lg font-medium">%</span>
               </div>
@@ -142,11 +142,11 @@ export function DepositsTab(props: DepositsTabProps) {
               <select
                 value={artistDepositStatus}
                 onChange={(e) => setArtistDepositStatus(e.target.value)}
-                className="w-full py-3 px-4 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full py-3 px-4 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="pending" className="bg-[#1A1F1E]">⏳ Pending</option>
-                <option value="paid" className="bg-[#1A1F1E]">✅ Paid</option>
-                <option value="overdue" className="bg-[#1A1F1E]">⚠️ Overdue</option>
+                <option value="pending" className="bg-[#14171E]">⏳ Pending</option>
+                <option value="paid" className="bg-[#14171E]">✅ Paid</option>
+                <option value="overdue" className="bg-[#14171E]">⚠️ Overdue</option>
               </select>
             </div>
           </div>
@@ -160,12 +160,12 @@ export function DepositsTab(props: DepositsTabProps) {
               <select
                 value={depositDueTiming}
                 onChange={(e) => setDepositDueTiming(e.target.value)}
-                className="w-full py-3 px-4 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full py-3 px-4 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="30_days_before" className="bg-[#1A1F1E]">30 days before show</option>
-                <option value="60_days_before" className="bg-[#1A1F1E]">60 days before show</option>
-                <option value="upon_signing" className="bg-[#1A1F1E]">Upon contract signing</option>
-                <option value="custom" className="bg-[#1A1F1E]">Custom date</option>
+                <option value="30_days_before" className="bg-[#14171E]">30 days before show</option>
+                <option value="60_days_before" className="bg-[#14171E]">60 days before show</option>
+                <option value="upon_signing" className="bg-[#14171E]">Upon contract signing</option>
+                <option value="custom" className="bg-[#14171E]">Custom date</option>
               </select>
 
               {depositDueTiming === 'custom' && (
@@ -173,13 +173,13 @@ export function DepositsTab(props: DepositsTabProps) {
                   type="date"
                   value={customDepositDate}
                   onChange={(e) => setCustomDepositDate(e.target.value)}
-                  className="w-full py-3 px-4 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full py-3 px-4 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               )}
             </div>
 
             {calculatedArtistDepositDueDate && (
-              <div className="mt-4 p-4 bg-[#1A1F1E] border border-blue-500/30 rounded-xl flex items-start gap-3">
+              <div className="mt-4 p-4 bg-[#14171E] border border-blue-500/30 rounded-xl flex items-start gap-3">
                 <Calendar className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm">
                   <span className="font-semibold text-gray-300">Due date: </span>
@@ -229,14 +229,14 @@ export function DepositsTab(props: DepositsTabProps) {
               <select
                 value={balanceDueTiming}
                 onChange={(e) => setBalanceDueTiming(e.target.value)}
-                className="w-full py-3 px-4 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full py-3 px-4 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
-                <option value="at_settlement" className="bg-[#1A1F1E]">At Event Settlement</option>
-                <option value="5_days_before" className="bg-[#1A1F1E]">5 days before show</option>
-                <option value="30_days_before" className="bg-[#1A1F1E]">30 days before show</option>
-                <option value="60_days_before" className="bg-[#1A1F1E]">60 days before show</option>
-                <option value="upon_signing" className="bg-[#1A1F1E]">Upon contract signing</option>
-                <option value="custom" className="bg-[#1A1F1E]">Custom date</option>
+                <option value="at_settlement" className="bg-[#14171E]">At Event Settlement</option>
+                <option value="5_days_before" className="bg-[#14171E]">5 days before show</option>
+                <option value="30_days_before" className="bg-[#14171E]">30 days before show</option>
+                <option value="60_days_before" className="bg-[#14171E]">60 days before show</option>
+                <option value="upon_signing" className="bg-[#14171E]">Upon contract signing</option>
+                <option value="custom" className="bg-[#14171E]">Custom date</option>
               </select>
 
               {balanceDueTiming === 'custom' && (
@@ -244,13 +244,13 @@ export function DepositsTab(props: DepositsTabProps) {
                   type="date"
                   value={customBalanceDueDate}
                   onChange={(e) => setCustomBalanceDueDate(e.target.value)}
-                  className="w-full py-3 px-4 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full py-3 px-4 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
               )}
             </div>
 
             {calculatedBalanceDueDate && (
-              <div className="mt-4 p-4 bg-[#1A1F1E] border border-green-500/30 rounded-xl flex items-start gap-3">
+              <div className="mt-4 p-4 bg-[#14171E] border border-green-500/30 rounded-xl flex items-start gap-3">
                 <Calendar className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm">
                   <span className="font-semibold text-gray-300">Due date: </span>
@@ -288,7 +288,7 @@ export function DepositsTab(props: DepositsTabProps) {
                     setVenueDeposit(isNaN(val) ? 0 : val);
                   }}
                   placeholder="5000"
-                  className="w-full text-lg font-bold py-3 pl-9 pr-4 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full text-lg font-bold py-3 pl-9 pr-4 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
               </div>
             </div>
@@ -301,7 +301,7 @@ export function DepositsTab(props: DepositsTabProps) {
                 type="date"
                 value={venueDepositDueDate}
                 onChange={(e) => setVenueDepositDueDate(e.target.value)}
-                className="w-full py-3 px-4 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full py-3 px-4 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               />
             </div>
 
@@ -310,17 +310,17 @@ export function DepositsTab(props: DepositsTabProps) {
               <select
                 value={venueDepositStatus}
                 onChange={(e) => setVenueDepositStatus(e.target.value)}
-                className="w-full py-3 px-4 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full py-3 px-4 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               >
-                <option value="pending" className="bg-[#1A1F1E]">⏳ Pending</option>
-                <option value="paid" className="bg-[#1A1F1E]">✅ Paid</option>
-                <option value="overdue" className="bg-[#1A1F1E]">⚠️ Overdue</option>
+                <option value="pending" className="bg-[#14171E]">⏳ Pending</option>
+                <option value="paid" className="bg-[#14171E]">✅ Paid</option>
+                <option value="overdue" className="bg-[#14171E]">⚠️ Overdue</option>
               </select>
             </div>
           </div>
 
           {venueDepositDueDate && (
-            <div className="p-4 bg-[#1A1F1E] border border-orange-500/30 rounded-xl flex items-start gap-3">
+            <div className="p-4 bg-[#14171E] border border-orange-500/30 rounded-xl flex items-start gap-3">
               <Calendar className="h-5 w-5 text-orange-400 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
                 <span className="font-semibold text-gray-300">Due date: </span>
@@ -335,13 +335,13 @@ export function DepositsTab(props: DepositsTabProps) {
       </div>
 
       {/* Total Payout Summary */}
-      <div className="bg-gradient-to-r from-[#C4FF0D]/10 to-green-500/10 border-2 border-[#C4FF0D]/30 rounded-2xl p-6">
+      <div className="bg-gradient-to-r from-[#8FD3FF]/10 to-green-500/10 border-2 border-[#8FD3FF]/30 rounded-2xl p-6">
         <div className="flex justify-between items-center">
           <div>
             <div className="text-sm text-gray-400 mb-1">Total Artist Payout</div>
             <div className="text-xs text-gray-500">After tax withholding</div>
           </div>
-          <div className="text-4xl font-bold text-[#C4FF0D]">
+          <div className="text-4xl font-bold text-[#8FD3FF]">
             ${totalPayout.toLocaleString()}
           </div>
         </div>

@@ -12,7 +12,7 @@ const STATUS_CONFIG: Record<ArtistOfferStatus, {
   draft: { label: 'Draft', icon: FileText, color: 'text-gray-400', bg: 'bg-gray-500/10', border: 'border-gray-500/30', step: 0 },
   sent: { label: 'Sent', icon: Send, color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30', step: 1 },
   negotiating: { label: 'Negotiating', icon: MessageSquare, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/30', step: 2 },
-  accepted: { label: 'Accepted', icon: CheckCircle, color: 'text-[#C4FF0D]', bg: 'bg-[#C4FF0D]/10', border: 'border-[#C4FF0D]/30', step: 3 },
+  accepted: { label: 'Accepted', icon: CheckCircle, color: 'text-[#8FD3FF]', bg: 'bg-[#8FD3FF]/10', border: 'border-[#8FD3FF]/30', step: 3 },
   declined: { label: 'Declined', icon: XCircle, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30', step: -1 },
   contracted: { label: 'Contracted', icon: FileCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', step: 4 },
   deposit_paid: { label: 'Deposit Paid', icon: DollarSign, color: 'text-teal-400', bg: 'bg-teal-500/10', border: 'border-teal-500/30', step: 5 },
@@ -65,10 +65,10 @@ export function ArtistProgressBar({ status }: ArtistProgressBarProps) {
 
   return (
     <div className="w-full">
-      <div className="w-full bg-[#252A29] rounded-full h-1 overflow-hidden">
+      <div className="w-full bg-[#22262F] rounded-full h-1 overflow-hidden">
         <div
           className={`h-full transition-all duration-500 ${
-            step < 0 ? 'bg-red-500' : 'bg-[#C4FF0D]'
+            step < 0 ? 'bg-red-500' : 'bg-[#8FD3FF]'
           }`}
           style={{ width: `${progress}%` }}
         />
@@ -79,7 +79,7 @@ export function ArtistProgressBar({ status }: ArtistProgressBarProps) {
 
 export function getRoleBadge(role: string) {
   const config: Record<string, { label: string; color: string; bg: string }> = {
-    headliner: { label: 'Headliner', color: 'text-[#C4FF0D]', bg: 'bg-[#C4FF0D]/10' },
+    headliner: { label: 'Headliner', color: 'text-[#8FD3FF]', bg: 'bg-[#8FD3FF]/10' },
     direct_support: { label: 'Direct Support', color: 'text-blue-400', bg: 'bg-blue-500/10' },
     support: { label: 'Support', color: 'text-amber-400', bg: 'bg-amber-500/10' },
     local_opener: { label: 'Local Opener', color: 'text-gray-400', bg: 'bg-gray-500/10' },

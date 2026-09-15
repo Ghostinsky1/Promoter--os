@@ -47,13 +47,13 @@ export function CreateTourPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1113] pb-24">
-      <div className="bg-[#1A1F1E] border-b border-gray-800">
+    <div className="min-h-screen bg-[#1140F0] pb-24">
+      <div className="bg-[#14171E] border-b border-gray-800">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/tours')}
-              className="p-2 hover:bg-[#252A29] text-gray-400 hover:text-white rounded-xl transition-colors"
+              className="p-2 hover:bg-[#22262F] text-gray-400 hover:text-white rounded-xl transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
@@ -66,7 +66,7 @@ export function CreateTourPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-8">
+        <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-8">
           <div className="space-y-6">
             <div>
               <label className="block text-base font-semibold mb-2 text-white">Tour Name *</label>
@@ -75,7 +75,7 @@ export function CreateTourPage() {
                 value={tourData.name}
                 onChange={(e) => setTourData({...tourData, name: e.target.value})}
                 placeholder="e.g., Summer 2025 World Tour"
-                className="w-full text-lg px-4 py-3 bg-[#141716] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all"
+                className="w-full text-lg px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all"
               />
             </div>
 
@@ -86,7 +86,7 @@ export function CreateTourPage() {
                 value={tourData.artist_name}
                 onChange={(e) => setTourData({...tourData, artist_name: e.target.value})}
                 placeholder="e.g., Drake"
-                className="w-full text-lg px-4 py-3 bg-[#141716] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all"
+                className="w-full text-lg px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all"
               />
             </div>
 
@@ -97,7 +97,7 @@ export function CreateTourPage() {
                   type="date"
                   value={tourData.start_date}
                   onChange={(e) => setTourData({...tourData, start_date: e.target.value})}
-                  className="w-full px-4 py-3 bg-[#141716] border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all [color-scheme:dark]"
+                  className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all [color-scheme:dark]"
                 />
               </div>
               <div>
@@ -106,7 +106,7 @@ export function CreateTourPage() {
                   type="date"
                   value={tourData.end_date}
                   onChange={(e) => setTourData({...tourData, end_date: e.target.value})}
-                  className="w-full px-4 py-3 bg-[#141716] border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all [color-scheme:dark]"
+                  className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all [color-scheme:dark]"
                 />
               </div>
             </div>
@@ -118,7 +118,7 @@ export function CreateTourPage() {
                 onChange={(e) => setTourData({...tourData, description: e.target.value})}
                 placeholder="Tour details, themes, special notes..."
                 rows={4}
-                className="w-full px-4 py-3 bg-[#141716] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all"
+                className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all"
               />
             </div>
 
@@ -127,7 +127,7 @@ export function CreateTourPage() {
               <select
                 value={tourData.status}
                 onChange={(e) => setTourData({...tourData, status: e.target.value as TourStatus})}
-                className="w-full px-4 py-3 bg-[#141716] border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] transition-all"
+                className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all"
               >
                 <option value="planning">📋 Planning</option>
                 <option value="booking">📞 Booking</option>
@@ -141,18 +141,18 @@ export function CreateTourPage() {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-[#1A1F1E] border-t border-gray-800 p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-[#14171E] border-t border-gray-800 p-4">
         <div className="max-w-4xl mx-auto flex justify-end gap-3">
           <button
             onClick={() => navigate('/tours')}
-            className="px-6 py-3 border border-gray-700 text-gray-300 rounded-2xl hover:bg-[#252A29] hover:border-gray-600 transition-colors font-medium"
+            className="px-6 py-3 border border-gray-700 text-gray-300 rounded-2xl hover:bg-[#22262F] hover:border-gray-600 transition-colors font-medium"
           >
             Cancel
           </button>
           <button
             onClick={createTour}
             disabled={saving}
-            className="px-6 py-3 bg-[#C4FF0D] hover:bg-[#A3D60A] text-black rounded-2xl transition-colors font-bold disabled:opacity-50"
+            className="px-6 py-3 bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-2xl transition-colors font-bold disabled:opacity-50"
           >
             {saving ? 'Creating...' : 'Create Tour'}
           </button>

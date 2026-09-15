@@ -12,14 +12,76 @@
     scroll-behavior: smooth;
   }
 
+  /* ---- Goza brand type: Saira Condensed body, Archivo Black headlines, Chakra Petch labels ---- */
   * {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-family: 'Saira Condensed', 'Arial Narrow', sans-serif;
   }
 
   body {
-    @apply bg-[#0F1113] text-white;
+    @apply bg-[#1140F0] text-white;
     overflow-x: hidden;
+    font-size: 17px;
+    /* subtle horizontal rule texture like the site */
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 100% 140px;
   }
+
+  h1, h2 {
+    font-family: 'Archivo Black', Impact, sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    font-weight: 400 !important;
+  }
+
+  h3, h4, th, label, .font-label {
+    font-family: 'Chakra Petch', 'Trebuchet MS', sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  th, label {
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  button, a.btn, [role="button"] {
+    font-family: 'Chakra Petch', 'Trebuchet MS', sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  input, select, textarea {
+    font-family: 'Saira Condensed', 'Arial Narrow', sans-serif !important;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+}
+
+@layer components {
+  /* Black glossy cards, like the site's property cards */
+  [class*="bg-[#14171E]"] {
+    background: linear-gradient(180deg, #171A20 0%, #0B0D12 100%) !important;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  [class*="bg-[#14171E]"][class*="border"] {
+    border-color: #2A3040 !important;
+  }
+  /* Ice-blue chrome buttons */
+  [class*="bg-[#8FD3FF]"] {
+    background: linear-gradient(180deg, #BFE6FF 0%, #6FB8F2 100%) !important;
+    color: #04214D !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+  [class*="bg-[#8FD3FF]"]:hover {
+    background: linear-gradient(180deg, #D6EEFF 0%, #8FD3FF 100%) !important;
+  }
+  /* Inputs sit on dark, not on blue */
+  input, select, textarea {
+    background-color: #0B0D12;
+    border-color: #2A3040;
+    color: #FFFFFF;
+  }
+  input::placeholder, textarea::placeholder { color: #7E8894; }
 }
 
 ::-webkit-scrollbar {
@@ -27,16 +89,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #1A1D1F;
+  background: #14171E;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #C4FF0D;
+  background: #8FD3FF;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #A3D60A;
+  background: #6FB8F2;
 }
 
 @keyframes fadeIn {

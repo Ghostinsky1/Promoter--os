@@ -414,21 +414,21 @@ export function EditOffer() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F1413] flex items-center justify-center">
+      <div className="min-h-screen bg-[#1140F0] flex items-center justify-center">
         <div className="text-gray-400">Loading offer...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0F1413]">
+    <div className="min-h-screen bg-[#1140F0]">
       {/* Sticky Header */}
-      <div className="bg-[#1A1F1E] border-b border-gray-800 sticky top-0 z-50">
+      <div className="bg-[#14171E] border-b border-gray-800 sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
               <h1 className="text-2xl font-bold text-white">Edit Offer</h1>
-              <span className="px-3 py-1 bg-[#252A29] text-gray-400 rounded-full text-sm">
+              <span className="px-3 py-1 bg-[#22262F] text-gray-400 rounded-full text-sm">
                 Step {currentStep} of {steps.length}
               </span>
             </div>
@@ -442,9 +442,9 @@ export function EditOffer() {
 
           {/* Progress Bar */}
           <div className="relative mb-6">
-            <div className="h-2 bg-[#252A29] rounded-full overflow-hidden">
+            <div className="h-2 bg-[#22262F] rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#C4FF0D] rounded-full transition-all duration-300"
+                className="h-full bg-[#8FD3FF] rounded-full transition-all duration-300"
                 style={{ width: `${(currentStep / steps.length) * 100}%` }}
               ></div>
             </div>
@@ -461,10 +461,10 @@ export function EditOffer() {
                 <div
                   className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-base sm:text-lg font-bold transition-all ${
                     step.number === currentStep
-                      ? 'bg-[#C4FF0D] text-black scale-110 shadow-lg shadow-[#C4FF0D]/30'
+                      ? 'bg-[#8FD3FF] text-[#04214D] scale-110 shadow-lg shadow-[#8FD3FF]/30'
                       : step.number < currentStep
-                      ? 'bg-[#C4FF0D]/30 text-[#C4FF0D]'
-                      : 'bg-[#252A29] text-gray-600'
+                      ? 'bg-[#8FD3FF]/30 text-[#8FD3FF]'
+                      : 'bg-[#22262F] text-gray-600'
                   }`}
                 >
                   {step.number < currentStep ? (
@@ -474,7 +474,7 @@ export function EditOffer() {
                   )}
                 </div>
                 <p className={`text-[10px] sm:text-xs mt-2 text-center leading-tight ${
-                  step.number === currentStep ? 'text-[#C4FF0D] font-semibold' : 'text-gray-500'
+                  step.number === currentStep ? 'text-[#8FD3FF] font-semibold' : 'text-gray-500'
                 }`}>
                   {step.label}
                 </p>
@@ -486,7 +486,7 @@ export function EditOffer() {
 
       {/* Main Form Content */}
       <div className="max-w-5xl mx-auto px-6 py-8">
-        <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-8">
+        <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-8">
           {currentStep === 1 && (
             <EventDetailsTab
               key="event-details"
@@ -702,7 +702,7 @@ export function EditOffer() {
             type="button"
             onClick={handlePrevious}
             disabled={currentStep === 1}
-            className="bg-[#252A29] text-gray-400 hover:text-white hover:bg-[#2D3331] rounded-2xl px-8 py-6 text-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#22262F] text-gray-400 hover:text-white hover:bg-[#2A3040] rounded-2xl px-8 py-6 text-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="h-5 w-5" />
             Previous
@@ -712,7 +712,7 @@ export function EditOffer() {
             <button
               type="button"
               onClick={handleNext}
-              className="bg-[#C4FF0D] text-black hover:bg-[#A3D60A] rounded-2xl px-8 py-6 text-lg font-bold transition-colors flex items-center gap-2"
+              className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] rounded-2xl px-8 py-6 text-lg font-bold transition-colors flex items-center gap-2"
             >
               Next
               <ChevronRight className="h-5 w-5" />
@@ -722,7 +722,7 @@ export function EditOffer() {
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="bg-[#C4FF0D] text-black hover:bg-[#A3D60A] rounded-2xl px-8 py-6 text-lg font-bold transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] rounded-2xl px-8 py-6 text-lg font-bold transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Changes'}
               <Check className="h-5 w-5" />

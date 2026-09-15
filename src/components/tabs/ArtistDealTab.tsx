@@ -262,7 +262,7 @@ export function ArtistDealTab({
         <p className="text-gray-400 mb-8">Configure the artist's financial terms</p>
       </div>
 
-      <div className="bg-[#141716] border border-gray-700 rounded-2xl p-6">
+      <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-6">
         <h3 className="text-xl font-bold text-white mb-4">Deal Structure</h3>
 
         <div className="mb-4">
@@ -270,21 +270,21 @@ export function ArtistDealTab({
           <select
             value={dealType}
             onChange={(e) => setDealType(e.target.value)}
-            className="w-full bg-[#1A1F1E] border-gray-600 text-white rounded-2xl px-4 py-4 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+            className="w-full bg-[#14171E] border-gray-600 text-white rounded-2xl px-4 py-4 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
           >
-            <option value="flat_fee" className="bg-[#1A1F1E]">Flat Fee - I pay artist flat amount, I keep profit</option>
-            <option value="guarantee_vs_percentage" className="bg-[#1A1F1E]">Guarantee vs Percentage - Artist gets higher</option>
-            <option value="percentage_only" className="bg-[#1A1F1E]">Percentage Only - No guarantee</option>
-            <option value="door_deal" className="bg-[#1A1F1E]">Door Deal - Split after covering costs</option>
+            <option value="flat_fee" className="bg-[#14171E]">Flat Fee - I pay artist flat amount, I keep profit</option>
+            <option value="guarantee_vs_percentage" className="bg-[#14171E]">Guarantee vs Percentage - Artist gets higher</option>
+            <option value="percentage_only" className="bg-[#14171E]">Percentage Only - No guarantee</option>
+            <option value="door_deal" className="bg-[#14171E]">Door Deal - Split after covering costs</option>
           </select>
         </div>
 
         {dealType === 'flat_fee' && (
-          <div className="p-6 bg-[#C4FF0D]/10 border-2 border-[#C4FF0D]/30 rounded-2xl">
+          <div className="p-6 bg-[#8FD3FF]/10 border-2 border-[#8FD3FF]/30 rounded-2xl">
             <div className="flex items-start gap-3">
-              <Info className="h-5 w-5 text-[#C4FF0D] mt-0.5 flex-shrink-0" />
+              <Info className="h-5 w-5 text-[#8FD3FF] mt-0.5 flex-shrink-0" />
               <div>
-                <div className="font-bold text-[#C4FF0D] mb-1">Flat Fee Deal</div>
+                <div className="font-bold text-[#8FD3FF] mb-1">Flat Fee Deal</div>
                 <div className="text-sm text-gray-300">
                   You pay the artist a fixed amount regardless of how the show does.
                   You keep all profit after paying the artist and covering expenses.
@@ -363,7 +363,7 @@ export function ArtistDealTab({
                 min="0"
                 step="100"
                 disabled={dealType === 'percentage_only'}
-                className="w-full pl-8 pr-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] disabled:opacity-50"
+                className="w-full pl-8 pr-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] disabled:opacity-50"
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">
@@ -384,7 +384,7 @@ export function ArtistDealTab({
                   value={artistPercentage}
                   onChange={(e) => setArtistPercentage(Number(e.target.value))}
                   placeholder="100"
-                  className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                  className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                 />
                 <span className="text-gray-400 font-medium">%</span>
               </div>
@@ -397,7 +397,7 @@ export function ArtistDealTab({
       </div>
 
       {(netRevenue > 0 || guarantee > 0) && (
-        <div className="bg-gradient-to-r from-[#C4FF0D]/10 to-[#C4FF0D]/5 border-2 border-[#C4FF0D]/30 rounded-2xl p-6">
+        <div className="bg-gradient-to-r from-[#8FD3FF]/10 to-[#8FD3FF]/5 border-2 border-[#8FD3FF]/30 rounded-2xl p-6">
           <h3 className="text-xl font-bold text-white mb-4">Deal Summary</h3>
 
           <div className="space-y-3">
@@ -417,17 +417,17 @@ export function ArtistDealTab({
               </span>
             </div>
 
-            <div className="border-t-2 border-[#C4FF0D]/30 pt-3">
+            <div className="border-t-2 border-[#8FD3FF]/30 pt-3">
               <div className="flex justify-between items-center">
                 <span className="text-xl font-bold text-white">Your Profit:</span>
-                <span className={`text-2xl font-bold ${promoterProfit >= 0 ? 'text-[#C4FF0D]' : 'text-red-500'}`}>
+                <span className={`text-2xl font-bold ${promoterProfit >= 0 ? 'text-[#8FD3FF]' : 'text-red-500'}`}>
                   {formatCurrency(promoterProfit)}
                 </span>
               </div>
             </div>
 
             {dealType === 'guarantee_vs_percentage' && netRevenue > 0 && (
-              <div className="mt-4 p-3 bg-[#1A1F1E] rounded-xl text-sm border border-gray-700">
+              <div className="mt-4 p-3 bg-[#14171E] rounded-xl text-sm border border-gray-700">
                 <div className="font-semibold mb-2 text-white">Artist Gets Higher Of:</div>
                 <div className="flex justify-between text-gray-400">
                   <span>Guarantee:</span>
@@ -457,7 +457,7 @@ export function ArtistDealTab({
                 </p>
               </div>
 
-              <div className="bg-[#141716] border border-gray-700 rounded-2xl p-4">
+              <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-4">
                 <h3 className="font-semibold text-white mb-4">Customize Backend Split</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -478,7 +478,7 @@ export function ArtistDealTab({
                       min="0"
                       max="100"
                       step="1"
-                      className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                      className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                     />
                   </div>
                   <div>
@@ -499,7 +499,7 @@ export function ArtistDealTab({
                       min="0"
                       max="100"
                       step="1"
-                      className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                      className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                     />
                   </div>
                 </div>
@@ -528,7 +528,7 @@ export function ArtistDealTab({
             min="0"
             max="100"
             step="0.1"
-            className="w-full px-4 py-3 bg-[#141716] border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+            className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
           />
         </div>
 
@@ -547,13 +547,13 @@ export function ArtistDealTab({
             min="0"
             max="100"
             step="1"
-            className="w-full px-4 py-3 bg-[#141716] border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+            className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
           />
         </div>
       </div>
 
       {(dealType === 'flat_fee' || dealType === 'flat_guarantee') && (
-        <div className="bg-[#141716] border border-gray-700 rounded-2xl p-6">
+        <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-6">
           <h3 className="font-semibold text-white mb-4">Calculated Payout</h3>
           <div className="space-y-3">
             <div className="flex justify-between">
@@ -579,11 +579,11 @@ export function ArtistDealTab({
       )}
 
       {/* Payment Terms Section */}
-      <div className="bg-[#141716] border border-gray-700 rounded-2xl p-6">
+      <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-bold text-white">Payment Terms</h3>
-          <div className="px-3 py-1 bg-[#C4FF0D]/20 border border-[#C4FF0D]/30 rounded-full">
-            <span className="text-[#C4FF0D] text-xs font-semibold">IMPORTANT</span>
+          <div className="px-3 py-1 bg-[#8FD3FF]/20 border border-[#8FD3FF]/30 rounded-full">
+            <span className="text-[#8FD3FF] text-xs font-semibold">IMPORTANT</span>
           </div>
         </div>
 
@@ -593,23 +593,23 @@ export function ArtistDealTab({
           <div
             className={`p-5 rounded-2xl border-2 transition-all cursor-pointer ${
               paymentMethod === 'deposit_balance'
-                ? 'bg-[#C4FF0D]/10 border-[#C4FF0D]'
-                : 'bg-[#1A1F1E] border-gray-700 hover:border-gray-600'
+                ? 'bg-[#8FD3FF]/10 border-[#8FD3FF]'
+                : 'bg-[#14171E] border-gray-700 hover:border-gray-600'
             }`}
             onClick={() => setPaymentMethod('deposit_balance')}
           >
             <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-                    paymentMethod === 'deposit_balance' ? 'bg-[#C4FF0D]/20' : 'bg-gray-700'
+                    paymentMethod === 'deposit_balance' ? 'bg-[#8FD3FF]/20' : 'bg-gray-700'
                   }`}>
                     <DollarSign className={`h-6 w-6 ${
-                      paymentMethod === 'deposit_balance' ? 'text-[#C4FF0D]' : 'text-gray-400'
+                      paymentMethod === 'deposit_balance' ? 'text-[#8FD3FF]' : 'text-gray-400'
                     }`} />
                   </div>
                   <div className="flex-1">
                     <h4 className={`font-bold mb-1 ${
-                      paymentMethod === 'deposit_balance' ? 'text-[#C4FF0D]' : 'text-white'
+                      paymentMethod === 'deposit_balance' ? 'text-[#8FD3FF]' : 'text-white'
                     }`}>
                       Deposit + Balance
                     </h4>
@@ -622,8 +622,8 @@ export function ArtistDealTab({
                   </div>
                 </div>
                 {paymentMethod === 'deposit_balance' && (
-                  <div className="w-6 h-6 bg-[#C4FF0D] rounded-full flex items-center justify-center flex-shrink-0">
-                    <Check className="h-4 w-4 text-black" />
+                  <div className="w-6 h-6 bg-[#8FD3FF] rounded-full flex items-center justify-center flex-shrink-0">
+                    <Check className="h-4 w-4 text-[#04214D]" />
                   </div>
                 )}
               </div>
@@ -633,23 +633,23 @@ export function ArtistDealTab({
           <div
             className={`p-5 rounded-2xl border-2 transition-all cursor-pointer ${
               paymentMethod === 'full_upfront'
-                ? 'bg-[#C4FF0D]/10 border-[#C4FF0D]'
-                : 'bg-[#1A1F1E] border-gray-700 hover:border-gray-600'
+                ? 'bg-[#8FD3FF]/10 border-[#8FD3FF]'
+                : 'bg-[#14171E] border-gray-700 hover:border-gray-600'
             }`}
             onClick={() => setPaymentMethod('full_upfront')}
           >
             <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-                    paymentMethod === 'full_upfront' ? 'bg-[#C4FF0D]/20' : 'bg-gray-700'
+                    paymentMethod === 'full_upfront' ? 'bg-[#8FD3FF]/20' : 'bg-gray-700'
                   }`}>
                     <Banknote className={`h-6 w-6 ${
-                      paymentMethod === 'full_upfront' ? 'text-[#C4FF0D]' : 'text-gray-400'
+                      paymentMethod === 'full_upfront' ? 'text-[#8FD3FF]' : 'text-gray-400'
                     }`} />
                   </div>
                   <div className="flex-1">
                     <h4 className={`font-bold mb-1 ${
-                      paymentMethod === 'full_upfront' ? 'text-[#C4FF0D]' : 'text-white'
+                      paymentMethod === 'full_upfront' ? 'text-[#8FD3FF]' : 'text-white'
                     }`}>
                       Full Payment Upfront
                     </h4>
@@ -662,8 +662,8 @@ export function ArtistDealTab({
                   </div>
                 </div>
                 {paymentMethod === 'full_upfront' && (
-                  <div className="w-6 h-6 bg-[#C4FF0D] rounded-full flex items-center justify-center flex-shrink-0">
-                    <Check className="h-4 w-4 text-black" />
+                  <div className="w-6 h-6 bg-[#8FD3FF] rounded-full flex items-center justify-center flex-shrink-0">
+                    <Check className="h-4 w-4 text-[#04214D]" />
                   </div>
                 )}
               </div>
@@ -673,23 +673,23 @@ export function ArtistDealTab({
           <div
             className={`p-5 rounded-2xl border-2 transition-all cursor-pointer ${
               paymentMethod === 'day_of_settlement'
-                ? 'bg-[#C4FF0D]/10 border-[#C4FF0D]'
-                : 'bg-[#1A1F1E] border-gray-700 hover:border-gray-600'
+                ? 'bg-[#8FD3FF]/10 border-[#8FD3FF]'
+                : 'bg-[#14171E] border-gray-700 hover:border-gray-600'
             }`}
             onClick={() => setPaymentMethod('day_of_settlement')}
           >
             <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-                    paymentMethod === 'day_of_settlement' ? 'bg-[#C4FF0D]/20' : 'bg-gray-700'
+                    paymentMethod === 'day_of_settlement' ? 'bg-[#8FD3FF]/20' : 'bg-gray-700'
                   }`}>
                     <CalendarCheck className={`h-6 w-6 ${
-                      paymentMethod === 'day_of_settlement' ? 'text-[#C4FF0D]' : 'text-gray-400'
+                      paymentMethod === 'day_of_settlement' ? 'text-[#8FD3FF]' : 'text-gray-400'
                     }`} />
                   </div>
                   <div className="flex-1">
                     <h4 className={`font-bold mb-1 ${
-                      paymentMethod === 'day_of_settlement' ? 'text-[#C4FF0D]' : 'text-white'
+                      paymentMethod === 'day_of_settlement' ? 'text-[#8FD3FF]' : 'text-white'
                     }`}>
                       Day of Event Settlement
                     </h4>
@@ -702,8 +702,8 @@ export function ArtistDealTab({
                   </div>
                 </div>
                 {paymentMethod === 'day_of_settlement' && (
-                  <div className="w-6 h-6 bg-[#C4FF0D] rounded-full flex items-center justify-center flex-shrink-0">
-                    <Check className="h-4 w-4 text-black" />
+                  <div className="w-6 h-6 bg-[#8FD3FF] rounded-full flex items-center justify-center flex-shrink-0">
+                    <Check className="h-4 w-4 text-[#04214D]" />
                   </div>
                 )}
               </div>
@@ -714,8 +714,8 @@ export function ArtistDealTab({
         {paymentMethod === 'full_upfront' && (
           <div className="space-y-4 pt-4 border-t border-gray-700">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-[#C4FF0D]/20 rounded-2xl flex items-center justify-center">
-                <Banknote className="h-6 w-6 text-[#C4FF0D]" />
+              <div className="w-12 h-12 bg-[#8FD3FF]/20 rounded-2xl flex items-center justify-center">
+                <Banknote className="h-6 w-6 text-[#8FD3FF]" />
               </div>
               <div>
                 <h4 className="text-white font-semibold text-lg">Full Payment</h4>
@@ -728,7 +728,7 @@ export function ArtistDealTab({
               <div className="relative">
                 <input
                   type="date"
-                  className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                  className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                   value={fullPaymentDueDate}
                   onChange={(e) => setFullPaymentDueDate(e.target.value)}
                 />
@@ -737,10 +737,10 @@ export function ArtistDealTab({
             </div>
 
             {totalPayout > 0 && (
-              <div className="p-5 bg-[#C4FF0D]/10 border-2 border-[#C4FF0D]/30 rounded-2xl">
+              <div className="p-5 bg-[#8FD3FF]/10 border-2 border-[#8FD3FF]/30 rounded-2xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-[#C4FF0D] font-semibold">Full Payment Amount</span>
-                  <span className="text-[#C4FF0D] font-bold text-2xl">
+                  <span className="text-[#8FD3FF] font-semibold">Full Payment Amount</span>
+                  <span className="text-[#8FD3FF] font-bold text-2xl">
                     {formatCurrency(totalPayout)}
                   </span>
                 </div>
@@ -784,7 +784,7 @@ export function ArtistDealTab({
         )}
       </div>
 
-      <div className="bg-[#141716] border border-gray-700 rounded-2xl p-6">
+      <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-6">
         <h3 className="text-xl font-bold text-white mb-4">Merchandise</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -793,7 +793,7 @@ export function ArtistDealTab({
               type="number"
               value={merchRateSoft}
               onChange={(e) => setMerchRateSoft(parseInt(e.target.value))}
-              className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+              className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
             />
           </div>
           <div>
@@ -802,13 +802,13 @@ export function ArtistDealTab({
               type="number"
               value={merchRateHard}
               onChange={(e) => setMerchRateHard(parseInt(e.target.value))}
-              className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+              className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
             />
           </div>
         </div>
       </div>
 
-      <div className="bg-[#141716] border border-gray-700 rounded-2xl p-6">
+      <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-lg font-semibold text-white">Artist Lineup</h3>
@@ -817,7 +817,7 @@ export function ArtistDealTab({
           <button
             type="button"
             onClick={addSupportAct}
-            className="flex items-center gap-2 px-4 py-2 bg-[#C4FF0D] text-black rounded-xl hover:bg-[#A3D60A] transition-colors text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-[#8FD3FF] text-[#04214D] rounded-xl hover:bg-[#6FB8F2] transition-colors text-sm font-medium"
           >
             <Plus className="h-4 w-4" />
             Add Artist
@@ -825,13 +825,13 @@ export function ArtistDealTab({
         </div>
 
         {supportActs.length === 0 ? (
-          <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-700 rounded-2xl bg-[#1A1F1E]">
+          <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-700 rounded-2xl bg-[#14171E]">
             <Music className="h-12 w-12 mx-auto mb-3 text-gray-600" />
             <p className="font-medium text-gray-400">No support acts added yet</p>
             <button
               type="button"
               onClick={addSupportAct}
-              className="mt-3 text-[#C4FF0D] hover:text-[#A3D60A] font-medium text-sm"
+              className="mt-3 text-[#8FD3FF] hover:text-[#6FB8F2] font-medium text-sm"
             >
               Add your first artist
             </button>
@@ -851,10 +851,10 @@ export function ArtistDealTab({
             ))}
 
             {totalSupportCost > 0 && (
-              <div className="p-4 bg-[#C4FF0D]/10 border border-[#C4FF0D]/30 rounded-2xl">
+              <div className="p-4 bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 rounded-2xl">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-lg text-white">Total Artist Lineup Cost:</span>
-                  <span className="text-2xl font-bold text-[#C4FF0D]">
+                  <span className="text-2xl font-bold text-[#8FD3FF]">
                     {formatCurrency(totalSupportCost)}
                   </span>
                 </div>
@@ -865,7 +865,7 @@ export function ArtistDealTab({
       </div>
 
       {/* Artist Accommodations Section */}
-      <div className="bg-[#141716] border border-gray-700 rounded-2xl p-6">
+      <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-lg font-semibold text-white">Artist Accommodations</h3>
@@ -896,7 +896,7 @@ export function ArtistDealTab({
                   onChange={(e) => setIncludeHotel(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#C4FF0D] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#C4FF0D]"></div>
+                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#8FD3FF] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8FD3FF]"></div>
               </label>
             </div>
 
@@ -910,7 +910,7 @@ export function ArtistDealTab({
                       <input
                         type="number"
                         placeholder="0"
-                        className="w-full pl-12 pr-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                        className="w-full pl-12 pr-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                         value={hotelBudget || ''}
                         onChange={(e) => setHotelBudget(Number(e.target.value) || 0)}
                       />
@@ -924,7 +924,7 @@ export function ArtistDealTab({
                       type="number"
                       placeholder="1"
                       min="1"
-                      className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                      className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                       value={hotelNights || 1}
                       onChange={(e) => setHotelNights(Number(e.target.value) || 1)}
                     />
@@ -935,7 +935,7 @@ export function ArtistDealTab({
                   <label className="block text-sm font-medium text-gray-400 mb-2">Hotel Requirements / Notes</label>
                   <textarea
                     placeholder="e.g., 4-star hotel near venue, non-smoking rooms, 2 rooms needed"
-                    className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl placeholder:text-gray-600 min-h-24 focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                    className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl placeholder:text-gray-600 min-h-24 focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                     value={hotelNotes}
                     onChange={(e) => setHotelNotes(e.target.value)}
                   />
@@ -945,21 +945,21 @@ export function ArtistDealTab({
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    className="px-3 py-1.5 bg-[#1A1F1E] border border-gray-600 text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] rounded-lg text-xs transition-colors"
+                    className="px-3 py-1.5 bg-[#14171E] border border-gray-600 text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] rounded-lg text-xs transition-colors"
                     onClick={() => setHotelNotes('4-star hotel near venue')}
                   >
                     4-Star Hotel
                   </button>
                   <button
                     type="button"
-                    className="px-3 py-1.5 bg-[#1A1F1E] border border-gray-600 text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] rounded-lg text-xs transition-colors"
+                    className="px-3 py-1.5 bg-[#14171E] border border-gray-600 text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] rounded-lg text-xs transition-colors"
                     onClick={() => setHotelNotes('5-star luxury hotel')}
                   >
                     5-Star Luxury
                   </button>
                   <button
                     type="button"
-                    className="px-3 py-1.5 bg-[#1A1F1E] border border-gray-600 text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] rounded-lg text-xs transition-colors"
+                    className="px-3 py-1.5 bg-[#14171E] border border-gray-600 text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] rounded-lg text-xs transition-colors"
                     onClick={() => setHotelNotes('Budget hotel, clean and comfortable')}
                   >
                     Budget Hotel
@@ -1003,7 +1003,7 @@ export function ArtistDealTab({
                   onChange={(e) => setIncludeTransport(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#C4FF0D] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#C4FF0D]"></div>
+                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#8FD3FF] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8FD3FF]"></div>
               </label>
             </div>
 
@@ -1016,7 +1016,7 @@ export function ArtistDealTab({
                     <input
                       type="number"
                       placeholder="0"
-                      className="w-full pl-12 pr-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                      className="w-full pl-12 pr-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                       value={transportBudget || ''}
                       onChange={(e) => setTransportBudget(Number(e.target.value) || 0)}
                     />
@@ -1028,7 +1028,7 @@ export function ArtistDealTab({
                   <label className="block text-sm font-medium text-gray-400 mb-2">Transport Details / Notes</label>
                   <textarea
                     placeholder="e.g., Airport pickup, hotel to venue transport, return to airport"
-                    className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl placeholder:text-gray-600 min-h-24 focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                    className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl placeholder:text-gray-600 min-h-24 focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                     value={transportNotes}
                     onChange={(e) => setTransportNotes(e.target.value)}
                   />
@@ -1038,21 +1038,21 @@ export function ArtistDealTab({
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    className="px-3 py-1.5 bg-[#1A1F1E] border border-gray-600 text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] rounded-lg text-xs transition-colors"
+                    className="px-3 py-1.5 bg-[#14171E] border border-gray-600 text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] rounded-lg text-xs transition-colors"
                     onClick={() => setTransportNotes('Airport pickup and return')}
                   >
                     Airport Pickup/Return
                   </button>
                   <button
                     type="button"
-                    className="px-3 py-1.5 bg-[#1A1F1E] border border-gray-600 text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] rounded-lg text-xs transition-colors"
+                    className="px-3 py-1.5 bg-[#14171E] border border-gray-600 text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] rounded-lg text-xs transition-colors"
                     onClick={() => setTransportNotes('Hotel to venue shuttle')}
                   >
                     Hotel to Venue
                   </button>
                   <button
                     type="button"
-                    className="px-3 py-1.5 bg-[#1A1F1E] border border-gray-600 text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] rounded-lg text-xs transition-colors"
+                    className="px-3 py-1.5 bg-[#14171E] border border-gray-600 text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] rounded-lg text-xs transition-colors"
                     onClick={() => setTransportNotes('Private car service, full day')}
                   >
                     Private Car
@@ -1093,7 +1093,7 @@ export function ArtistDealTab({
                   onChange={(e) => setIncludeFlights(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#C4FF0D] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#C4FF0D]"></div>
+                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#8FD3FF] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8FD3FF]"></div>
               </label>
             </div>
 
@@ -1106,7 +1106,7 @@ export function ArtistDealTab({
                     <input
                       type="number"
                       placeholder="0"
-                      className="w-full pl-12 pr-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                      className="w-full pl-12 pr-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                       value={flightBudget || ''}
                       onChange={(e) => setFlightBudget(Number(e.target.value) || 0)}
                     />
@@ -1118,7 +1118,7 @@ export function ArtistDealTab({
                   <label className="block text-sm font-medium text-gray-400 mb-2">Flight Details / Notes</label>
                   <textarea
                     placeholder="e.g., Round-trip flights for 4 people from LAX, economy class"
-                    className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl placeholder:text-gray-600 min-h-24 focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                    className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl placeholder:text-gray-600 min-h-24 focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                     value={flightNotes}
                     onChange={(e) => setFlightNotes(e.target.value)}
                   />
@@ -1127,21 +1127,21 @@ export function ArtistDealTab({
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    className="px-3 py-1.5 bg-[#1A1F1E] border border-gray-600 text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] rounded-lg text-xs transition-colors"
+                    className="px-3 py-1.5 bg-[#14171E] border border-gray-600 text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] rounded-lg text-xs transition-colors"
                     onClick={() => setFlightNotes('Round-trip economy flights')}
                   >
                     Economy
                   </button>
                   <button
                     type="button"
-                    className="px-3 py-1.5 bg-[#1A1F1E] border border-gray-600 text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] rounded-lg text-xs transition-colors"
+                    className="px-3 py-1.5 bg-[#14171E] border border-gray-600 text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] rounded-lg text-xs transition-colors"
                     onClick={() => setFlightNotes('Round-trip business class flights')}
                   >
                     Business Class
                   </button>
                   <button
                     type="button"
-                    className="px-3 py-1.5 bg-[#1A1F1E] border border-gray-600 text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] rounded-lg text-xs transition-colors"
+                    className="px-3 py-1.5 bg-[#14171E] border border-gray-600 text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] rounded-lg text-xs transition-colors"
                     onClick={() => setFlightNotes('Artist books own flights, promoter reimburses')}
                   >
                     Reimbursement
@@ -1181,7 +1181,7 @@ export function ArtistDealTab({
                   onChange={(e) => setIncludeRider(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#C4FF0D] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#C4FF0D]"></div>
+                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#8FD3FF] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8FD3FF]"></div>
               </label>
             </div>
 
@@ -1194,7 +1194,7 @@ export function ArtistDealTab({
                     <input
                       type="number"
                       placeholder="100"
-                      className="w-full pl-12 pr-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                      className="w-full pl-12 pr-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                       value={riderCap || ''}
                       onChange={(e) => setRiderCap(Number(e.target.value) || 0)}
                     />
@@ -1206,28 +1206,28 @@ export function ArtistDealTab({
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    className="px-3 py-1.5 bg-[#1A1F1E] border border-gray-600 text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] rounded-lg text-xs transition-colors"
+                    className="px-3 py-1.5 bg-[#14171E] border border-gray-600 text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] rounded-lg text-xs transition-colors"
                     onClick={() => setRiderCap(50)}
                   >
                     $50 Cap
                   </button>
                   <button
                     type="button"
-                    className="px-3 py-1.5 bg-[#1A1F1E] border border-gray-600 text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] rounded-lg text-xs transition-colors"
+                    className="px-3 py-1.5 bg-[#14171E] border border-gray-600 text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] rounded-lg text-xs transition-colors"
                     onClick={() => setRiderCap(100)}
                   >
                     $100 Cap
                   </button>
                   <button
                     type="button"
-                    className="px-3 py-1.5 bg-[#1A1F1E] border border-gray-600 text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] rounded-lg text-xs transition-colors"
+                    className="px-3 py-1.5 bg-[#14171E] border border-gray-600 text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] rounded-lg text-xs transition-colors"
                     onClick={() => setRiderCap(200)}
                   >
                     $200 Cap
                   </button>
                   <button
                     type="button"
-                    className="px-3 py-1.5 bg-[#1A1F1E] border border-gray-600 text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] rounded-lg text-xs transition-colors"
+                    className="px-3 py-1.5 bg-[#14171E] border border-gray-600 text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] rounded-lg text-xs transition-colors"
                     onClick={() => setRiderCap(500)}
                   >
                     $500 Cap
@@ -1238,7 +1238,7 @@ export function ArtistDealTab({
                   <label className="block text-sm font-medium text-gray-400 mb-2">Rider Requirements / Notes</label>
                   <textarea
                     placeholder="e.g., Standard rider: water, soft drinks, fresh fruit, deli platter"
-                    className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl placeholder:text-gray-600 min-h-24 focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                    className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl placeholder:text-gray-600 min-h-24 focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                     value={riderNotes}
                     onChange={(e) => setRiderNotes(e.target.value)}
                   />
@@ -1268,10 +1268,10 @@ export function ArtistDealTab({
 
       {/* Total Accommodations Summary */}
       {(includeHotel || includeTransport || includeFlights || includeRider) && (hotelBudget > 0 || transportBudget > 0 || flightBudget > 0 || riderCap > 0) && (
-        <div className="bg-gradient-to-r from-[#C4FF0D]/10 to-[#A3D60A]/10 border-2 border-[#C4FF0D]/30 rounded-2xl p-6">
+        <div className="bg-gradient-to-r from-[#8FD3FF]/10 to-[#6FB8F2]/10 border-2 border-[#8FD3FF]/30 rounded-2xl p-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-[#C4FF0D]/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-              <Info className="h-6 w-6 text-[#C4FF0D]" />
+            <div className="w-12 h-12 bg-[#8FD3FF]/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <Info className="h-6 w-6 text-[#8FD3FF]" />
             </div>
             <div className="flex-1">
               <h4 className="text-white font-bold mb-3">Accommodations Summary</h4>
@@ -1302,10 +1302,10 @@ export function ArtistDealTab({
                     <span className="text-white font-semibold">{formatCurrency(riderCap)}</span>
                   </div>
                 )}
-                <div className="h-px bg-[#C4FF0D]/30 my-2"></div>
+                <div className="h-px bg-[#8FD3FF]/30 my-2"></div>
                 <div className="flex justify-between">
-                  <span className="text-[#C4FF0D] font-bold">Total Accommodations</span>
-                  <span className="text-[#C4FF0D] font-bold text-lg">
+                  <span className="text-[#8FD3FF] font-bold">Total Accommodations</span>
+                  <span className="text-[#8FD3FF] font-bold text-lg">
                     {formatCurrency(
                       (includeHotel ? hotelBudget * (hotelNights || 1) : 0) +
                       (includeTransport ? transportBudget : 0) +

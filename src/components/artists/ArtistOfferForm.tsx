@@ -22,16 +22,16 @@ const ROLES: { value: ArtistRole; label: string }[] = [
   { value: 'local_opener', label: 'Local Opener' },
 ];
 
-const inputCls = 'w-full bg-[#141918] border border-[#2A3330] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 outline-none focus:border-[#C4FF0D]/50 transition-colors';
+const inputCls = 'w-full bg-[#0B0D12] border border-[#2A3040] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 outline-none focus:border-[#8FD3FF]/50 transition-colors';
 const labelCls = 'text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-1';
-const toggleActiveCls = 'bg-[#C4FF0D]/15 border-[#C4FF0D]/40 text-[#C4FF0D]';
-const toggleInactiveCls = 'bg-[#1A1F1E] border-gray-700 text-gray-500 hover:border-gray-600 hover:text-gray-400';
+const toggleActiveCls = 'bg-[#8FD3FF]/15 border-[#8FD3FF]/40 text-[#8FD3FF]';
+const toggleInactiveCls = 'bg-[#14171E] border-gray-700 text-gray-500 hover:border-gray-600 hover:text-gray-400';
 
 function Section({ title, icon: Icon, children }: { title: string; icon: typeof Music; children: React.ReactNode }) {
   return (
-    <div className="border-t border-[#2A3330] pt-4">
+    <div className="border-t border-[#2A3040] pt-4">
       <div className="flex items-center gap-2 mb-3">
-        <Icon className="w-3.5 h-3.5 text-[#C4FF0D]" />
+        <Icon className="w-3.5 h-3.5 text-[#8FD3FF]" />
         <h4 className="text-xs font-bold text-white uppercase tracking-wide">{title}</h4>
       </div>
       {children}
@@ -191,7 +191,7 @@ export function ArtistOfferForm({ artist, tasks, onUpdate, onAddTask, onUpdateTa
           )}
         </div>
 
-        <div className="mt-3 bg-[#252A29] rounded-lg p-3 grid grid-cols-3 gap-3">
+        <div className="mt-3 bg-[#22262F] rounded-lg p-3 grid grid-cols-3 gap-3">
           <div>
             <div className="text-[10px] text-gray-500 uppercase">Deposit</div>
             <div className="text-sm font-bold text-white">{formatCurrency(depositAmount)}</div>
@@ -202,7 +202,7 @@ export function ArtistOfferForm({ artist, tasks, onUpdate, onAddTask, onUpdateTa
           </div>
           <div>
             <div className="text-[10px] text-gray-500 uppercase">Total</div>
-            <div className="text-sm font-bold text-[#C4FF0D]">{formatCurrency(artist.guarantee || 0)}</div>
+            <div className="text-sm font-bold text-[#8FD3FF]">{formatCurrency(artist.guarantee || 0)}</div>
           </div>
         </div>
 
@@ -469,12 +469,12 @@ export function ArtistOfferForm({ artist, tasks, onUpdate, onAddTask, onUpdateTa
       <Section title="Follow-up Tasks" icon={Check}>
         <div className="space-y-1">
           {tasks.map(task => (
-            <div key={task.id} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-[#252A29]/60 transition-colors group">
+            <div key={task.id} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-[#22262F]/60 transition-colors group">
               <button
                 onClick={() => onUpdateTask(task.id, { completed: !task.completed })}
                 className={`w-4 h-4 rounded flex-shrink-0 border transition-all flex items-center justify-center ${
                   task.completed
-                    ? 'bg-[#C4FF0D]/20 border-[#C4FF0D] text-[#C4FF0D]'
+                    ? 'bg-[#8FD3FF]/20 border-[#8FD3FF] text-[#8FD3FF]'
                     : 'border-gray-600 hover:border-gray-400'
                 }`}
               >
@@ -500,7 +500,7 @@ export function ArtistOfferForm({ artist, tasks, onUpdate, onAddTask, onUpdateTa
         </div>
 
         {addingTask ? (
-          <div className="mt-2 p-3 bg-[#141918] border border-[#2A3330] rounded-lg space-y-2">
+          <div className="mt-2 p-3 bg-[#0B0D12] border border-[#2A3040] rounded-lg space-y-2">
             <input
               className={inputCls}
               value={newTaskTitle}
@@ -518,13 +518,13 @@ export function ArtistOfferForm({ artist, tasks, onUpdate, onAddTask, onUpdateTa
               />
               <div className="flex-1" />
               <button onClick={() => setAddingTask(false)} className="px-3 py-1 text-xs text-gray-400 hover:text-white">Cancel</button>
-              <button onClick={handleAddTask} className="px-3 py-1 bg-[#C4FF0D] text-black text-xs font-bold rounded-md hover:bg-[#A3D60A]">Add</button>
+              <button onClick={handleAddTask} className="px-3 py-1 bg-[#8FD3FF] text-[#04214D] text-xs font-bold rounded-md hover:bg-[#6FB8F2]">Add</button>
             </div>
           </div>
         ) : (
           <button
             onClick={() => setAddingTask(true)}
-            className="mt-2 text-xs text-[#C4FF0D] hover:text-[#A3D60A] flex items-center gap-1 transition-colors"
+            className="mt-2 text-xs text-[#8FD3FF] hover:text-[#6FB8F2] flex items-center gap-1 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />Add Task
           </button>

@@ -30,9 +30,9 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-      <div className="bg-[#0F1113] border border-gray-800 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+      <div className="bg-[#1140F0] border border-gray-800 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
 
-        <div className="bg-[#1A1F1E] border-b border-gray-800 p-6">
+        <div className="bg-[#14171E] border-b border-gray-800 p-6">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Generate PDF</h2>
@@ -49,7 +49,7 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
 
         <div className="flex h-[calc(90vh-200px)]">
 
-          <div className="w-80 bg-[#1A1F1E] border-r border-gray-800 p-6 overflow-y-auto">
+          <div className="w-80 bg-[#14171E] border-r border-gray-800 p-6 overflow-y-auto">
             <h3 className="text-white font-bold mb-4">Select Mode</h3>
 
             <div className="space-y-3">
@@ -68,29 +68,29 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
                 />
                 <div className={`p-5 rounded-2xl transition-all ${
                   selectedMode === 'artist_offer'
-                    ? 'bg-[#C4FF0D]/10 border-2 border-[#C4FF0D]'
-                    : 'bg-[#141716] border border-gray-700 hover:border-gray-600'
+                    ? 'bg-[#8FD3FF]/10 border-2 border-[#8FD3FF]'
+                    : 'bg-[#0B0D12] border border-gray-700 hover:border-gray-600'
                 }`}>
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-10 h-10 bg-[#C4FF0D]/20 rounded-xl flex items-center justify-center">
-                        <FileText className="h-5 w-5 text-[#C4FF0D]" />
+                      <div className="w-10 h-10 bg-[#8FD3FF]/20 rounded-xl flex items-center justify-center">
+                        <FileText className="h-5 w-5 text-[#8FD3FF]" />
                       </div>
                       {selectedMode === 'artist_offer' && (
-                        <div className="w-5 h-5 bg-[#C4FF0D] rounded-full flex items-center justify-center">
-                          <svg className="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 20 20">
+                        <div className="w-5 h-5 bg-[#8FD3FF] rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-[#04214D]" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                           </svg>
                         </div>
                       )}
                     </div>
-                    <span className="bg-[#C4FF0D] text-black px-2 py-1 rounded-lg text-xs font-bold">
+                    <span className="bg-[#8FD3FF] text-[#04214D] px-2 py-1 rounded-lg text-xs font-bold">
                       RECOMMENDED
                     </span>
                   </div>
 
                   <h4 className={`font-bold mb-1 ${
-                    selectedMode === 'artist_offer' ? 'text-[#C4FF0D]' : 'text-white'
+                    selectedMode === 'artist_offer' ? 'text-[#8FD3FF]' : 'text-white'
                   }`}>
                     Artist Offer
                   </h4>
@@ -143,7 +143,7 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
                 <div className={`p-5 rounded-2xl transition-all ${
                   selectedMode === 'estimate'
                     ? 'bg-blue-500/10 border-2 border-blue-500'
-                    : 'bg-[#141716] border border-gray-700 hover:border-gray-600'
+                    : 'bg-[#0B0D12] border border-gray-700 hover:border-gray-600'
                 }`}>
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -215,13 +215,13 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
             )}
 
             {selectedMode === 'artist_offer' && (
-              <div className="mt-6 p-4 bg-[#C4FF0D]/10 border border-[#C4FF0D]/30 rounded-2xl">
+              <div className="mt-6 p-4 bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 rounded-2xl">
                 <div className="flex items-start gap-3">
-                  <svg className="h-5 w-5 text-[#C4FF0D] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="h-5 w-5 text-[#8FD3FF] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                   </svg>
                   <div>
-                    <p className="text-[#C4FF0D] font-semibold text-sm mb-1">
+                    <p className="text-[#8FD3FF] font-semibold text-sm mb-1">
                       Artist-Friendly
                     </p>
                     <p className="text-gray-400 text-xs">
@@ -238,12 +238,12 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
 
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-[#C4FF0D]"></div>
+                  <div className="w-2 h-2 rounded-full bg-[#8FD3FF]"></div>
                   <h3 className="text-white font-bold">Preview</h3>
                 </div>
                 <span className={`px-3 py-1 rounded-lg text-xs font-bold ${
                   selectedMode === 'artist_offer'
-                    ? 'bg-[#C4FF0D]/20 text-[#C4FF0D]'
+                    ? 'bg-[#8FD3FF]/20 text-[#8FD3FF]'
                     : 'bg-blue-500/20 text-blue-500'
                 }`}>
                   {currentMode.name}
@@ -270,7 +270,7 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
                     <p className="text-gray-600 text-xs mb-1">DEAL TYPE</p>
-                    <p className="text-black font-bold text-sm">
+                    <p className="text-[#04214D] font-bold text-sm">
                       {offer.deal_type === 'flat_guarantee'
                         ? 'Flat Fee'
                         : `${offer.artist_backend_pct || 85}/${offer.promoter_backend_pct || 15} Split`
@@ -279,7 +279,7 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
                   </div>
                   <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
                     <p className="text-gray-600 text-xs mb-1">GUARANTEE</p>
-                    <p className="text-black font-bold">${offer.guarantee.toLocaleString()}</p>
+                    <p className="text-[#04214D] font-bold">${offer.guarantee.toLocaleString()}</p>
                   </div>
                   <div className={`p-4 rounded-xl border-2 ${
                     selectedMode === 'artist_offer'
@@ -294,7 +294,7 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
                 </div>
 
                 <div className="mb-6">
-                  <h3 className="text-black font-bold mb-3 text-sm">TICKET SCALING</h3>
+                  <h3 className="text-[#04214D] font-bold mb-3 text-sm">TICKET SCALING</h3>
                   <div className="overflow-hidden rounded-xl border border-gray-200">
                     <table className="w-full">
                       <thead>
@@ -311,7 +311,7 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
                       <tbody>
                         {offer.ticket_tiers.map((tier, i) => (
                           <tr key={i} className="border-b border-gray-200 text-sm">
-                            <td className="p-3 text-black">{tier.type}</td>
+                            <td className="p-3 text-[#04214D]">{tier.type}</td>
                             <td className="p-3 text-gray-600">{tier.allotment - tier.comps}</td>
                             <td className="p-3 text-gray-600">${tier.price}</td>
                             {currentMode.showBreakEven && (
@@ -319,7 +319,7 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
                                 {Math.ceil(totalSellable * 0.7)}
                               </td>
                             )}
-                            <td className="p-3 text-right text-black font-semibold">
+                            <td className="p-3 text-right text-[#04214D] font-semibold">
                               ${((tier.allotment - tier.comps) * tier.price).toLocaleString()}
                             </td>
                           </tr>
@@ -331,11 +331,11 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                    <h4 className="text-black font-bold mb-3 text-sm">REVENUE</h4>
+                    <h4 className="text-[#04214D] font-bold mb-3 text-sm">REVENUE</h4>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Gross</span>
-                        <span className="text-black font-semibold">
+                        <span className="text-[#04214D] font-semibold">
                           ${offer.calculations.grossPotential.toLocaleString()}
                         </span>
                       </div>
@@ -346,8 +346,8 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
                         </span>
                       </div>
                       <div className="flex justify-between pt-2 border-t border-gray-300">
-                        <span className="text-black font-bold">Net Revenue</span>
-                        <span className="text-black font-bold">
+                        <span className="text-[#04214D] font-bold">Net Revenue</span>
+                        <span className="text-[#04214D] font-bold">
                           ${offer.calculations.netGross.toLocaleString()}
                         </span>
                       </div>
@@ -356,7 +356,7 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
 
                   {currentMode.showProfit ? (
                     <div className="p-4 bg-green-50 rounded-xl border-2 border-green-300">
-                      <h4 className="text-black font-bold mb-3 text-sm">EXPENSES & PROFIT</h4>
+                      <h4 className="text-[#04214D] font-bold mb-3 text-sm">EXPENSES & PROFIT</h4>
                       <div className="space-y-2 text-xs">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Expenses</span>
@@ -381,11 +381,11 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
                     </div>
                   ) : (
                     <div className="p-4 bg-green-50 rounded-xl border-2 border-green-300">
-                      <h4 className="text-black font-bold mb-3 text-sm">ARTIST PAYMENT</h4>
+                      <h4 className="text-[#04214D] font-bold mb-3 text-sm">ARTIST PAYMENT</h4>
                       <div className="space-y-3">
                         <div>
                           <p className="text-gray-600 text-xs mb-1">Deal Structure</p>
-                          <p className="text-black font-semibold text-sm">
+                          <p className="text-[#04214D] font-semibold text-sm">
                             {offer.deal_type === 'flat_guarantee'
                               ? 'Flat Fee Guarantee'
                               : `${offer.artist_backend_pct || 85}/${offer.promoter_backend_pct || 15} Profit Split`
@@ -396,7 +396,7 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
                           <>
                             <div className="flex justify-between text-xs">
                               <span className="text-gray-600">Guarantee (Base)</span>
-                              <span className="text-black font-semibold">
+                              <span className="text-[#04214D] font-semibold">
                                 ${offer.guarantee.toLocaleString()}
                               </span>
                             </div>
@@ -410,7 +410,7 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
                             </div>
                             <div className="pt-2 border-t border-green-300">
                               <div className="flex justify-between">
-                                <span className="text-black font-bold text-xs">Total Amount</span>
+                                <span className="text-[#04214D] font-bold text-xs">Total Amount</span>
                                 <span className="text-green-600 font-bold text-lg">
                                   ${offer.calculations.artistTotalPayout.toLocaleString()}
                                 </span>
@@ -434,7 +434,7 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
                 </div>
 
                 <div className="p-4 bg-gray-100 rounded-xl">
-                  <h4 className="text-black font-bold mb-2 text-sm">SHOW DETAILS</h4>
+                  <h4 className="text-[#04214D] font-bold mb-2 text-sm">SHOW DETAILS</h4>
                   <div className="text-xs text-gray-600 space-y-1">
                     <p>Doors: {offer.doors_time} • Show: {offer.show_time} • Curfew: {offer.curfew_time}</p>
                     <p>Age: {offer.age_limit} • Merch: {offer.merch_rate_soft}% Artist • Comps: {totalComps}</p>
@@ -453,7 +453,7 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
           </div>
         </div>
 
-        <div className="bg-[#1A1F1E] border-t border-gray-800 p-6">
+        <div className="bg-[#14171E] border-t border-gray-800 p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-white font-semibold">Ready to generate?</p>
@@ -481,9 +481,9 @@ export function PDFPreview({ offer, companySettings, costsOnly, onClose }: PDFPr
               <button
                 className={`${
                   selectedMode === 'artist_offer'
-                    ? 'bg-[#C4FF0D] hover:bg-[#A3D60A]'
+                    ? 'bg-[#8FD3FF] hover:bg-[#6FB8F2]'
                     : 'bg-blue-500 hover:bg-blue-600'
-                } text-black transition-colors rounded-2xl px-8 py-2 font-bold`}
+                } text-[#04214D] transition-colors rounded-2xl px-8 py-2 font-bold`}
                 onClick={handleGenerate}
               >
                 <Download className="h-4 w-4 inline mr-2" />

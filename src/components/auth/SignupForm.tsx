@@ -81,7 +81,7 @@ export function SignupFormLegacy() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1113] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#1140F0] flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
@@ -92,10 +92,10 @@ export function SignupFormLegacy() {
             />
             <span className="text-3xl font-bold text-white">PROMTP</span>
           </div>
-          <p className="text-[#A8B3B8]">Create your free account - no credit card required</p>
+          <p className="text-[#A8B2C1]">Create your free account - no credit card required</p>
         </div>
 
-        <div className="bg-[#252A2E] border border-gray-800 rounded-2xl p-8">
+        <div className="bg-[#22262F] border border-gray-800 rounded-2xl p-8">
           <h2 className="text-2xl font-bold text-white mb-6">Create Account</h2>
 
           {message && (
@@ -103,7 +103,7 @@ export function SignupFormLegacy() {
               className={`rounded-xl p-4 mb-6 ${
                 message.type === 'error'
                   ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                  : 'bg-[#C4FF0D]/10 text-[#C4FF0D] border border-[#C4FF0D]/20'
+                  : 'bg-[#8FD3FF]/10 text-[#8FD3FF] border border-[#8FD3FF]/20'
               }`}
             >
               {message.text}
@@ -124,7 +124,7 @@ export function SignupFormLegacy() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="w-full bg-[#1A1D1F] border border-gray-700 text-white placeholder:text-gray-600 rounded-xl h-12 px-4 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] focus:ring-1 focus:outline-none"
+                className="w-full bg-[#14171E] border border-gray-700 text-white placeholder:text-gray-600 rounded-xl h-12 px-4 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] focus:ring-1 focus:outline-none"
               />
             </div>
 
@@ -142,7 +142,7 @@ export function SignupFormLegacy() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#1A1D1F] border border-gray-700 text-white placeholder:text-gray-600 rounded-xl h-12 px-4 pr-12 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] focus:ring-1 focus:outline-none"
+                  className="w-full bg-[#14171E] border border-gray-700 text-white placeholder:text-gray-600 rounded-xl h-12 px-4 pr-12 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] focus:ring-1 focus:outline-none"
                 />
                 <button
                   type="button"
@@ -173,7 +173,7 @@ export function SignupFormLegacy() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#1A1D1F] border border-gray-700 text-white placeholder:text-gray-600 rounded-xl h-12 px-4 pr-12 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] focus:ring-1 focus:outline-none"
+                  className="w-full bg-[#14171E] border border-gray-700 text-white placeholder:text-gray-600 rounded-xl h-12 px-4 pr-12 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] focus:ring-1 focus:outline-none"
                 />
                 <button
                   type="button"
@@ -194,13 +194,13 @@ export function SignupFormLegacy() {
                 <input
                   type="checkbox"
                   required
-                  className="w-4 h-4 rounded border-gray-700 bg-[#1A1D1F] text-[#C4FF0D] focus:ring-[#C4FF0D] mt-1"
+                  className="w-4 h-4 rounded border-gray-700 bg-[#14171E] text-[#8FD3FF] focus:ring-[#8FD3FF] mt-1"
                 />
-                <span className="text-sm text-[#A8B3B8]">
+                <span className="text-sm text-[#A8B2C1]">
                   I agree to the{' '}
-                  <a href="#" className="text-[#C4FF0D] hover:text-[#A3D60A]">Terms of Service</a>
+                  <a href="#" className="text-[#8FD3FF] hover:text-[#6FB8F2]">Terms of Service</a>
                   {' '}and{' '}
-                  <a href="#" className="text-[#C4FF0D] hover:text-[#A3D60A]">Privacy Policy</a>
+                  <a href="#" className="text-[#8FD3FF] hover:text-[#6FB8F2]">Privacy Policy</a>
                 </span>
               </label>
             </div>
@@ -208,46 +208,46 @@ export function SignupFormLegacy() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#C4FF0D] hover:bg-[#A3D60A] text-black font-bold h-12 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] font-bold h-12 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Processing...' : 'Create Account →'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-[#A8B3B8]">
+            <p className="text-sm text-[#A8B2C1]">
               Already have an account?{' '}
-              <Link to="/login" className="text-[#C4FF0D] hover:text-[#A3D60A] font-semibold">
+              <Link to="/login" className="text-[#8FD3FF] hover:text-[#6FB8F2] font-semibold">
                 Sign in
               </Link>
             </p>
           </div>
         </div>
 
-        <div className="mt-8 p-6 bg-[#252A2E]/50 border border-gray-800 rounded-2xl">
+        <div className="mt-8 p-6 bg-[#22262F]/50 border border-gray-800 rounded-2xl">
           <h3 className="font-bold text-white mb-4 text-center">What you get:</h3>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-[#C4FF0D] flex-shrink-0" />
-              <span className="text-sm text-[#A8B3B8]">14-day free trial, no credit card</span>
+              <CheckCircle2 className="h-5 w-5 text-[#8FD3FF] flex-shrink-0" />
+              <span className="text-sm text-[#A8B2C1]">14-day free trial, no credit card</span>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-[#C4FF0D] flex-shrink-0" />
-              <span className="text-sm text-[#A8B3B8]">Professional offer creation</span>
+              <CheckCircle2 className="h-5 w-5 text-[#8FD3FF] flex-shrink-0" />
+              <span className="text-sm text-[#A8B2C1]">Professional offer creation</span>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-[#C4FF0D] flex-shrink-0" />
-              <span className="text-sm text-[#A8B3B8]">Settlement tracking & analytics</span>
+              <CheckCircle2 className="h-5 w-5 text-[#8FD3FF] flex-shrink-0" />
+              <span className="text-sm text-[#A8B2C1]">Settlement tracking & analytics</span>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-[#C4FF0D] flex-shrink-0" />
-              <span className="text-sm text-[#A8B3B8]">Cancel anytime, no strings attached</span>
+              <CheckCircle2 className="h-5 w-5 text-[#8FD3FF] flex-shrink-0" />
+              <span className="text-sm text-[#A8B2C1]">Cancel anytime, no strings attached</span>
             </div>
           </div>
         </div>
 
         <div className="mt-8 text-center">
-          <Link to="/" className="text-sm text-[#A8B3B8] hover:text-[#C4FF0D]">
+          <Link to="/" className="text-sm text-[#A8B2C1] hover:text-[#8FD3FF]">
             ← Back to homepage
           </Link>
         </div>

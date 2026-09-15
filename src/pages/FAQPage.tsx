@@ -11,20 +11,20 @@ interface FAQItemProps {
 
 function FAQItem({ question, answer, isOpen, onClick }: FAQItemProps) {
   return (
-    <div className="bg-[#1A1D1F] rounded-xl border border-gray-800 overflow-hidden hover:border-[#C4FF0D]/30 transition-colors">
+    <div className="bg-[#14171E] rounded-xl border border-gray-800 overflow-hidden hover:border-[#8FD3FF]/30 transition-colors">
       <button
         onClick={onClick}
         className="w-full px-6 py-5 flex items-center justify-between text-left"
       >
         <h3 className="text-lg font-semibold text-white pr-4">{question}</h3>
         <ChevronDown
-          className={`h-5 w-5 text-[#C4FF0D] flex-shrink-0 transition-transform ${
+          className={`h-5 w-5 text-[#8FD3FF] flex-shrink-0 transition-transform ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
       </button>
       {isOpen && (
-        <div className="px-6 pb-5 text-[#A8B3B8]">
+        <div className="px-6 pb-5 text-[#A8B2C1]">
           <p>{answer}</p>
         </div>
       )}
@@ -139,11 +139,11 @@ export default function FAQPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0F1113]">
+    <div className="min-h-screen bg-[#1140F0]">
       <div className="max-w-4xl mx-auto px-6 py-12">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-[#C4FF0D] hover:text-[#A3D60A] transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-[#8FD3FF] hover:text-[#6FB8F2] transition-colors mb-8"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Home
@@ -153,7 +153,7 @@ export default function FAQPage() {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Frequently Asked Questions
           </h1>
-          <p className="text-lg text-[#A8B3B8]">
+          <p className="text-lg text-[#A8B2C1]">
             Everything you need to know about PROMTP
           </p>
         </div>
@@ -170,14 +170,14 @@ export default function FAQPage() {
           ))}
         </div>
 
-        <div className="mt-12 p-8 bg-gradient-to-br from-[#1A1D1F] to-[#252A2E] rounded-2xl border border-[#C4FF0D]/30 text-center">
+        <div className="mt-12 p-8 bg-gradient-to-br from-[#14171E] to-[#22262F] rounded-2xl border border-[#8FD3FF]/30 text-center">
           <h2 className="text-2xl font-bold text-white mb-3">Still have questions?</h2>
-          <p className="text-[#A8B3B8] mb-6">
+          <p className="text-[#A8B2C1] mb-6">
             Can't find the answer you're looking for? Our support team is here to help.
           </p>
           <a
             href="mailto:support@promtp.com"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#C4FF0D] text-black font-semibold rounded-lg hover:bg-[#A3D60A] transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#8FD3FF] text-[#04214D] font-semibold rounded-lg hover:bg-[#6FB8F2] transition-colors"
           >
             Contact Support
           </a>

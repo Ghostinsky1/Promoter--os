@@ -36,7 +36,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1113] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#1140F0] flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
@@ -47,10 +47,10 @@ export function LoginForm() {
             />
             <span className="text-3xl font-bold text-white">PROMTP</span>
           </div>
-          <p className="text-[#A8B3B8]">Welcome back! Sign in to your account</p>
+          <p className="text-[#A8B2C1]">Welcome back! Sign in to your account</p>
         </div>
 
-        <div className="bg-[#252A2E] border border-gray-800 rounded-2xl p-8">
+        <div className="bg-[#22262F] border border-gray-800 rounded-2xl p-8">
           <h2 className="text-2xl font-bold text-white mb-6">Sign In</h2>
 
           {message && (
@@ -58,7 +58,7 @@ export function LoginForm() {
               className={`rounded-xl p-4 mb-6 ${
                 message.type === 'error'
                   ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                  : 'bg-[#C4FF0D]/10 text-[#C4FF0D] border border-[#C4FF0D]/20'
+                  : 'bg-[#8FD3FF]/10 text-[#8FD3FF] border border-[#8FD3FF]/20'
               }`}
             >
               {message.text}
@@ -79,7 +79,7 @@ export function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="w-full bg-[#1A1D1F] border-gray-700 text-white placeholder:text-gray-600 rounded-xl h-12 px-4 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] focus:ring-1 focus:outline-none"
+                className="w-full bg-[#14171E] border-gray-700 text-white placeholder:text-gray-600 rounded-xl h-12 px-4 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] focus:ring-1 focus:outline-none"
               />
             </div>
 
@@ -97,7 +97,7 @@ export function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#1A1D1F] border border-gray-700 text-white placeholder:text-gray-600 rounded-xl h-12 px-4 pr-12 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] focus:ring-1 focus:outline-none"
+                  className="w-full bg-[#14171E] border border-gray-700 text-white placeholder:text-gray-600 rounded-xl h-12 px-4 pr-12 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] focus:ring-1 focus:outline-none"
                 />
                 <button
                   type="button"
@@ -117,11 +117,11 @@ export function LoginForm() {
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 rounded border-gray-700 bg-[#1A1D1F] text-[#C4FF0D] focus:ring-[#C4FF0D]"
+                  className="w-4 h-4 rounded border-gray-700 bg-[#14171E] text-[#8FD3FF] focus:ring-[#8FD3FF]"
                 />
-                <span className="text-sm text-[#A8B3B8]">Remember me</span>
+                <span className="text-sm text-[#A8B2C1]">Remember me</span>
               </label>
-              <a href="#" className="text-sm text-[#C4FF0D] hover:text-[#A3D60A]">
+              <a href="#" className="text-sm text-[#8FD3FF] hover:text-[#6FB8F2]">
                 Forgot password?
               </a>
             </div>
@@ -129,16 +129,16 @@ export function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#C4FF0D] hover:bg-[#A3D60A] text-black font-bold h-12 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] font-bold h-12 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Signing in...' : 'Sign In →'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-[#A8B3B8]">
+            <p className="text-sm text-[#A8B2C1]">
               Don't have an account?{' '}
-              <Link to="/signup" className="text-[#C4FF0D] hover:text-[#A3D60A] font-semibold">
+              <Link to="/signup" className="text-[#8FD3FF] hover:text-[#6FB8F2] font-semibold">
                 Create one free
               </Link>
             </p>
@@ -146,7 +146,7 @@ export function LoginForm() {
         </div>
 
         <div className="mt-8 text-center">
-          <Link to="/" className="text-sm text-[#A8B3B8] hover:text-[#C4FF0D]">
+          <Link to="/" className="text-sm text-[#A8B2C1] hover:text-[#8FD3FF]">
             ← Back to homepage
           </Link>
         </div>

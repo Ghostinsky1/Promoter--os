@@ -3,24 +3,24 @@ import { Link } from 'react-router-dom';
 
 export default function SecurityPage() {
   return (
-    <div className="min-h-screen bg-[#0F1113]">
+    <div className="min-h-screen bg-[#1140F0]">
       <div className="max-w-4xl mx-auto px-6 py-12">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-[#C4FF0D] hover:text-[#A3D60A] transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-[#8FD3FF] hover:text-[#6FB8F2] transition-colors mb-8"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Home
         </Link>
 
         <div className="flex items-center gap-4 mb-8">
-          <div className="p-3 bg-[#C4FF0D]/10 rounded-xl">
-            <Shield className="h-8 w-8 text-[#C4FF0D]" />
+          <div className="p-3 bg-[#8FD3FF]/10 rounded-xl">
+            <Shield className="h-8 w-8 text-[#8FD3FF]" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white">Security</h1>
         </div>
 
-        <div className="prose prose-invert max-w-none space-y-8 text-[#A8B3B8]">
+        <div className="prose prose-invert max-w-none space-y-8 text-[#A8B2C1]">
           <section>
             <p className="text-lg">
               At PROMTP, security is our top priority. We implement industry-leading security
@@ -28,10 +28,10 @@ export default function SecurityPage() {
             </p>
           </section>
 
-          <section className="bg-[#1A1D1F] rounded-2xl p-8 border border-gray-800">
+          <section className="bg-[#14171E] rounded-2xl p-8 border border-gray-800">
             <div className="flex items-start gap-4 mb-4">
-              <div className="p-2 bg-[#C4FF0D]/10 rounded-lg">
-                <Lock className="h-6 w-6 text-[#C4FF0D]" />
+              <div className="p-2 bg-[#8FD3FF]/10 rounded-lg">
+                <Lock className="h-6 w-6 text-[#8FD3FF]" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white mb-3">Data Encryption</h2>
@@ -45,10 +45,10 @@ export default function SecurityPage() {
             </div>
           </section>
 
-          <section className="bg-[#1A1D1F] rounded-2xl p-8 border border-gray-800">
+          <section className="bg-[#14171E] rounded-2xl p-8 border border-gray-800">
             <div className="flex items-start gap-4 mb-4">
-              <div className="p-2 bg-[#C4FF0D]/10 rounded-lg">
-                <Key className="h-6 w-6 text-[#C4FF0D]" />
+              <div className="p-2 bg-[#8FD3FF]/10 rounded-lg">
+                <Key className="h-6 w-6 text-[#8FD3FF]" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white mb-3">Authentication & Access Control</h2>
@@ -66,10 +66,10 @@ export default function SecurityPage() {
             </div>
           </section>
 
-          <section className="bg-[#1A1D1F] rounded-2xl p-8 border border-gray-800">
+          <section className="bg-[#14171E] rounded-2xl p-8 border border-gray-800">
             <div className="flex items-start gap-4 mb-4">
-              <div className="p-2 bg-[#C4FF0D]/10 rounded-lg">
-                <Database className="h-6 w-6 text-[#C4FF0D]" />
+              <div className="p-2 bg-[#8FD3FF]/10 rounded-lg">
+                <Database className="h-6 w-6 text-[#8FD3FF]" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white mb-3">Database Security</h2>
@@ -87,10 +87,10 @@ export default function SecurityPage() {
             </div>
           </section>
 
-          <section className="bg-[#1A1D1F] rounded-2xl p-8 border border-gray-800">
+          <section className="bg-[#14171E] rounded-2xl p-8 border border-gray-800">
             <div className="flex items-start gap-4 mb-4">
-              <div className="p-2 bg-[#C4FF0D]/10 rounded-lg">
-                <Eye className="h-6 w-6 text-[#C4FF0D]" />
+              <div className="p-2 bg-[#8FD3FF]/10 rounded-lg">
+                <Eye className="h-6 w-6 text-[#8FD3FF]" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white mb-3">Privacy & Data Protection</h2>
@@ -108,10 +108,10 @@ export default function SecurityPage() {
             </div>
           </section>
 
-          <section className="bg-[#1A1D1F] rounded-2xl p-8 border border-gray-800">
+          <section className="bg-[#14171E] rounded-2xl p-8 border border-gray-800">
             <div className="flex items-start gap-4 mb-4">
-              <div className="p-2 bg-[#C4FF0D]/10 rounded-lg">
-                <Shield className="h-6 w-6 text-[#C4FF0D]" />
+              <div className="p-2 bg-[#8FD3FF]/10 rounded-lg">
+                <Shield className="h-6 w-6 text-[#8FD3FF]" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white mb-3">Application Security</h2>
@@ -130,10 +130,10 @@ export default function SecurityPage() {
             </div>
           </section>
 
-          <section className="bg-[#1A1D1F] rounded-2xl p-8 border border-gray-800">
+          <section className="bg-[#14171E] rounded-2xl p-8 border border-gray-800">
             <div className="flex items-start gap-4 mb-4">
-              <div className="p-2 bg-[#C4FF0D]/10 rounded-lg">
-                <AlertTriangle className="h-6 w-6 text-[#C4FF0D]" />
+              <div className="p-2 bg-[#8FD3FF]/10 rounded-lg">
+                <AlertTriangle className="h-6 w-6 text-[#8FD3FF]" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white mb-3">Incident Response</h2>
@@ -190,7 +190,7 @@ export default function SecurityPage() {
             </ul>
           </section>
 
-          <section className="bg-[#252A2E] rounded-2xl p-8 border border-[#C4FF0D]/30">
+          <section className="bg-[#22262F] rounded-2xl p-8 border border-[#8FD3FF]/30">
             <h2 className="text-2xl font-bold text-white mb-4">Report a Security Issue</h2>
             <p className="mb-4">
               If you discover a security vulnerability, please report it responsibly:

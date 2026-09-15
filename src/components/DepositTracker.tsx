@@ -85,15 +85,15 @@ export function DepositTracker({
   };
 
   return (
-    <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-4">
+    <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Wallet className="w-4 h-4 text-[#C4FF0D]" />
+          <Wallet className="w-4 h-4 text-[#8FD3FF]" />
           <h2 className="text-base font-bold text-white">Deposits</h2>
         </div>
         <button
           onClick={() => setAdding(!adding)}
-          className="text-xs text-[#C4FF0D] hover:text-[#A3D60A] flex items-center gap-1 transition-colors"
+          className="text-xs text-[#8FD3FF] hover:text-[#6FB8F2] flex items-center gap-1 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />Add
         </button>
@@ -115,7 +115,7 @@ export function DepositTracker({
       {showArtistSuggestion && (
         <button
           onClick={handleCreateFromArtist}
-          className="w-full mb-3 p-2.5 border border-dashed border-[#C4FF0D]/30 rounded-lg text-xs text-[#C4FF0D] hover:bg-[#C4FF0D]/5 transition-colors text-left flex items-center gap-2"
+          className="w-full mb-3 p-2.5 border border-dashed border-[#8FD3FF]/30 rounded-lg text-xs text-[#8FD3FF] hover:bg-[#8FD3FF]/5 transition-colors text-left flex items-center gap-2"
         >
           <DollarSign className="w-3.5 h-3.5 flex-shrink-0" />
           <span>Create deposit from artist deal ({formatCurrency(artistDepositAmount)})</span>
@@ -124,13 +124,13 @@ export function DepositTracker({
 
       {/* Add Inline Row */}
       {adding && (
-        <div className="mb-3 p-3 bg-[#141918] border border-[#2A3330] rounded-lg space-y-2">
+        <div className="mb-3 p-3 bg-[#0B0D12] border border-[#2A3040] rounded-lg space-y-2">
           <input
             type="text"
             value={newLabel}
             onChange={e => setNewLabel(e.target.value)}
             placeholder="Deposit label..."
-            className="w-full bg-[#1A2220] border border-[#2A3330] rounded-md px-2.5 py-1.5 text-xs text-white placeholder-gray-500 outline-none focus:border-[#C4FF0D]/50"
+            className="w-full bg-[#2A3040] border border-[#2A3040] rounded-md px-2.5 py-1.5 text-xs text-white placeholder-gray-500 outline-none focus:border-[#8FD3FF]/50"
             autoFocus
           />
           <div className="grid grid-cols-3 gap-2">
@@ -139,12 +139,12 @@ export function DepositTracker({
               value={newAmount}
               onChange={e => setNewAmount(e.target.value)}
               placeholder="Amount"
-              className="bg-[#1A2220] border border-[#2A3330] rounded-md px-2.5 py-1.5 text-xs text-white placeholder-gray-500 outline-none focus:border-[#C4FF0D]/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="bg-[#2A3040] border border-[#2A3040] rounded-md px-2.5 py-1.5 text-xs text-white placeholder-gray-500 outline-none focus:border-[#8FD3FF]/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
             <select
               value={newType}
               onChange={e => setNewType(e.target.value as OfferDeposit['related_type'])}
-              className="bg-[#1A2220] border border-[#2A3330] rounded-md px-2 py-1.5 text-xs text-gray-300 outline-none focus:border-[#C4FF0D]/50"
+              className="bg-[#2A3040] border border-[#2A3040] rounded-md px-2 py-1.5 text-xs text-gray-300 outline-none focus:border-[#8FD3FF]/50"
             >
               {RELATED_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
@@ -152,12 +152,12 @@ export function DepositTracker({
               type="date"
               value={newDueDate}
               onChange={e => setNewDueDate(e.target.value)}
-              className="bg-[#1A2220] border border-[#2A3330] rounded-md px-2 py-1.5 text-xs text-gray-300 outline-none focus:border-[#C4FF0D]/50"
+              className="bg-[#2A3040] border border-[#2A3040] rounded-md px-2 py-1.5 text-xs text-gray-300 outline-none focus:border-[#8FD3FF]/50"
             />
           </div>
           <div className="flex justify-end gap-2">
             <button onClick={() => setAdding(false)} className="px-3 py-1 text-xs text-gray-400 hover:text-white transition-colors">Cancel</button>
-            <button onClick={handleAdd} className="px-3 py-1 bg-[#C4FF0D] text-black text-xs font-bold rounded-md hover:bg-[#A3D60A] transition-colors">Add</button>
+            <button onClick={handleAdd} className="px-3 py-1 bg-[#8FD3FF] text-[#04214D] text-xs font-bold rounded-md hover:bg-[#6FB8F2] transition-colors">Add</button>
           </div>
         </div>
       )}
@@ -169,7 +169,7 @@ export function DepositTracker({
         <div className="space-y-1">
           {deposits.map(dep => (
             <div key={dep.id} className="group">
-              <div className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-[#252A29]/60 transition-colors">
+              <div className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-[#22262F]/60 transition-colors">
                 <button
                   onClick={() => togglePaid(dep)}
                   className={`w-4 h-4 rounded flex-shrink-0 border transition-all flex items-center justify-center ${
@@ -206,7 +206,7 @@ export function DepositTracker({
                       if (expandedNote === dep.id) { setExpandedNote(null); setEditingNote(null); }
                       else { setExpandedNote(dep.id); setEditingNote({ id: dep.id, text: dep.note || '' }); }
                     }}
-                    className={`p-0.5 rounded hover:bg-[#252A29] transition-colors ${dep.note ? 'text-[#C4FF0D]' : 'text-gray-500'}`}
+                    className={`p-0.5 rounded hover:bg-[#22262F] transition-colors ${dep.note ? 'text-[#8FD3FF]' : 'text-gray-500'}`}
                   >
                     <StickyNote className="w-3 h-3" />
                   </button>
@@ -230,10 +230,10 @@ export function DepositTracker({
                     value={editingNote.text}
                     onChange={e => setEditingNote({ id: dep.id, text: e.target.value })}
                     placeholder="Add a note..."
-                    className="flex-1 bg-[#141918] border border-[#2A3330] rounded-md px-2 py-1 text-[10px] text-gray-300 outline-none focus:border-[#C4FF0D]/50"
+                    className="flex-1 bg-[#0B0D12] border border-[#2A3040] rounded-md px-2 py-1 text-[10px] text-gray-300 outline-none focus:border-[#8FD3FF]/50"
                     onKeyDown={e => { if (e.key === 'Enter') saveNote(dep.id); }}
                   />
-                  <button onClick={() => saveNote(dep.id)} className="px-2 py-1 bg-[#C4FF0D]/20 text-[#C4FF0D] text-[10px] rounded-md hover:bg-[#C4FF0D]/30 transition-colors">Save</button>
+                  <button onClick={() => saveNote(dep.id)} className="px-2 py-1 bg-[#8FD3FF]/20 text-[#8FD3FF] text-[10px] rounded-md hover:bg-[#8FD3FF]/30 transition-colors">Save</button>
                 </div>
               )}
             </div>

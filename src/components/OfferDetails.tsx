@@ -252,7 +252,7 @@ export function OfferDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F1413] flex items-center justify-center">
+      <div className="min-h-screen bg-[#1140F0] flex items-center justify-center">
         <div className="text-gray-400">Loading offer details...</div>
       </div>
     );
@@ -279,7 +279,7 @@ export function OfferDetails() {
   const indicator = getProfitIndicator(calc.netProfit, calc.netGross);
 
   return (
-    <div className="min-h-screen bg-[#0F1413]">
+    <div className="min-h-screen bg-[#1140F0]">
       <div className={`max-w-7xl mx-auto px-3 py-4 ${isDirty ? 'pb-24' : ''}`}>
         <div className="mb-4">
           <button
@@ -291,10 +291,10 @@ export function OfferDetails() {
           </button>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-            <button onClick={() => navigate(`/offers/${id}/analytics`)} className="bg-[#1A1F1E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#252A29] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
+            <button onClick={() => navigate(`/offers/${id}/analytics`)} className="bg-[#14171E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#22262F] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
               <BarChart3 className="h-5 w-5" /><span className="text-xs sm:text-base">Analytics</span>
             </button>
-            <button onClick={() => navigate(`/offers/${id}/run-of-show`)} className="bg-[#1A1F1E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#252A29] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
+            <button onClick={() => navigate(`/offers/${id}/run-of-show`)} className="bg-[#14171E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#22262F] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
               <Film className="h-5 w-5" /><span className="text-xs sm:text-base">Run of Show</span>
             </button>
             {(() => {
@@ -302,26 +302,26 @@ export function OfferDetails() {
               const today = new Date(); today.setHours(0, 0, 0, 0);
               return eventDate && eventDate < today;
             })() && (
-              <button onClick={() => navigate(`/offers/${id}/settlement`)} className="bg-[#1A1F1E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#252A29] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2 relative">
+              <button onClick={() => navigate(`/offers/${id}/settlement`)} className="bg-[#14171E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#22262F] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2 relative">
                 <Calculator className="h-5 w-5" />
                 <span className="text-xs sm:text-base">{offer.is_settled ? 'View Settlement' : 'Settle Event'}</span>
-                {offer.is_settled && <span className="absolute -top-1 -right-1 bg-[#C4FF0D] text-black text-xs px-2 py-0.5 rounded-full font-bold">✓</span>}
+                {offer.is_settled && <span className="absolute -top-1 -right-1 bg-[#8FD3FF] text-[#04214D] text-xs px-2 py-0.5 rounded-full font-bold">✓</span>}
               </button>
             )}
-            <button onClick={handlePreviewPDF} className="bg-[#1A1F1E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#252A29] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
+            <button onClick={handlePreviewPDF} className="bg-[#14171E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#22262F] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
               <Eye className="h-5 w-5" /><span className="text-xs sm:text-base">Preview</span>
             </button>
-            <button onClick={() => navigate(`/offers/${id}/edit`)} className="bg-[#1A1F1E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#252A29] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
+            <button onClick={() => navigate(`/offers/${id}/edit`)} className="bg-[#14171E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#22262F] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
               <Edit className="h-5 w-5" /><span className="text-xs sm:text-base">Edit</span>
             </button>
-            <button onClick={handleSaveAsTemplate} className="bg-[#1A1F1E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#252A29] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
+            <button onClick={handleSaveAsTemplate} className="bg-[#14171E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#22262F] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
               <Copy className="h-5 w-5" /><span className="text-xs sm:text-base">Template</span>
             </button>
           </div>
         </div>
 
         {/* Header Card */}
-        <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-4 mb-4">
+        <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4 mb-4">
           <div className="mb-4">
             <div className="flex items-start justify-between mb-2">
               <div>
@@ -330,10 +330,10 @@ export function OfferDetails() {
               </div>
               <div className="flex items-center gap-3">
                 <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer">
-                  <input type="checkbox" checked={costsOnly} onChange={(e) => setCostsOnly(e.target.checked)} className="w-4 h-4 text-[#C4FF0D] bg-[#252A29] border-gray-700 rounded focus:ring-2 focus:ring-[#C4FF0D]" />
+                  <input type="checkbox" checked={costsOnly} onChange={(e) => setCostsOnly(e.target.checked)} className="w-4 h-4 text-[#8FD3FF] bg-[#22262F] border-gray-700 rounded focus:ring-2 focus:ring-[#8FD3FF]" />
                   <span className="font-medium">Costs Only</span>
                 </label>
-                <button onClick={handleDownloadPDF} className="bg-[#C4FF0D] hover:bg-[#A3D60A] text-black px-4 py-2 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm">
+                <button onClick={handleDownloadPDF} className="bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] px-4 py-2 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm">
                   <FileDown className="h-4 w-4" />Download
                 </button>
               </div>
@@ -347,10 +347,10 @@ export function OfferDetails() {
               <div className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 flex-shrink-0" /><span>Capacity: {offer.show.capacity}</span></div>
             </div>
             <div className="flex flex-wrap gap-2 mt-3">
-              <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap ${offer.mode === 'estimate' ? 'bg-[#C4FF0D]/20 text-[#C4FF0D]' : 'bg-green-900/30 text-green-400'}`}>
+              <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap ${offer.mode === 'estimate' ? 'bg-[#8FD3FF]/20 text-[#8FD3FF]' : 'bg-green-900/30 text-green-400'}`}>
                 {offer.mode === 'estimate' ? 'Estimate' : 'Settlement'}
               </span>
-              <span className="text-xs px-2.5 py-0.5 rounded-full font-medium bg-[#252A29] text-gray-300 whitespace-nowrap">
+              <span className="text-xs px-2.5 py-0.5 rounded-full font-medium bg-[#22262F] text-gray-300 whitespace-nowrap">
                 {offer.deal_type === 'flat_guarantee' ? 'Flat Guarantee' : 'Promoter Profit Deal'}
               </span>
             </div>
@@ -358,11 +358,11 @@ export function OfferDetails() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="bg-[#252A29] rounded-xl p-3">
+            <div className="bg-[#22262F] rounded-xl p-3">
               <div className="text-xs text-gray-400 mb-1">Net Gross Potential</div>
               <div className="text-lg font-bold text-white">{formatCurrency(calc.netGross)}</div>
             </div>
-            <div className="bg-[#252A29] rounded-xl p-3">
+            <div className="bg-[#22262F] rounded-xl p-3">
               <div className="text-xs text-gray-400 mb-1">Artist Total Payout</div>
               <div className="text-lg font-bold text-white">{formatCurrency(calc.artistTotalPayout)}</div>
             </div>
@@ -374,7 +374,7 @@ export function OfferDetails() {
               <div className="text-xs text-gray-400 mb-1">Net Profit</div>
               <div className={`text-lg font-bold ${calc.netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatCurrency(calc.netProfit)}</div>
               <div className="mt-1 flex items-center gap-2">
-                <div className="flex-1 bg-[#252A29] rounded-full h-2 overflow-hidden">
+                <div className="flex-1 bg-[#22262F] rounded-full h-2 overflow-hidden">
                   <div className={`h-full ${indicator.meterColor} transition-all`} style={{ width: `${indicator.meterPercentage}%` }} />
                 </div>
                 <span className={`text-xs font-bold ${calc.netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -405,7 +405,7 @@ export function OfferDetails() {
         {/* Main Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Artist Deal */}
-          <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-4">
+          <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
             <h2 className="text-base font-bold text-white mb-3">Artist Deal</h2>
             <div className="space-y-2">
               <div className="flex justify-between items-center text-sm">
@@ -438,7 +438,7 @@ export function OfferDetails() {
           </div>
 
           {/* Ticket Scaling */}
-          <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-4">
+          <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
             <h2 className="text-base font-bold text-white mb-3">Ticket Scaling</h2>
             <div className="space-y-2">
               {tierStates.map((ts) => {
@@ -475,7 +475,7 @@ export function OfferDetails() {
           </div>
 
           {/* Fixed Expenses */}
-          <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-4">
+          <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
             <h2 className="text-base font-bold text-white mb-3">Fixed Expenses Breakdown</h2>
             <div className="space-y-3">
               {[
@@ -597,7 +597,7 @@ export function OfferDetails() {
           </div>
 
           {/* Variable Expenses */}
-          <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl px-4 pt-4 pb-2">
+          <div className="bg-[#14171E] border border-gray-800 rounded-2xl px-4 pt-4 pb-2">
             <h2 className="text-base font-bold text-white mb-3">Variable Expenses</h2>
             <div className="space-y-1.5">
               {(() => {
@@ -712,7 +712,7 @@ export function OfferDetails() {
           />
 
           {offer.mode === 'estimate' && offer.calculations.projections && (
-            <div className="md:col-span-2 bg-[#1A1F1E] border border-gray-800 rounded-2xl p-4">
+            <div className="md:col-span-2 bg-[#14171E] border border-gray-800 rounded-2xl p-4">
               <h2 className="text-base font-bold text-white mb-3">Capacity Projections</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {[
@@ -746,10 +746,10 @@ export function OfferDetails() {
           )}
 
           {/* Next Steps */}
-          <div className="md:col-span-2 bg-gradient-to-br from-[#C4FF0D]/10 to-green-500/10 border-2 border-[#C4FF0D]/30 rounded-2xl p-6">
+          <div className="md:col-span-2 bg-gradient-to-br from-[#8FD3FF]/10 to-green-500/10 border-2 border-[#8FD3FF]/30 rounded-2xl p-6">
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 bg-[#C4FF0D] rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-[#8FD3FF] rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-[#04214D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
@@ -765,18 +765,18 @@ export function OfferDetails() {
                 { num: 3, title: 'Track Ticket Sales', desc: 'Monitor progress against your projections and adjust marketing if needed.' },
                 { num: 4, title: 'Post-Show Settlement', desc: 'After the event, create a settlement to reconcile actual vs projected numbers.' },
               ].map(({ num, title, desc }) => (
-                <div key={num} className="bg-[#1A1F1E] border border-gray-700 rounded-xl p-4">
+                <div key={num} className="bg-[#14171E] border border-gray-700 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-6 h-6 bg-[#C4FF0D] rounded-lg flex items-center justify-center text-black font-bold text-xs">{num}</div>
+                    <div className="w-6 h-6 bg-[#8FD3FF] rounded-lg flex items-center justify-center text-[#04214D] font-bold text-xs">{num}</div>
                     <h4 className="font-semibold text-white text-sm">{title}</h4>
                   </div>
                   <p className="text-gray-400 text-xs">{desc}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-4 p-3 bg-[#1A1F1E] border border-gray-700 rounded-xl">
+            <div className="mt-4 p-3 bg-[#14171E] border border-gray-700 rounded-xl">
               <p className="text-gray-400 text-xs">
-                <span className="font-semibold text-[#C4FF0D]">Pro Tip:</span> Save this offer before making any changes. You can always edit it later if deal terms change.
+                <span className="font-semibold text-[#8FD3FF]">Pro Tip:</span> Save this offer before making any changes. You can always edit it later if deal terms change.
               </p>
             </div>
           </div>
@@ -787,7 +787,7 @@ export function OfferDetails() {
               <span className="font-mono">{showDebug ? '\u25BC' : '\u25B6'}</span>Live State Debug
             </button>
             {showDebug && state && (
-              <div className="mt-2 bg-[#0F1413] border border-gray-800 rounded-xl p-3 overflow-auto max-h-80">
+              <div className="mt-2 bg-[#1140F0] border border-gray-800 rounded-xl p-3 overflow-auto max-h-80">
                 <div className="font-mono text-[10px] text-gray-500 whitespace-pre">
                   {JSON.stringify({
                     grossRevenue: calc.grossPotential, netGross: calc.netGross,
@@ -810,17 +810,17 @@ export function OfferDetails() {
 
       {/* Floating Save Bar */}
       <div className={`fixed bottom-0 left-0 right-0 z-50 transition-all duration-300 ease-out ${isDirty ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
-        <div className="bg-[#1A1F1E]/95 backdrop-blur-lg border-t border-[#C4FF0D]/20 shadow-[0_-4px_30px_rgba(0,0,0,0.5)]">
+        <div className="bg-[#14171E]/95 backdrop-blur-lg border-t border-[#8FD3FF]/20 shadow-[0_-4px_30px_rgba(0,0,0,0.5)]">
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-2 h-2 rounded-full bg-[#C4FF0D] animate-pulse flex-shrink-0" />
+              <div className="w-2 h-2 rounded-full bg-[#8FD3FF] animate-pulse flex-shrink-0" />
               <span className="text-sm text-gray-300 truncate">Unsaved changes</span>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={resetToOriginal}
                 disabled={saving}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-[#252A29] border border-gray-700 transition-all flex items-center gap-2 disabled:opacity-50"
+                className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-[#22262F] border border-gray-700 transition-all flex items-center gap-2 disabled:opacity-50"
               >
                 <Undo2 className="w-3.5 h-3.5" />
                 Discard
@@ -831,7 +831,7 @@ export function OfferDetails() {
                 className={`px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
                   saveSuccess
                     ? 'bg-green-500 text-white'
-                    : 'bg-[#C4FF0D] hover:bg-[#A3D60A] text-black'
+                    : 'bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D]'
                 } disabled:opacity-70`}
               >
                 {saving ? (
@@ -855,20 +855,20 @@ export function OfferDetails() {
 }
 
 function DealScoreCard({ dealScore }: { dealScore: number | null }) {
-  const bg = dealScore === null ? 'bg-[#252A29]' :
+  const bg = dealScore === null ? 'bg-[#22262F]' :
     dealScore >= 80 ? 'bg-green-900/20 border border-green-800/30' :
-    dealScore >= 60 ? 'bg-[#C4FF0D]/10 border border-[#C4FF0D]/30' :
+    dealScore >= 60 ? 'bg-[#8FD3FF]/10 border border-[#8FD3FF]/30' :
     dealScore >= 40 ? 'bg-yellow-900/20 border border-yellow-800/30' : 'bg-red-900/20 border border-red-800/30';
   const iconColor = dealScore === null ? 'text-gray-400' :
-    dealScore >= 80 ? 'text-green-400' : dealScore >= 60 ? 'text-[#C4FF0D]' :
+    dealScore >= 80 ? 'text-green-400' : dealScore >= 60 ? 'text-[#8FD3FF]' :
     dealScore >= 40 ? 'text-yellow-400' : 'text-red-400';
-  const badgeBg = dealScore === null ? 'bg-[#252A29] text-gray-400' :
-    dealScore >= 80 ? 'bg-green-900/50 text-green-300' : dealScore >= 60 ? 'bg-[#C4FF0D]/20 text-[#C4FF0D]' :
+  const badgeBg = dealScore === null ? 'bg-[#22262F] text-gray-400' :
+    dealScore >= 80 ? 'bg-green-900/50 text-green-300' : dealScore >= 60 ? 'bg-[#8FD3FF]/20 text-[#8FD3FF]' :
     dealScore >= 40 ? 'bg-yellow-900/50 text-yellow-300' : 'bg-red-900/50 text-red-300';
   const badgeText = dealScore === null ? 'Calculating...' : dealScore >= 80 ? 'STRONG BUY' :
     dealScore >= 60 ? 'PROCEED' : dealScore >= 40 ? 'CAUTION' : 'PASS';
   const barColor = dealScore === null ? 'bg-gray-600' : dealScore >= 80 ? 'bg-green-500' :
-    dealScore >= 60 ? 'bg-[#C4FF0D]' : dealScore >= 40 ? 'bg-yellow-500' : 'bg-red-500';
+    dealScore >= 60 ? 'bg-[#8FD3FF]' : dealScore >= 40 ? 'bg-yellow-500' : 'bg-red-500';
 
   return (
     <div className={`rounded-xl p-3 ${bg}`}>
@@ -879,7 +879,7 @@ function DealScoreCard({ dealScore }: { dealScore: number | null }) {
       <div className="text-xs text-gray-400 mb-1">AI Deal Score</div>
       <div className={`text-lg font-bold ${iconColor}`}>{dealScore === null ? '\u2014' : `${dealScore}/100`}</div>
       <div className="mt-2">
-        <div className="w-full bg-[#252A29] rounded-full h-2 overflow-hidden">
+        <div className="w-full bg-[#22262F] rounded-full h-2 overflow-hidden">
           <div className={`h-full transition-all ${barColor}`} style={{ width: dealScore === null ? '0%' : `${dealScore}%` }} />
         </div>
       </div>

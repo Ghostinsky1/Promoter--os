@@ -107,8 +107,8 @@ export function SignupWithOrganization() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1113] flex items-center justify-center p-6">
-      <div className="bg-[#1A1D1F] border border-gray-800 rounded-3xl p-8 max-w-md w-full">
+    <div className="min-h-screen bg-[#1140F0] flex items-center justify-center p-6">
+      <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-8 max-w-md w-full">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
             <img
@@ -135,7 +135,7 @@ export function SignupWithOrganization() {
             <input
               type="text"
               placeholder="Your Company Name"
-              className="w-full bg-[#141716] border border-gray-700 text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-[#C4FF0D]"
+              className="w-full bg-[#0B0D12] border border-gray-700 text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-[#8FD3FF]"
               value={formData.organizationName}
               onChange={(e) => setFormData({ ...formData, organizationName: e.target.value })}
               required
@@ -149,7 +149,7 @@ export function SignupWithOrganization() {
             <input
               type="text"
               placeholder="John Doe"
-              className="w-full bg-[#141716] border border-gray-700 text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-[#C4FF0D]"
+              className="w-full bg-[#0B0D12] border border-gray-700 text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-[#8FD3FF]"
               value={formData.fullName}
               onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
               required
@@ -163,7 +163,7 @@ export function SignupWithOrganization() {
             <input
               type="email"
               placeholder="you@company.com"
-              className="w-full bg-[#141716] border border-gray-700 text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-[#C4FF0D]"
+              className="w-full bg-[#0B0D12] border border-gray-700 text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-[#8FD3FF]"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
@@ -177,7 +177,7 @@ export function SignupWithOrganization() {
             <input
               type="password"
               placeholder="••••••••"
-              className="w-full bg-[#141716] border border-gray-700 text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-[#C4FF0D]"
+              className="w-full bg-[#0B0D12] border border-gray-700 text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-[#8FD3FF]"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
@@ -192,7 +192,7 @@ export function SignupWithOrganization() {
             <input
               type="password"
               placeholder="••••••••"
-              className="w-full bg-[#141716] border border-gray-700 text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-[#C4FF0D]"
+              className="w-full bg-[#0B0D12] border border-gray-700 text-white rounded-2xl px-4 py-3 focus:outline-none focus:border-[#8FD3FF]"
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               required
@@ -203,7 +203,7 @@ export function SignupWithOrganization() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#C4FF0D] text-black hover:bg-[#A3D60A] rounded-2xl py-4 font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] rounded-2xl py-4 font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating Account...' : 'Continue to Plan Selection →'}
           </button>
@@ -212,7 +212,7 @@ export function SignupWithOrganization() {
         <div className="mt-6 text-center">
           <p className="text-gray-400 text-sm">
             Already have an account?{' '}
-            <a href="/login" className="text-[#C4FF0D] hover:text-[#A3D60A] font-semibold">
+            <a href="/login" className="text-[#8FD3FF] hover:text-[#6FB8F2] font-semibold">
               Sign in
             </a>
           </p>

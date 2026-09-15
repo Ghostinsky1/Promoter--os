@@ -11,7 +11,7 @@ export function UpgradePrompt({ message, onClose }: UpgradePromptProps) {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#1A1D1F] border border-gray-800 rounded-3xl p-8 max-w-md w-full relative">
+      <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-8 max-w-md w-full relative">
         {onClose && (
           <button
             onClick={onClose}
@@ -21,8 +21,8 @@ export function UpgradePrompt({ message, onClose }: UpgradePromptProps) {
           </button>
         )}
 
-        <div className="w-16 h-16 bg-gradient-to-br from-[#C4FF0D] to-[#A3D60A] rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <Sparkles className="h-8 w-8 text-black" />
+        <div className="w-16 h-16 bg-gradient-to-br from-[#8FD3FF] to-[#6FB8F2] rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <Sparkles className="h-8 w-8 text-[#04214D]" />
         </div>
 
         <h3 className="text-2xl font-bold text-white mb-3 text-center">
@@ -39,7 +39,7 @@ export function UpgradePrompt({ message, onClose }: UpgradePromptProps) {
               navigate('/pricing');
               onClose?.();
             }}
-            className="w-full bg-[#C4FF0D] text-black hover:bg-[#A3D60A] px-6 py-4 rounded-2xl font-bold transition-colors inline-flex items-center justify-center gap-2"
+            className="w-full bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] px-6 py-4 rounded-2xl font-bold transition-colors inline-flex items-center justify-center gap-2"
           >
             View Upgrade Options <ArrowRight className="h-5 w-5" />
           </button>
@@ -47,7 +47,7 @@ export function UpgradePrompt({ message, onClose }: UpgradePromptProps) {
           {onClose && (
             <button
               onClick={onClose}
-              className="w-full border-2 border-gray-700 text-white hover:bg-[#252A2E] px-6 py-4 rounded-2xl font-semibold transition-colors"
+              className="w-full border-2 border-gray-700 text-white hover:bg-[#22262F] px-6 py-4 rounded-2xl font-semibold transition-colors"
             >
               Maybe Later
             </button>

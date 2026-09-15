@@ -87,7 +87,7 @@ export function EventDetailsTab({
           value={eventName || ''}
           onChange={(e) => setEventName(e.target.value)}
           placeholder="e.g., Summer Festival 2024, Holiday Show (optional)"
-          className="w-full bg-[#141716] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-6 text-lg focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+          className="w-full bg-[#0B0D12] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-6 text-lg focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
         />
         <p className="text-gray-500 text-sm mt-2">
           Optional - Give this event a custom name for easy identification
@@ -104,7 +104,7 @@ export function EventDetailsTab({
             value={artistName || ''}
             onChange={(e) => setArtistName(e.target.value)}
             placeholder="Enter artist name"
-            className="w-full bg-[#141716] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-6 text-lg focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+            className="w-full bg-[#0B0D12] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-6 text-lg focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
             required
           />
         </div>
@@ -118,7 +118,7 @@ export function EventDetailsTab({
             value={venueName || ''}
             onChange={(e) => setVenueName(e.target.value)}
             placeholder="Enter venue name"
-            className="w-full bg-[#141716] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-6 text-lg focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+            className="w-full bg-[#0B0D12] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-6 text-lg focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
             required
           />
         </div>
@@ -134,7 +134,7 @@ export function EventDetailsTab({
               type="date"
               value={eventDate || ''}
               onChange={(e) => setEventDate(e.target.value)}
-              className="w-full bg-[#141716] border-gray-700 text-white rounded-2xl px-4 py-6 text-lg focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+              className="w-full bg-[#0B0D12] border-gray-700 text-white rounded-2xl px-4 py-6 text-lg focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
               required
             />
             <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none" />
@@ -151,7 +151,7 @@ export function EventDetailsTab({
             onChange={(e) => setCapacity(Number(e.target.value))}
             placeholder="0"
             min="0"
-            className="w-full bg-[#141716] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-6 text-lg focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+            className="w-full bg-[#0B0D12] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-6 text-lg focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
             required
           />
         </div>
@@ -166,7 +166,7 @@ export function EventDetailsTab({
           value={venueStreet || ''}
           onChange={(e) => setVenueStreet(e.target.value)}
           placeholder="Street Address"
-          className="w-full bg-[#141716] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-6 text-lg focus:border-[#C4FF0D] focus:ring-[#C4FF0D] mb-4 border"
+          className="w-full bg-[#0B0D12] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-6 text-lg focus:border-[#8FD3FF] focus:ring-[#8FD3FF] mb-4 border"
           required
         />
         <div className="grid grid-cols-3 gap-4">
@@ -175,25 +175,25 @@ export function EventDetailsTab({
             value={venueCity || ''}
             onChange={(e) => setVenueCity(e.target.value)}
             placeholder="City"
-            className="bg-[#141716] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-4 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+            className="bg-[#0B0D12] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-4 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
           />
           <input
             type="text"
             value={venueState || ''}
             onChange={(e) => setVenueState(e.target.value)}
             placeholder="State"
-            className="bg-[#141716] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-4 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+            className="bg-[#0B0D12] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-4 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
           />
           <input
             type="text"
             value={venueZip || ''}
             onChange={(e) => setVenueZip(e.target.value)}
             placeholder="ZIP"
-            className="bg-[#141716] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-4 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+            className="bg-[#0B0D12] border-gray-700 text-white placeholder:text-gray-600 rounded-2xl px-4 py-4 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
           />
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-400 bg-[#C4FF0D]/10 border border-[#C4FF0D]/30 rounded-2xl p-4 mt-4">
-          <MapPin className="h-4 w-4 flex-shrink-0 text-[#C4FF0D]" />
+        <div className="flex items-center gap-2 text-sm text-gray-400 bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 rounded-2xl p-4 mt-4">
+          <MapPin className="h-4 w-4 flex-shrink-0 text-[#8FD3FF]" />
           <span>This address will appear on offer PDFs and Run of Show documents</span>
         </div>
       </div>
@@ -210,7 +210,7 @@ export function EventDetailsTab({
               step="0.50"
               value={facilityFeePerTicket}
               onChange={(e) => setFacilityFeePerTicket(parseFloat(e.target.value))}
-              className="flex-1 bg-[#141716] border-gray-700 text-white rounded-2xl px-4 py-4 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+              className="flex-1 bg-[#0B0D12] border-gray-700 text-white rounded-2xl px-4 py-4 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
             />
           </div>
           <p className="text-xs text-gray-500 mt-2">Standard: $1.50-$3.00</p>
@@ -223,16 +223,16 @@ export function EventDetailsTab({
           <select
             value={ageLimit}
             onChange={(e) => setAgeLimit(e.target.value)}
-            className="w-full bg-[#141716] border-gray-700 text-white rounded-2xl px-4 py-4 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+            className="w-full bg-[#0B0D12] border-gray-700 text-white rounded-2xl px-4 py-4 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
           >
-            <option value="All Ages" className="bg-[#1A1F1E]">All Ages</option>
-            <option value="18+" className="bg-[#1A1F1E]">18+</option>
-            <option value="21+" className="bg-[#1A1F1E]">21+</option>
+            <option value="All Ages" className="bg-[#14171E]">All Ages</option>
+            <option value="18+" className="bg-[#14171E]">18+</option>
+            <option value="21+" className="bg-[#14171E]">21+</option>
           </select>
         </div>
       </div>
 
-      <div className="bg-[#141716] border border-gray-700 rounded-2xl p-6">
+      <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-6">
         <h3 className="text-xl font-bold text-white mb-4">Show Schedule</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -241,7 +241,7 @@ export function EventDetailsTab({
               type="time"
               value={doorsTime}
               onChange={(e) => setDoorsTime(e.target.value)}
-              className="w-full bg-[#1A1F1E] border-gray-600 text-white rounded-xl px-4 py-3 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+              className="w-full bg-[#14171E] border-gray-600 text-white rounded-xl px-4 py-3 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
             />
           </div>
           <div>
@@ -250,7 +250,7 @@ export function EventDetailsTab({
               type="number"
               value={doorsDuration}
               onChange={(e) => setDoorsDuration(parseInt(e.target.value))}
-              className="w-full bg-[#1A1F1E] border-gray-600 text-white rounded-xl px-4 py-3 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+              className="w-full bg-[#14171E] border-gray-600 text-white rounded-xl px-4 py-3 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
             />
           </div>
           <div>
@@ -259,7 +259,7 @@ export function EventDetailsTab({
               type="time"
               value={showTime}
               onChange={(e) => setShowTime(e.target.value)}
-              className="w-full bg-[#1A1F1E] border-gray-600 text-white rounded-xl px-4 py-3 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+              className="w-full bg-[#14171E] border-gray-600 text-white rounded-xl px-4 py-3 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
             />
           </div>
           <div>
@@ -268,7 +268,7 @@ export function EventDetailsTab({
               type="number"
               value={showDuration}
               onChange={(e) => setShowDuration(parseInt(e.target.value))}
-              className="w-full bg-[#1A1F1E] border-gray-600 text-white rounded-xl px-4 py-3 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+              className="w-full bg-[#14171E] border-gray-600 text-white rounded-xl px-4 py-3 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
             />
           </div>
           <div>
@@ -277,17 +277,17 @@ export function EventDetailsTab({
               type="time"
               value={curfewTime}
               onChange={(e) => setCurfewTime(e.target.value)}
-              className="w-full bg-[#1A1F1E] border-gray-600 text-white rounded-xl px-4 py-3 focus:border-[#C4FF0D] focus:ring-[#C4FF0D] border"
+              className="w-full bg-[#14171E] border-gray-600 text-white rounded-xl px-4 py-3 focus:border-[#8FD3FF] focus:ring-[#8FD3FF] border"
             />
           </div>
         </div>
       </div>
 
-      <div className="bg-[#C4FF0D]/10 border border-[#C4FF0D]/30 rounded-2xl p-4">
+      <div className="bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 rounded-2xl p-4">
         <div className="flex items-center gap-3">
-          <Info className="h-5 w-5 text-[#C4FF0D] flex-shrink-0" />
+          <Info className="h-5 w-5 text-[#8FD3FF] flex-shrink-0" />
           <p className="text-sm text-gray-300">
-            <span className="font-semibold text-[#C4FF0D]">Mode:</span> {mode === 'estimate' ? 'Estimate (Pre-Show)' : 'Settlement (Post-Show)'}
+            <span className="font-semibold text-[#8FD3FF]">Mode:</span> {mode === 'estimate' ? 'Estimate (Pre-Show)' : 'Settlement (Post-Show)'}
           </p>
         </div>
       </div>

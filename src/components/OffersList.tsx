@@ -25,9 +25,9 @@ const STATUS_CONFIG: Record<OfferStatus, { label: string; icon: any; color: stri
   confirmed: {
     label: 'Confirmed',
     icon: CheckCircle,
-    color: 'text-[#C4FF0D]',
-    bgColor: 'bg-[#C4FF0D]/10',
-    borderColor: 'border-[#C4FF0D]/30'
+    color: 'text-[#8FD3FF]',
+    bgColor: 'bg-[#8FD3FF]/10',
+    borderColor: 'border-[#8FD3FF]/30'
   },
   active: {
     label: 'Active',
@@ -294,14 +294,14 @@ export function OffersList() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F1113] flex items-center justify-center">
+      <div className="min-h-screen bg-[#1140F0] flex items-center justify-center">
         <div className="text-gray-400">Loading offers...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0F1113] p-6">
+    <div className="min-h-screen bg-[#1140F0] p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
@@ -314,8 +314,8 @@ export function OffersList() {
               onClick={() => handleViewChange('list')}
               className={`px-3 sm:px-6 py-2 sm:py-3 rounded-2xl font-semibold transition-all flex items-center gap-2 ${
                 viewMode === 'list'
-                  ? 'bg-[#C4FF0D] text-black'
-                  : 'bg-[#1A1D1F] border border-gray-800 text-gray-400 hover:text-white hover:bg-[#252A2E]'
+                  ? 'bg-[#8FD3FF] text-[#04214D]'
+                  : 'bg-[#14171E] border border-gray-800 text-gray-400 hover:text-white hover:bg-[#22262F]'
               }`}
             >
               <LayoutGrid className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -325,8 +325,8 @@ export function OffersList() {
               onClick={() => handleViewChange('calendar')}
               className={`px-3 sm:px-6 py-2 sm:py-3 rounded-2xl font-semibold transition-all flex items-center gap-2 ${
                 viewMode === 'calendar'
-                  ? 'bg-[#C4FF0D] text-black'
-                  : 'bg-[#1A1D1F] border border-gray-800 text-gray-400 hover:text-white hover:bg-[#252A2E]'
+                  ? 'bg-[#8FD3FF] text-[#04214D]'
+                  : 'bg-[#14171E] border border-gray-800 text-gray-400 hover:text-white hover:bg-[#22262F]'
               }`}
             >
               <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -335,7 +335,7 @@ export function OffersList() {
 
             <button
               onClick={() => navigate('/offers/create')}
-              className="bg-[#C4FF0D] text-black hover:bg-[#A3D60A] rounded-2xl px-4 sm:px-8 py-2 sm:py-3 font-bold transition-colors flex items-center gap-2 whitespace-nowrap"
+              className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] rounded-2xl px-4 sm:px-8 py-2 sm:py-3 font-bold transition-colors flex items-center gap-2 whitespace-nowrap"
             >
               <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="hidden sm:inline">Create Offer</span>
@@ -356,7 +356,7 @@ export function OffersList() {
                   placeholder="Search by artist or venue..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-6 bg-[#1A1D1F] border border-gray-800 text-white placeholder:text-gray-500 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                  className="w-full pl-12 pr-4 py-6 bg-[#14171E] border border-gray-800 text-white placeholder:text-gray-500 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                 />
               </div>
             </div>
@@ -367,8 +367,8 @@ export function OffersList() {
                   onClick={() => setSelectedStatus('all')}
                   className={`flex-shrink-0 px-6 py-2 rounded-full font-bold whitespace-nowrap transition-colors ${
                     selectedStatus === 'all'
-                      ? 'bg-[#C4FF0D] text-black'
-                      : 'bg-[#1A1D1F] border border-gray-800 text-gray-400 hover:text-white hover:bg-[#252A2E]'
+                      ? 'bg-[#8FD3FF] text-[#04214D]'
+                      : 'bg-[#14171E] border border-gray-800 text-gray-400 hover:text-white hover:bg-[#22262F]'
                   }`}
                 >
                   All ({offers.length})
@@ -384,8 +384,8 @@ export function OffersList() {
                       onClick={() => setSelectedStatus(status)}
                       className={`flex-shrink-0 px-6 py-2 rounded-full font-semibold whitespace-nowrap transition-colors flex items-center gap-2 ${
                         selectedStatus === status
-                          ? 'bg-[#C4FF0D] text-black'
-                          : 'bg-[#1A1D1F] border border-gray-800 text-gray-400 hover:text-white hover:bg-[#252A2E]'
+                          ? 'bg-[#8FD3FF] text-[#04214D]'
+                          : 'bg-[#14171E] border border-gray-800 text-gray-400 hover:text-white hover:bg-[#22262F]'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -397,14 +397,14 @@ export function OffersList() {
             </div>
 
             {selectedStatus !== 'all' && (
-              <div className="h-1 bg-[#C4FF0D] rounded-full mb-8"></div>
+              <div className="h-1 bg-[#8FD3FF] rounded-full mb-8"></div>
             )}
 
             {filteredOffers.length === 0 ? (
-              <div className="bg-[#1A1D1F] border border-gray-800 rounded-3xl p-16 text-center">
+              <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-16 text-center">
                 <div className="max-w-md mx-auto">
-                  <div className="w-20 h-20 bg-[#C4FF0D]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <FileText className="h-10 w-10 text-[#C4FF0D]" />
+                  <div className="w-20 h-20 bg-[#8FD3FF]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <FileText className="h-10 w-10 text-[#8FD3FF]" />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-3">
                     {searchQuery || selectedStatus !== 'all' ? 'No offers found' : 'No offers yet'}
@@ -417,7 +417,7 @@ export function OffersList() {
                   {!searchQuery && selectedStatus === 'all' && (
                     <button
                       onClick={() => navigate('/offers/create')}
-                      className="bg-[#C4FF0D] text-black hover:bg-[#A3D60A] rounded-2xl px-8 py-3 font-bold transition-colors inline-flex items-center gap-2"
+                      className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] rounded-2xl px-8 py-3 font-bold transition-colors inline-flex items-center gap-2"
                     >
                       <Plus className="w-5 h-5" />
                       Create Your First Offer
@@ -461,15 +461,15 @@ export function OffersList() {
                   return (
                     <div
                       key={offer.id}
-                      className={`relative rounded-3xl p-6 transition-all cursor-pointer group bg-[#1A1D1F] border border-gray-800 hover:border-[#C4FF0D]/50 hover:shadow-lg ${
+                      className={`relative rounded-3xl p-6 transition-all cursor-pointer group bg-[#14171E] border border-gray-800 hover:border-[#8FD3FF]/50 hover:shadow-lg ${
                         isCancelled ? 'opacity-40 hover:opacity-60' : ''
                       }`}
                       onClick={() => navigate(`/offers/${offer.id}`)}
                     >
                       <div className="flex items-start justify-between mb-6 pb-6 border-b border-gray-800">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-[#C4FF0D]/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <Music className="h-6 w-6 text-[#C4FF0D]" />
+                          <div className="w-12 h-12 bg-[#8FD3FF]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <Music className="h-6 w-6 text-[#8FD3FF]" />
                           </div>
                           <div>
                             <h3 className="text-white font-bold text-xl mb-1">
@@ -503,7 +503,7 @@ export function OffersList() {
                       </div>
 
                       <div className="space-y-4">
-                        <div className="bg-[#252A2E] rounded-xl p-4 border border-gray-800">
+                        <div className="bg-[#22262F] rounded-xl p-4 border border-gray-800">
                           <div className="grid grid-cols-3 gap-4">
                             <div>
                               <p className="text-xs text-gray-400 mb-1">Deal Type</p>
@@ -527,13 +527,13 @@ export function OffersList() {
                         </div>
 
                         {offer.deal_type === 'flat_fee' && offer.guarantee > 0 && (
-                          <div className="bg-gradient-to-br from-[#C4FF0D]/20 to-[#C4FF0D]/10 rounded-xl p-4 border border-[#C4FF0D]/30">
-                            <p className="text-xs text-[#C4FF0D] font-bold mb-1">GUARANTEE AMOUNT</p>
+                          <div className="bg-gradient-to-br from-[#8FD3FF]/20 to-[#8FD3FF]/10 rounded-xl p-4 border border-[#8FD3FF]/30">
+                            <p className="text-xs text-[#8FD3FF] font-bold mb-1">GUARANTEE AMOUNT</p>
                             <p className="text-2xl font-bold text-white">{formatCurrency(offer.guarantee)}</p>
                           </div>
                         )}
 
-                        <div className="bg-[#252A2E] rounded-xl p-4 border border-gray-800">
+                        <div className="bg-[#22262F] rounded-xl p-4 border border-gray-800">
                           <p className="text-xs text-gray-400 font-bold mb-3">PAYMENT SCHEDULE</p>
                           <div className="space-y-2.5">
                             {hasDeposit && (
@@ -542,7 +542,7 @@ export function OffersList() {
                                 <div className="text-right">
                                   <p className="text-sm font-bold text-white">{formatCurrency(depositAmount)}</p>
                                   {offer.artist_deposit_status === 'paid' && (
-                                    <p className="text-xs text-[#C4FF0D] font-semibold">Paid</p>
+                                    <p className="text-xs text-[#8FD3FF] font-semibold">Paid</p>
                                   )}
                                 </div>
                               </div>
@@ -554,7 +554,7 @@ export function OffersList() {
                             <div className="h-px bg-gray-700 my-2"></div>
                             <div className="flex justify-between items-center">
                               <span className="text-base font-bold text-white">Total Artist Payment</span>
-                              <span className="text-xl font-bold text-[#C4FF0D]">{formatCurrency(artistPayment)}</span>
+                              <span className="text-xl font-bold text-[#8FD3FF]">{formatCurrency(artistPayment)}</span>
                             </div>
                           </div>
                         </div>
@@ -563,7 +563,7 @@ export function OffersList() {
                       <div className="flex items-center gap-3 mt-6">
                         <button
                           onClick={() => navigate(`/offers/${offer.id}`)}
-                          className="flex-1 bg-[#252A2E] text-white hover:bg-[#2D3331] rounded-2xl py-3 font-semibold transition-colors"
+                          className="flex-1 bg-[#22262F] text-white hover:bg-[#2A3040] rounded-2xl py-3 font-semibold transition-colors"
                         >
                           View Details
                         </button>
@@ -572,7 +572,7 @@ export function OffersList() {
                             e.stopPropagation();
                             duplicateOffer(offer);
                           }}
-                          className="bg-[#252A2E] hover:bg-[#2D3331] rounded-2xl p-3 transition-colors"
+                          className="bg-[#22262F] hover:bg-[#2A3040] rounded-2xl p-3 transition-colors"
                           title="Duplicate offer"
                         >
                           <Copy className="h-5 w-5 text-gray-400" />

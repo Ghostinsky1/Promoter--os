@@ -80,57 +80,57 @@ export function ArtistsDashboard({
     <div className="space-y-4">
       {/* Summary Dashboard */}
       {artists.length > 0 && (
-        <div className="bg-[#1A1D1F] border border-gray-800 rounded-2xl p-4">
+        <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Users className="w-4 h-4 text-[#C4FF0D]" />
+            <Users className="w-4 h-4 text-[#8FD3FF]" />
             <h3 className="text-sm font-bold text-white uppercase tracking-wide">Artist Summary</h3>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#252A29] text-gray-400 font-medium">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#22262F] text-gray-400 font-medium">
               {summary.count} artist{summary.count !== 1 ? 's' : ''}
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <div className="bg-[#252A29] rounded-xl p-3">
+            <div className="bg-[#22262F] rounded-xl p-3">
               <div className="flex items-center gap-1.5 mb-1">
-                <DollarSign className="w-3 h-3 text-[#C4FF0D]" />
+                <DollarSign className="w-3 h-3 text-[#8FD3FF]" />
                 <span className="text-[10px] text-gray-500 uppercase font-medium">Guarantees</span>
               </div>
               <div className="text-sm font-bold text-white">{formatCurrency(summary.totalGuarantees)}</div>
             </div>
-            <div className="bg-[#252A29] rounded-xl p-3">
+            <div className="bg-[#22262F] rounded-xl p-3">
               <div className="flex items-center gap-1.5 mb-1">
                 <DollarSign className="w-3 h-3 text-amber-400" />
                 <span className="text-[10px] text-gray-500 uppercase font-medium">Deposits</span>
               </div>
               <div className="text-sm font-bold text-white">{formatCurrency(summary.totalDeposits)}</div>
             </div>
-            <div className="bg-[#252A29] rounded-xl p-3">
+            <div className="bg-[#22262F] rounded-xl p-3">
               <div className="flex items-center gap-1.5 mb-1">
                 <DollarSign className="w-3 h-3 text-blue-400" />
                 <span className="text-[10px] text-gray-500 uppercase font-medium">Balances</span>
               </div>
               <div className="text-sm font-bold text-white">{formatCurrency(summary.totalBalances)}</div>
             </div>
-            <div className="bg-[#252A29] rounded-xl p-3">
+            <div className="bg-[#22262F] rounded-xl p-3">
               <div className="flex items-center gap-1.5 mb-1">
                 <Plane className="w-3 h-3 text-cyan-400" />
                 <span className="text-[10px] text-gray-500 uppercase font-medium">Travel</span>
               </div>
               <div className="text-sm font-bold text-white">{formatCurrency(summary.totalTravelCosts)}</div>
             </div>
-            <div className="bg-[#252A29] rounded-xl p-3">
+            <div className="bg-[#22262F] rounded-xl p-3">
               <div className="flex items-center gap-1.5 mb-1">
                 <UtensilsCrossed className="w-3 h-3 text-orange-400" />
                 <span className="text-[10px] text-gray-500 uppercase font-medium">Hospitality</span>
               </div>
               <div className="text-sm font-bold text-white">{formatCurrency(summary.totalHospitalityCosts)}</div>
             </div>
-            <div className="bg-gradient-to-br from-[#C4FF0D]/10 to-[#C4FF0D]/5 border border-[#C4FF0D]/20 rounded-xl p-3">
+            <div className="bg-gradient-to-br from-[#8FD3FF]/10 to-[#8FD3FF]/5 border border-[#8FD3FF]/20 rounded-xl p-3">
               <div className="flex items-center gap-1.5 mb-1">
-                <DollarSign className="w-3 h-3 text-[#C4FF0D]" />
-                <span className="text-[10px] text-[#C4FF0D]/70 uppercase font-medium">Total</span>
+                <DollarSign className="w-3 h-3 text-[#8FD3FF]" />
+                <span className="text-[10px] text-[#8FD3FF]/70 uppercase font-medium">Total</span>
               </div>
-              <div className="text-sm font-bold text-[#C4FF0D]">{formatCurrency(summary.totalArtistCosts)}</div>
+              <div className="text-sm font-bold text-[#8FD3FF]">{formatCurrency(summary.totalArtistCosts)}</div>
             </div>
           </div>
 
@@ -165,7 +165,7 @@ export function ArtistsDashboard({
           <div className="relative">
             <button
               onClick={() => setShowAddMenu(!showAddMenu)}
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#C4FF0D] text-black text-xs font-bold rounded-xl hover:bg-[#A3D60A] transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#8FD3FF] text-[#04214D] text-xs font-bold rounded-xl hover:bg-[#6FB8F2] transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
               Add Artist
@@ -174,7 +174,7 @@ export function ArtistsDashboard({
             {showAddMenu && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setShowAddMenu(false)} />
-                <div className="absolute top-full mt-1 left-0 bg-[#1A1D1F] border border-gray-800 rounded-xl shadow-xl z-20 py-1 min-w-[180px]">
+                <div className="absolute top-full mt-1 left-0 bg-[#14171E] border border-gray-800 rounded-xl shadow-xl z-20 py-1 min-w-[180px]">
                   {([
                     { role: 'headliner' as ArtistRole, label: 'Headliner' },
                     { role: 'direct_support' as ArtistRole, label: 'Direct Support' },
@@ -184,7 +184,7 @@ export function ArtistsDashboard({
                     <button
                       key={role}
                       onClick={() => handleAddArtist(role)}
-                      className="w-full text-left px-4 py-2 text-xs text-gray-300 hover:bg-[#252A2E] hover:text-white transition-colors"
+                      className="w-full text-left px-4 py-2 text-xs text-gray-300 hover:bg-[#22262F] hover:text-white transition-colors"
                     >
                       {label}
                     </button>
@@ -202,7 +202,7 @@ export function ArtistsDashboard({
               <select
                 value={filterRole}
                 onChange={e => setFilterRole(e.target.value as FilterRole)}
-                className="bg-[#1A1D1F] border border-gray-800 rounded-lg px-2 py-1.5 text-[11px] text-gray-400 outline-none focus:border-[#C4FF0D]/50"
+                className="bg-[#14171E] border border-gray-800 rounded-lg px-2 py-1.5 text-[11px] text-gray-400 outline-none focus:border-[#8FD3FF]/50"
               >
                 <option value="all">All Roles</option>
                 <option value="headliner">Headliner</option>
@@ -213,7 +213,7 @@ export function ArtistsDashboard({
               <select
                 value={filterStatus}
                 onChange={e => setFilterStatus(e.target.value as FilterStatus)}
-                className="bg-[#1A1D1F] border border-gray-800 rounded-lg px-2 py-1.5 text-[11px] text-gray-400 outline-none focus:border-[#C4FF0D]/50"
+                className="bg-[#14171E] border border-gray-800 rounded-lg px-2 py-1.5 text-[11px] text-gray-400 outline-none focus:border-[#8FD3FF]/50"
               >
                 <option value="all">All Statuses</option>
                 <option value="draft">Draft</option>
@@ -235,7 +235,7 @@ export function ArtistsDashboard({
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value as SortKey)}
-              className="bg-[#1A1D1F] border border-gray-800 rounded-lg px-2 py-1.5 text-[11px] text-gray-400 outline-none focus:border-[#C4FF0D]/50"
+              className="bg-[#14171E] border border-gray-800 rounded-lg px-2 py-1.5 text-[11px] text-gray-400 outline-none focus:border-[#8FD3FF]/50"
             >
               <option value="role">Sort by Role</option>
               <option value="status">Sort by Status</option>
@@ -248,9 +248,9 @@ export function ArtistsDashboard({
 
       {/* Artist Cards */}
       {filtered.length === 0 && artists.length === 0 && (
-        <div className="bg-[#1A1D1F] border border-gray-800 border-dashed rounded-2xl p-10 text-center">
-          <div className="w-14 h-14 bg-[#C4FF0D]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Users className="w-7 h-7 text-[#C4FF0D]" />
+        <div className="bg-[#14171E] border border-gray-800 border-dashed rounded-2xl p-10 text-center">
+          <div className="w-14 h-14 bg-[#8FD3FF]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Users className="w-7 h-7 text-[#8FD3FF]" />
           </div>
           <h3 className="text-lg font-bold text-white mb-2">No Artists Yet</h3>
           <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">
@@ -258,7 +258,7 @@ export function ArtistsDashboard({
           </p>
           <button
             onClick={() => handleAddArtist('headliner')}
-            className="px-6 py-2.5 bg-[#C4FF0D] text-black text-sm font-bold rounded-xl hover:bg-[#A3D60A] transition-colors inline-flex items-center gap-2"
+            className="px-6 py-2.5 bg-[#8FD3FF] text-[#04214D] text-sm font-bold rounded-xl hover:bg-[#6FB8F2] transition-colors inline-flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Add First Artist
@@ -267,7 +267,7 @@ export function ArtistsDashboard({
       )}
 
       {filtered.length === 0 && artists.length > 0 && (
-        <div className="bg-[#1A1D1F] border border-gray-800 rounded-2xl p-8 text-center">
+        <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-8 text-center">
           <p className="text-sm text-gray-500">No artists match the current filters.</p>
         </div>
       )}

@@ -253,16 +253,16 @@ export function TourDetailsPage() {
   const statusOptions = ['planning', 'booking', 'confirmed', 'active', 'completed', 'cancelled'];
 
   if (loading) {
-    return <div className="min-h-screen bg-[#0F1113] flex items-center justify-center text-white">Loading...</div>;
+    return <div className="min-h-screen bg-[#1140F0] flex items-center justify-center text-white">Loading...</div>;
   }
 
   if (!tour) {
-    return <div className="min-h-screen bg-[#0F1113] flex items-center justify-center text-white">Tour not found</div>;
+    return <div className="min-h-screen bg-[#1140F0] flex items-center justify-center text-white">Tour not found</div>;
   }
 
   return (
-    <div className="min-h-screen bg-[#0F1113]">
-      <div className="bg-[#1A1F1E] border-b border-gray-800">
+    <div className="min-h-screen bg-[#1140F0]">
+      <div className="bg-[#14171E] border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-start gap-3 sm:gap-4 mb-6">
             <button
@@ -292,7 +292,7 @@ export function TourDetailsPage() {
                     {tour.status}
                   </button>
                   {statusMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 bg-[#1A1F1E] border border-gray-700 rounded-xl shadow-xl z-10 min-w-[140px]">
+                    <div className="absolute right-0 top-full mt-2 bg-[#14171E] border border-gray-700 rounded-xl shadow-xl z-10 min-w-[140px]">
                       {statusOptions.map((status) => (
                         <button
                           key={status}
@@ -314,7 +314,7 @@ export function TourDetailsPage() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[#0F1113] border border-gray-800 rounded-2xl p-4 hover:border-blue-500/50 transition-colors">
+            <div className="bg-[#1140F0] border border-gray-800 rounded-2xl p-4 hover:border-blue-500/50 transition-colors">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 bg-blue-500/10 rounded-xl">
                   <Calendar className="h-5 w-5 text-blue-400" />
@@ -324,7 +324,7 @@ export function TourDetailsPage() {
               <div className="text-sm text-gray-400">Total Shows</div>
             </div>
 
-            <div className="bg-[#0F1113] border border-gray-800 rounded-2xl p-4 hover:border-green-500/50 transition-colors">
+            <div className="bg-[#1140F0] border border-gray-800 rounded-2xl p-4 hover:border-green-500/50 transition-colors">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 bg-green-500/10 rounded-xl">
                   <DollarSign className="h-5 w-5 text-green-400" />
@@ -336,7 +336,7 @@ export function TourDetailsPage() {
               <div className="text-sm text-gray-400">Projected Revenue</div>
             </div>
 
-            <div className="bg-[#0F1113] border border-gray-800 rounded-2xl p-4 hover:border-orange-500/50 transition-colors">
+            <div className="bg-[#1140F0] border border-gray-800 rounded-2xl p-4 hover:border-orange-500/50 transition-colors">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 bg-orange-500/10 rounded-xl">
                   <TrendingDown className="h-5 w-5 text-orange-400" />
@@ -348,13 +348,13 @@ export function TourDetailsPage() {
               <div className="text-sm text-gray-400">Total Costs</div>
             </div>
 
-            <div className="bg-[#0F1113] border border-gray-800 rounded-2xl p-4 hover:border-[#C4FF0D]/50 transition-colors col-span-2 sm:col-span-2 lg:col-span-1">
+            <div className="bg-[#1140F0] border border-gray-800 rounded-2xl p-4 hover:border-[#8FD3FF]/50 transition-colors col-span-2 sm:col-span-2 lg:col-span-1">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 bg-green-500/10 rounded-xl">
                   <TrendingUp className="h-5 w-5 text-green-400" />
                 </div>
                 <div className={`text-xl sm:text-2xl font-bold truncate ${
-                  (tour.net_profit || 0) >= 0 ? 'text-[#C4FF0D]' : 'text-red-400'
+                  (tour.net_profit || 0) >= 0 ? 'text-[#8FD3FF]' : 'text-red-400'
                 }`}>
                   {(tour.net_profit || 0) >= 0 ? '+' : ''}{formatCurrency(tour.net_profit || 0)}
                 </div>
@@ -367,7 +367,7 @@ export function TourDetailsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {calculateSettlementTotals() && (
-          <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-4 sm:p-6 mb-6">
+          <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4 sm:p-6 mb-6">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-xl font-bold text-white">Settlement Overview</h3>
@@ -454,7 +454,7 @@ export function TourDetailsPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-400">Actual:</span>
                     <span className={`text-sm font-bold ${
-                      calculateSettlementTotals()!.actual_profit >= 0 ? 'text-[#C4FF0D]' : 'text-red-400'
+                      calculateSettlementTotals()!.actual_profit >= 0 ? 'text-[#8FD3FF]' : 'text-red-400'
                     }`}>
                       {formatCurrency(calculateSettlementTotals()!.actual_profit)}
                     </span>
@@ -475,7 +475,7 @@ export function TourDetailsPage() {
             </div>
 
             {/* Overall Performance Indicator */}
-            <div className="mt-4 p-4 bg-[#0F1113] border border-gray-800 rounded-lg">
+            <div className="mt-4 p-4 bg-[#1140F0] border border-gray-800 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm font-semibold text-white">Overall Performance</div>
@@ -493,12 +493,12 @@ export function TourDetailsPage() {
           </div>
         )}
 
-        <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-6">
+        <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-white">Tour Dates</h3>
             <button
               onClick={() => setShowAddShow(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#C4FF0D] hover:bg-[#A3D60A] text-black rounded-xl font-bold text-sm transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-xl font-bold text-sm transition-colors"
             >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Add Show</span>
@@ -512,13 +512,13 @@ export function TourDetailsPage() {
                 return (
                   <div
                     key={show.offer_id}
-                    className={`p-4 bg-[#0F1113] border border-gray-800 rounded-xl hover:border-[#C4FF0D]/50 transition-all cursor-pointer ${
+                    className={`p-4 bg-[#1140F0] border border-gray-800 rounded-xl hover:border-[#8FD3FF]/50 transition-all cursor-pointer ${
                       isCancelled ? 'opacity-40 hover:opacity-60' : ''
                     }`}
                     onClick={() => navigate(`/offers/${show.offer_id}`)}
                   >
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#C4FF0D] to-[#A3D60A] text-black rounded-xl flex flex-col items-center justify-center flex-shrink-0 font-bold">
+                    <div className="w-14 h-14 bg-gradient-to-br from-[#8FD3FF] to-[#6FB8F2] text-[#04214D] rounded-xl flex flex-col items-center justify-center flex-shrink-0 font-bold">
                       {(() => {
                         const eventDate = parseLocalDate(show.event_date);
                         return eventDate ? (
@@ -571,7 +571,7 @@ export function TourDetailsPage() {
                       <div>
                         <div className="text-xs text-gray-500 mb-1">Profit</div>
                         <div className={`text-base font-bold ${
-                          (show.net_profit || 0) >= 0 ? 'text-[#C4FF0D]' : 'text-red-400'
+                          (show.net_profit || 0) >= 0 ? 'text-[#8FD3FF]' : 'text-red-400'
                         }`}>
                           {formatCurrency(show.net_profit || 0)}
                         </div>
@@ -597,7 +597,7 @@ export function TourDetailsPage() {
                     <div>
                       <div className="text-xs text-gray-500 mb-1">Profit</div>
                       <div className={`text-sm font-bold truncate ${
-                        (show.net_profit || 0) >= 0 ? 'text-[#C4FF0D]' : 'text-red-400'
+                        (show.net_profit || 0) >= 0 ? 'text-[#8FD3FF]' : 'text-red-400'
                       }`}>
                         {formatCurrency(show.net_profit || 0)}
                       </div>
@@ -612,7 +612,7 @@ export function TourDetailsPage() {
                 <p>No shows added yet</p>
                 <button
                   onClick={() => setShowAddShow(true)}
-                  className="mt-2 text-[#C4FF0D] hover:text-[#A3D60A] font-medium"
+                  className="mt-2 text-[#8FD3FF] hover:text-[#6FB8F2] font-medium"
                 >
                   Add your first show
                 </button>
@@ -624,7 +624,7 @@ export function TourDetailsPage() {
 
       {showAddShow && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-[#14171E] border border-gray-800 rounded-2xl max-w-4xl w-full max-h-[80vh] overflow-y-auto">
             <div className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl sm:text-2xl font-bold text-white">Add Show to Tour</h2>
@@ -641,7 +641,7 @@ export function TourDetailsPage() {
                   availableOffers.map((offer) => (
                     <div
                       key={offer.id}
-                      className="p-4 bg-[#0F1113] border border-gray-800 rounded-xl hover:border-[#C4FF0D]/50 cursor-pointer transition-all"
+                      className="p-4 bg-[#1140F0] border border-gray-800 rounded-xl hover:border-[#8FD3FF]/50 cursor-pointer transition-all"
                       onClick={() => addShowToTour(offer.id)}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -657,7 +657,7 @@ export function TourDetailsPage() {
                         </div>
                         <div className="text-left sm:text-right">
                           <div className="text-xs sm:text-sm text-gray-400">Projected Profit</div>
-                          <div className="text-lg sm:text-xl font-bold text-[#C4FF0D]">
+                          <div className="text-lg sm:text-xl font-bold text-[#8FD3FF]">
                             ${Math.round(offer.calculations.netProfit / 1000)}K
                           </div>
                         </div>
@@ -669,7 +669,7 @@ export function TourDetailsPage() {
                     <p>No available offers</p>
                     <button
                       onClick={() => navigate('/offers/create')}
-                      className="mt-4 text-[#C4FF0D] hover:text-[#A3D60A] font-medium"
+                      className="mt-4 text-[#8FD3FF] hover:text-[#6FB8F2] font-medium"
                     >
                       Create a new offer first
                     </button>

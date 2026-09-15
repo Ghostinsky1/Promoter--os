@@ -144,7 +144,7 @@ export function Home() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#C4FF0D] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-[#8FD3FF] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-400">Loading dashboard...</p>
         </div>
       </div>
@@ -153,7 +153,7 @@ export function Home() {
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
-      case 'confirmed': return 'bg-[#C4FF0D]/20 text-[#C4FF0D] border-0';
+      case 'confirmed': return 'bg-[#8FD3FF]/20 text-[#8FD3FF] border-0';
       case 'settled': return 'bg-green-500/20 text-green-400 border-0';
       case 'offer_sent': return 'bg-blue-500/20 text-blue-400 border-0';
       default: return 'bg-purple-500/20 text-purple-400 border-0';
@@ -167,7 +167,7 @@ export function Home() {
   if (orgLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C4FF0D]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8FD3FF]"></div>
       </div>
     );
   }
@@ -195,7 +195,7 @@ export function Home() {
               </div>
             </div>
 
-            <button className="w-10 h-10 rounded-full bg-[#1A1F1E] border border-gray-800 p-0 hover:bg-[#252A29] flex items-center justify-center transition-colors">
+            <button className="w-10 h-10 rounded-full bg-[#14171E] border border-gray-800 p-0 hover:bg-[#22262F] flex items-center justify-center transition-colors">
               <Bell className="h-5 w-5 text-gray-400" />
             </button>
           </div>
@@ -247,42 +247,42 @@ export function Home() {
         {nextEvent && (
           <div
             onClick={() => navigate(`/offers/${nextEvent.id}`)}
-            className="bg-gradient-to-br from-[#C4FF0D] to-[#A3D60A] border-0 rounded-3xl p-6 relative overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+            className="bg-gradient-to-br from-[#8FD3FF] to-[#6FB8F2] border-0 rounded-3xl p-6 relative overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
           >
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-4">
-                <div className="bg-black/20 text-black border-0 text-xs font-bold px-3 py-1 rounded-full">
+                <div className="bg-black/20 text-[#04214D] border-0 text-xs font-bold px-3 py-1 rounded-full">
                   NEXT EVENT
                 </div>
-                <span className="text-black/70 text-sm font-semibold">
+                <span className="text-[#04214D]/70 text-sm font-semibold">
                   IN {nextEvent.daysUntil} {nextEvent.daysUntil === 1 ? 'DAY' : 'DAYS'}
                 </span>
               </div>
 
-              <h2 className="text-3xl font-bold text-black mb-2">{nextEvent.artist}</h2>
-              <div className="flex items-center gap-2 text-black/80 mb-1">
+              <h2 className="text-3xl font-bold text-[#04214D] mb-2">{nextEvent.artist}</h2>
+              <div className="flex items-center gap-2 text-[#04214D]/80 mb-1">
                 <MapPin className="h-4 w-4" />
                 <span className="font-semibold">{nextEvent.venue}</span>
               </div>
-              <div className="flex items-center gap-2 text-black/80 mb-6">
+              <div className="flex items-center gap-2 text-[#04214D]/80 mb-6">
                 <Calendar className="h-4 w-4" />
                 <span className="font-semibold">{nextEvent.date}</span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-black/10 rounded-2xl p-4">
-                  <p className="text-black/70 text-xs mb-1">Expected Profit</p>
-                  <p className="text-2xl font-bold text-black">
+                  <p className="text-[#04214D]/70 text-xs mb-1">Expected Profit</p>
+                  <p className="text-2xl font-bold text-[#04214D]">
                     ${(nextEvent.profit / 1000).toFixed(1)}K
                   </p>
                 </div>
                 <div className="bg-black/10 rounded-2xl p-4">
-                  <p className="text-black/70 text-xs mb-1">Capacity</p>
-                  <p className="text-2xl font-bold text-black">{nextEvent.capacity}</p>
+                  <p className="text-[#04214D]/70 text-xs mb-1">Capacity</p>
+                  <p className="text-2xl font-bold text-[#04214D]">{nextEvent.capacity}</p>
                 </div>
               </div>
 
-              <button className="w-full mt-4 bg-black text-[#C4FF0D] hover:bg-gray-900 rounded-2xl py-4 font-bold transition-colors">
+              <button className="w-full mt-4 bg-black text-[#8FD3FF] hover:bg-gray-900 rounded-2xl py-4 font-bold transition-colors">
                 View Event Details →
               </button>
             </div>
@@ -294,7 +294,7 @@ export function Home() {
         <div>
           <h3 className="text-white font-bold text-lg mb-4">Today's Snapshot</h3>
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-5">
+            <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-5">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
                   <Calendar className="h-5 w-5 text-blue-500" />
@@ -304,7 +304,7 @@ export function Home() {
               <p className="text-4xl font-bold text-white">{stats?.activeEvents || 0}</p>
             </div>
 
-            <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-5">
+            <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-5">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
                   <TrendingUp className="h-5 w-5 text-green-500" />
@@ -319,21 +319,21 @@ export function Home() {
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-4 text-center">
+          <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4 text-center">
             <p className="text-gray-500 text-xs mb-2">Revenue</p>
             <p className="text-xl font-bold text-white">
               ${((stats?.revenue || 0) / 1000).toFixed(1)}K
             </p>
           </div>
 
-          <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-4 text-center">
+          <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4 text-center">
             <p className="text-gray-500 text-xs mb-2">Shows</p>
             <p className="text-xl font-bold text-white">{stats?.totalShows || 0}</p>
           </div>
 
-          <div className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-4 text-center">
+          <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4 text-center">
             <p className="text-gray-500 text-xs mb-2">Margin</p>
-            <p className="text-xl font-bold text-[#C4FF0D]">
+            <p className="text-xl font-bold text-[#8FD3FF]">
               {Math.round(stats?.margin || 0)}%
             </p>
           </div>
@@ -345,7 +345,7 @@ export function Home() {
               <h3 className="text-white font-bold text-lg">Coming Up</h3>
               <button
                 onClick={() => navigate('/offers')}
-                className="text-[#C4FF0D] hover:text-[#A3D60A] text-sm transition-colors"
+                className="text-[#8FD3FF] hover:text-[#6FB8F2] text-sm transition-colors"
               >
                 View All →
               </button>
@@ -356,20 +356,20 @@ export function Home() {
                 <div
                   key={event.id}
                   onClick={() => navigate(`/offers/${event.id}`)}
-                  className="bg-[#1A1F1E] border border-gray-800 rounded-2xl p-4 active:bg-[#252A29] transition-colors cursor-pointer"
+                  className="bg-[#14171E] border border-gray-800 rounded-2xl p-4 active:bg-[#22262F] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <div className={`w-2 h-2 rounded-full ${
-                          event.daysUntil <= 3 ? 'bg-[#C4FF0D]' : 'bg-blue-500'
+                          event.daysUntil <= 3 ? 'bg-[#8FD3FF]' : 'bg-blue-500'
                         }`}></div>
                         <h4 className="text-white font-bold">{event.artist}</h4>
                       </div>
                       <p className="text-gray-500 text-sm mb-2">{event.venue}</p>
                       <div className="flex items-center gap-4 text-xs">
                         <span className="text-gray-400">{event.date}</span>
-                        <span className="text-[#C4FF0D] font-semibold">
+                        <span className="text-[#8FD3FF] font-semibold">
                           {event.daysUntil} {event.daysUntil === 1 ? 'day' : 'days'}
                         </span>
                       </div>
@@ -408,7 +408,7 @@ export function Home() {
           </div>
         </div>
 
-        <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-6">
+        <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
               <span className="text-2xl font-bold text-white">{stats?.activeTours || 0}</span>
@@ -450,11 +450,11 @@ export function Home() {
 
         {showAILearning && (
           <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-0 rounded-3xl p-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#C4FF0D] to-[#A3D60A] rounded-3xl mb-4">
-              <Sparkles className="h-8 w-8 text-black" />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#8FD3FF] to-[#6FB8F2] rounded-3xl mb-4">
+              <Sparkles className="h-8 w-8 text-[#04214D]" />
             </div>
 
-            <h4 className="text-2xl font-bold text-black mb-2">AI Learning Mode</h4>
+            <h4 className="text-2xl font-bold text-[#04214D] mb-2">AI Learning Mode</h4>
             <p className="text-gray-700 mb-6">
               Need {5 - settledShows} more settled {5 - settledShows === 1 ? 'show' : 'shows'} to generate insights
             </p>
@@ -462,7 +462,7 @@ export function Home() {
             <div className="max-w-xs mx-auto">
               <div className="flex items-center justify-between mb-2 text-sm">
                 <span className="text-gray-600 font-semibold">Progress</span>
-                <span className="text-black font-bold">{settledShows} / 5</span>
+                <span className="text-[#04214D] font-bold">{settledShows} / 5</span>
               </div>
               <div className="w-full h-3 bg-purple-200 rounded-full overflow-hidden">
                 <div

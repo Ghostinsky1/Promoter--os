@@ -20,7 +20,7 @@ export function ProductCard({ product }: ProductCardProps) {
     <button
       onClick={handlePurchase}
       disabled={loading}
-      className="w-full bg-[#C4FF0D] text-black py-3 px-6 rounded-lg hover:bg-[#A3D60A] focus:outline-none focus:ring-2 focus:ring-[#C4FF0D] focus:ring-offset-2 focus:ring-offset-[#1A1F1E] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-semibold transition-all transform hover:scale-105"
+      className="w-full bg-[#8FD3FF] text-[#04214D] py-3 px-6 rounded-lg hover:bg-[#6FB8F2] focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:ring-offset-2 focus:ring-offset-[#14171E] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-semibold transition-all transform hover:scale-105"
     >
       {loading ? (
         <>

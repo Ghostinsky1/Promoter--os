@@ -420,7 +420,7 @@ export function Settlement() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F1113] flex items-center justify-center">
+      <div className="min-h-screen bg-[#1140F0] flex items-center justify-center">
         <div className="text-gray-400">Loading settlement data...</div>
       </div>
     );
@@ -434,7 +434,7 @@ export function Settlement() {
     if (variance === 0) return <span className="text-gray-500">—</span>;
     const isPositive = variance > 0;
     return (
-      <div className={`flex items-center gap-1 ${isPositive ? 'text-[#C4FF0D]' : 'text-red-500'}`}>
+      <div className={`flex items-center gap-1 ${isPositive ? 'text-[#8FD3FF]' : 'text-red-500'}`}>
         {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
         <span className="font-semibold">{formatCurrency(Math.abs(variance))}</span>
       </div>
@@ -449,7 +449,7 @@ export function Settlement() {
   const capacityPercentage = totalCapacity > 0 ? Math.round((totalSold / totalCapacity) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-[#0F1113]">
+    <div className="min-h-screen bg-[#1140F0]">
       <div className="max-w-7xl mx-auto px-6 py-6">
         <button
           onClick={() => navigate(`/offers/${id}`)}
@@ -467,7 +467,7 @@ export function Settlement() {
               </h1>
               <div className={`${
                 settlement.settled_at
-                  ? 'bg-[#C4FF0D] text-black'
+                  ? 'bg-[#8FD3FF] text-[#04214D]'
                   : 'bg-yellow-500/20 text-yellow-500'
               } border-0 rounded-full px-4 py-1 text-sm font-semibold`}>
                 {settlement.settled_at ? 'Settled' : 'Draft'}
@@ -492,7 +492,7 @@ export function Settlement() {
           <div className="flex items-center gap-3">
             <button
               onClick={handleExportPDF}
-              className="bg-[#1A1F1E] border border-gray-700 text-white hover:border-[#C4FF0D] hover:text-[#C4FF0D] px-4 py-2.5 rounded-2xl font-medium transition-all flex items-center gap-2"
+              className="bg-[#14171E] border border-gray-700 text-white hover:border-[#8FD3FF] hover:text-[#8FD3FF] px-4 py-2.5 rounded-2xl font-medium transition-all flex items-center gap-2"
             >
               <FileDown className="h-4 w-4" />
               Export PDF
@@ -500,7 +500,7 @@ export function Settlement() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="bg-[#C4FF0D] text-black hover:bg-[#A3D60A] px-6 py-2.5 rounded-2xl font-semibold transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] px-6 py-2.5 rounded-2xl font-semibold transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="h-5 w-5" />
               {saving ? 'Saving...' : 'Save Settlement'}
@@ -561,31 +561,31 @@ export function Settlement() {
 
           <div className={`bg-gradient-to-br rounded-3xl p-6 border-2 ${
             settlement.actual_profit >= 0
-              ? 'from-[#C4FF0D]/10 to-green-500/10 border-[#C4FF0D]/30'
+              ? 'from-[#8FD3FF]/10 to-green-500/10 border-[#8FD3FF]/30'
               : 'from-red-500/10 to-red-600/10 border-red-500/30'
           }`}>
             <div className="flex items-start justify-between mb-4">
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                settlement.actual_profit >= 0 ? 'bg-[#C4FF0D]/20' : 'bg-red-500/20'
+                settlement.actual_profit >= 0 ? 'bg-[#8FD3FF]/20' : 'bg-red-500/20'
               }`}>
                 <Wallet className={`h-6 w-6 ${
-                  settlement.actual_profit >= 0 ? 'text-[#C4FF0D]' : 'text-red-500'
+                  settlement.actual_profit >= 0 ? 'text-[#8FD3FF]' : 'text-red-500'
                 }`} />
               </div>
               {settlement.actual_profit >= 0 ? (
-                <TrendingUp className="h-5 w-5 text-[#C4FF0D]" />
+                <TrendingUp className="h-5 w-5 text-[#8FD3FF]" />
               ) : (
                 <TrendingDown className="h-5 w-5 text-red-500" />
               )}
             </div>
             <p className="text-gray-400 text-sm mb-1">Your Profit</p>
             <p className={`text-3xl font-bold mb-1 ${
-              settlement.actual_profit >= 0 ? 'text-[#C4FF0D]' : 'text-red-500'
+              settlement.actual_profit >= 0 ? 'text-[#8FD3FF]' : 'text-red-500'
             }`}>
               {settlement.actual_profit >= 0 ? '+' : ''}{formatCurrency(settlement.actual_profit)}
             </p>
             <p className={`text-xs ${
-              settlement.actual_profit >= 0 ? 'text-[#C4FF0D]' : 'text-red-500'
+              settlement.actual_profit >= 0 ? 'text-[#8FD3FF]' : 'text-red-500'
             }`}>
               {settlement.variance_profit !== 0 && `${settlement.variance_profit >= 0 ? '+' : ''}${formatCurrency(Math.abs(settlement.variance_profit))} vs projected`}
               {settlement.variance_profit === 0 && (settlement.actual_profit >= 0 ? 'Profit' : 'Loss')}
@@ -595,7 +595,7 @@ export function Settlement() {
 
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-6">
+            <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">Ticket Sales</h2>
                 <div className="bg-blue-500/20 text-blue-400 border-0 rounded-full px-3 py-1 text-sm">
@@ -605,7 +605,7 @@ export function Settlement() {
 
               <div className="space-y-3">
                 {settlement.actual_attendance.map((tier, index) => (
-                  <div key={index} className="p-4 bg-[#141716] rounded-2xl">
+                  <div key={index} className="p-4 bg-[#0B0D12] rounded-2xl">
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <p className="text-white font-semibold">{tier.type}</p>
@@ -628,13 +628,13 @@ export function Settlement() {
                         min="0"
                         value={tier.actual_sold}
                         onChange={(e) => handleAttendanceChange(index, e.target.value)}
-                        className="flex-1 px-3 py-2 bg-[#0F1113] border border-gray-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#C4FF0D] focus:border-transparent"
+                        className="flex-1 px-3 py-2 bg-[#1140F0] border border-gray-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-transparent"
                       />
                     </div>
 
                     <div className="w-full bg-gray-700 rounded-full h-2">
                       <div
-                        className="bg-[#C4FF0D] h-2 rounded-full transition-all"
+                        className="bg-[#8FD3FF] h-2 rounded-full transition-all"
                         style={{ width: `${tier.projected_sold > 0 ? Math.min((tier.actual_sold / tier.projected_sold) * 100, 100) : 0}%` }}
                       ></div>
                     </div>
@@ -642,27 +642,27 @@ export function Settlement() {
                 ))}
               </div>
 
-              <div className="mt-4 p-5 bg-[#C4FF0D]/10 border-2 border-[#C4FF0D]/30 rounded-2xl">
+              <div className="mt-4 p-5 bg-[#8FD3FF]/10 border-2 border-[#8FD3FF]/30 rounded-2xl">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[#C4FF0D] font-semibold">Total Gross Revenue</p>
+                    <p className="text-[#8FD3FF] font-semibold">Total Gross Revenue</p>
                     <p className="text-gray-400 text-sm">
                       {totalSold} tickets sold
                     </p>
                   </div>
-                  <p className="text-[#C4FF0D] font-bold text-2xl">
+                  <p className="text-[#8FD3FF] font-bold text-2xl">
                     {formatCurrency(settlement.actual_revenue)}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-6">
+            <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">Expenses</h2>
                 <button
                   onClick={handleAddCategory}
-                  className="flex items-center gap-1 text-sm text-[#C4FF0D] hover:text-[#A3D60A] font-medium"
+                  className="flex items-center gap-1 text-sm text-[#8FD3FF] hover:text-[#6FB8F2] font-medium"
                 >
                   <Plus className="w-4 h-4" />
                   Add Category
@@ -677,7 +677,7 @@ export function Settlement() {
                     </div>
                     <div className="space-y-2">
                       {offer.support_acts.map((act, index) => (
-                        <div key={index} className="flex items-center gap-2 p-3 bg-[#141716] rounded-xl">
+                        <div key={index} className="flex items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
                           <span className="text-white flex-1">{act.name}</span>
                           <span className="text-gray-400 text-sm">{formatCurrency(act.guarantee)}</span>
                         </div>
@@ -706,19 +706,19 @@ export function Settlement() {
                         </div>
                         <div className="space-y-2">
                           {offer.include_hotel && offer.hotel_budget && offer.hotel_budget > 0 && (
-                            <div className="flex items-center gap-2 p-3 bg-[#141716] rounded-xl">
+                            <div className="flex items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
                               <span className="text-white flex-1">Hotel ({offer.hotel_nights || 1} nights)</span>
                               <span className="text-gray-400 text-sm">{formatCurrency(offer.hotel_budget * (offer.hotel_nights || 1))}</span>
                             </div>
                           )}
                           {offer.include_transport && offer.transport_budget && offer.transport_budget > 0 && (
-                            <div className="flex items-center gap-2 p-3 bg-[#141716] rounded-xl">
+                            <div className="flex items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
                               <span className="text-white flex-1">Ground Transport</span>
                               <span className="text-gray-400 text-sm">{formatCurrency(offer.transport_budget)}</span>
                             </div>
                           )}
                           {offer.include_rider && offer.rider_cap && offer.rider_cap > 0 && (
-                            <div className="flex items-center gap-2 p-3 bg-[#141716] rounded-xl">
+                            <div className="flex items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
                               <span className="text-white flex-1">Rider/Hospitality</span>
                               <span className="text-gray-400 text-sm">{formatCurrency(offer.rider_cap)}</span>
                             </div>
@@ -752,37 +752,37 @@ export function Settlement() {
                         </div>
                         <div className="space-y-2">
                           {facilityFees > 0 && (
-                            <div className="flex items-center gap-2 p-3 bg-[#141716] rounded-xl">
+                            <div className="flex items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
                               <span className="text-white flex-1">Facility Fees ({formatCurrency(offer.facility_fee_per_ticket || 0)}/ticket)</span>
                               <span className="text-gray-400 text-sm">{formatCurrency(facilityFees)}</span>
                             </div>
                           )}
                           {ascap > 0 && (
-                            <div className="flex items-center gap-2 p-3 bg-[#141716] rounded-xl">
+                            <div className="flex items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
                               <span className="text-white flex-1">ASCAP ({((offer.ascap_rate || 0) * 100).toFixed(2)}%)</span>
                               <span className="text-gray-400 text-sm">{formatCurrency(ascap)}</span>
                             </div>
                           )}
                           {bmi > 0 && (
-                            <div className="flex items-center gap-2 p-3 bg-[#141716] rounded-xl">
+                            <div className="flex items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
                               <span className="text-white flex-1">BMI ({((offer.bmi_rate || 0) * 100).toFixed(2)}%)</span>
                               <span className="text-gray-400 text-sm">{formatCurrency(bmi)}</span>
                             </div>
                           )}
                           {sesac > 0 && (
-                            <div className="flex items-center gap-2 p-3 bg-[#141716] rounded-xl">
+                            <div className="flex items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
                               <span className="text-white flex-1">SESAC ({((offer.sesac_rate || 0) * 100).toFixed(4)}%)</span>
                               <span className="text-gray-400 text-sm">{formatCurrency(sesac)}</span>
                             </div>
                           )}
                           {insurance > 0 && (
-                            <div className="flex items-center gap-2 p-3 bg-[#141716] rounded-xl">
+                            <div className="flex items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
                               <span className="text-white flex-1">Insurance ({formatCurrency(offer.insurance_per_attendee || 0)}/attendee)</span>
                               <span className="text-gray-400 text-sm">{formatCurrency(insurance)}</span>
                             </div>
                           )}
                           {ccFee > 0 && (
-                            <div className="flex items-center gap-2 p-3 bg-[#141716] rounded-xl">
+                            <div className="flex items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
                               <span className="text-white flex-1">CC Processing ({((offer.cc_fee_rate || 0) * 100).toFixed(1)}%)</span>
                               <span className="text-gray-400 text-sm">{formatCurrency(ccFee)}</span>
                             </div>
@@ -805,7 +805,7 @@ export function Settlement() {
                         <h3 className="text-gray-400 text-sm font-semibold uppercase">{category.replace(/_/g, ' ')}</h3>
                         <button
                           onClick={() => handleAddExpense(categoryKey)}
-                          className="flex items-center gap-1 text-xs text-[#C4FF0D] hover:text-[#A3D60A] font-medium"
+                          className="flex items-center gap-1 text-xs text-[#8FD3FF] hover:text-[#6FB8F2] font-medium"
                         >
                           <Plus className="w-3 h-3" />
                           Add
@@ -813,10 +813,10 @@ export function Settlement() {
                       </div>
                       <div className="space-y-2">
                         {Object.keys(categoryExpenses).length === 0 ? (
-                          <div className="text-sm text-gray-500 italic py-2 px-3 bg-[#141716] rounded-xl">No expenses in this category</div>
+                          <div className="text-sm text-gray-500 italic py-2 px-3 bg-[#0B0D12] rounded-xl">No expenses in this category</div>
                         ) : (
                           Object.keys(categoryExpenses).map((expenseKey) => (
-                            <div key={expenseKey} className="flex items-center gap-2 p-3 bg-[#141716] rounded-xl">
+                            <div key={expenseKey} className="flex items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
                               <span className="text-white flex-1">{expenseKey.replace(/_/g, ' ')}</span>
                               <div className="flex items-center gap-2">
                                 {estimatedExpenses[expenseKey] !== undefined && (
@@ -830,7 +830,7 @@ export function Settlement() {
                                   min="0"
                                   value={categoryExpenses[expenseKey] || 0}
                                   onChange={(e) => handleExpenseChange(categoryKey, expenseKey, e.target.value)}
-                                  className="w-32 px-2 py-1.5 bg-[#0F1113] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#C4FF0D] focus:border-transparent"
+                                  className="w-32 px-2 py-1.5 bg-[#1140F0] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-transparent"
                                 />
                                 <button
                                   onClick={() => handleDeleteExpense(categoryKey, expenseKey)}
@@ -861,10 +861,10 @@ export function Settlement() {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-gradient-to-br from-[#C4FF0D]/10 to-green-500/10 border-2 border-[#C4FF0D] rounded-3xl p-6">
+            <div className="bg-gradient-to-br from-[#8FD3FF]/10 to-green-500/10 border-2 border-[#8FD3FF] rounded-3xl p-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-[#C4FF0D]/20 rounded-2xl flex items-center justify-center">
-                  <Users className="h-6 w-6 text-[#C4FF0D]" />
+                <div className="w-12 h-12 bg-[#8FD3FF]/20 rounded-2xl flex items-center justify-center">
+                  <Users className="h-6 w-6 text-[#8FD3FF]" />
                 </div>
                 <div>
                   <h2 className="text-white font-bold text-lg">Artist Payment</h2>
@@ -891,11 +891,11 @@ export function Settlement() {
 
                 {offer.artist_deposit > 0 && (
                   <>
-                    <div className="h-px bg-[#C4FF0D]/30"></div>
+                    <div className="h-px bg-[#8FD3FF]/30"></div>
                     <div>
                       <p className="text-gray-400 text-sm mb-2">Payment Schedule</p>
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between p-3 bg-[#141716] rounded-xl">
+                        <div className="flex items-center justify-between p-3 bg-[#0B0D12] rounded-xl">
                           <div>
                             <span className="text-white text-sm block">Deposit Paid</span>
                             <span className="text-gray-500 text-xs">Already paid upfront</span>
@@ -904,12 +904,12 @@ export function Settlement() {
                             {formatCurrency(offer.artist_deposit)}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-[#C4FF0D]/10 rounded-xl">
+                        <div className="flex items-center justify-between p-3 bg-[#8FD3FF]/10 rounded-xl">
                           <div>
                             <span className="text-white text-sm block">Balance Due</span>
                             <span className="text-gray-400 text-xs">Due at settlement</span>
                           </div>
-                          <span className="text-[#C4FF0D] font-semibold">
+                          <span className="text-[#8FD3FF] font-semibold">
                             {formatCurrency(offer.calculations.artistTotalPayout - offer.artist_deposit)}
                           </span>
                         </div>
@@ -918,18 +918,18 @@ export function Settlement() {
                   </>
                 )}
 
-                <div className="h-px bg-[#C4FF0D]"></div>
+                <div className="h-px bg-[#8FD3FF]"></div>
 
                 <div className="flex items-center justify-between">
                   <span className="text-white font-bold">Total Artist Payment</span>
-                  <span className="text-[#C4FF0D] font-bold text-2xl">
+                  <span className="text-[#8FD3FF] font-bold text-2xl">
                     {formatCurrency(offer.calculations.artistTotalPayout)}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-6">
+            <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-6">
               <h2 className="text-white font-bold mb-4">Settlement Summary</h2>
 
               <div className="space-y-3">
@@ -958,16 +958,16 @@ export function Settlement() {
 
                 <div className={`flex items-center justify-between p-4 rounded-2xl border-2 ${
                   settlement.actual_profit >= 0
-                    ? 'bg-[#C4FF0D]/10 border-[#C4FF0D]/30'
+                    ? 'bg-[#8FD3FF]/10 border-[#8FD3FF]/30'
                     : 'bg-red-500/10 border-red-500/30'
                 }`}>
                   <span className={`font-bold ${
-                    settlement.actual_profit >= 0 ? 'text-[#C4FF0D]' : 'text-red-500'
+                    settlement.actual_profit >= 0 ? 'text-[#8FD3FF]' : 'text-red-500'
                   }`}>
                     Your {settlement.actual_profit >= 0 ? 'Profit' : 'Loss'}
                   </span>
                   <span className={`font-bold text-2xl ${
-                    settlement.actual_profit >= 0 ? 'text-[#C4FF0D]' : 'text-red-500'
+                    settlement.actual_profit >= 0 ? 'text-[#8FD3FF]' : 'text-red-500'
                   }`}>
                     {settlement.actual_profit >= 0 ? '+' : ''}{formatCurrency(settlement.actual_profit)}
                   </span>
@@ -975,44 +975,44 @@ export function Settlement() {
               </div>
             </div>
 
-            <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-6">
+            <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-6">
               <h2 className="text-white font-bold mb-3">Variance Analysis</h2>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-[#141716] rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-[#0B0D12] rounded-xl">
                   <span className="text-gray-400 text-sm">Revenue vs Projected</span>
                   <VarianceIndicator variance={settlement.variance_revenue} />
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-[#141716] rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-[#0B0D12] rounded-xl">
                   <span className="text-gray-400 text-sm">Expenses vs Projected</span>
                   <VarianceIndicator variance={-settlement.variance_expenses} />
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-[#141716] rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-[#0B0D12] rounded-xl">
                   <span className="text-gray-400 text-sm">Profit vs Projected</span>
                   <VarianceIndicator variance={settlement.variance_profit} />
                 </div>
               </div>
             </div>
 
-            <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-6">
+            <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-6">
               <h2 className="text-white font-bold mb-3">Settlement Notes</h2>
               <textarea
                 value={settlement.notes}
                 onChange={(e) => handleNotesChange(e.target.value)}
                 placeholder="Add any notes about the settlement, issues encountered, or other relevant information..."
                 rows={6}
-                className="w-full px-3 py-2 bg-[#141716] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C4FF0D] focus:border-transparent text-sm"
+                className="w-full px-3 py-2 bg-[#0B0D12] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-transparent text-sm"
               />
             </div>
 
             {settlement.variance_profit !== 0 && (
               <div className={`rounded-2xl p-4 flex items-start gap-3 ${
-                settlement.variance_profit > 0 ? 'bg-[#C4FF0D]/10 border-2 border-[#C4FF0D]/30' : 'bg-yellow-500/10 border-2 border-yellow-500/30'
+                settlement.variance_profit > 0 ? 'bg-[#8FD3FF]/10 border-2 border-[#8FD3FF]/30' : 'bg-yellow-500/10 border-2 border-yellow-500/30'
               }`}>
                 <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
-                  settlement.variance_profit > 0 ? 'text-[#C4FF0D]' : 'text-yellow-500'
+                  settlement.variance_profit > 0 ? 'text-[#8FD3FF]' : 'text-yellow-500'
                 }`} />
                 <div>
                   <div className={`font-semibold ${

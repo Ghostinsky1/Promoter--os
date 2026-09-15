@@ -407,11 +407,11 @@ export function CreateOffer() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1113]">
+    <div className="min-h-screen bg-[#1140F0]">
       {/* Initial Template Selection Modal */}
       {showInitialModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#1A1D1F] border border-gray-800 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-[#14171E] border border-gray-800 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-6 sm:p-8 border-b border-gray-800">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-2xl sm:text-3xl font-bold text-white">Create New Offer</h2>
@@ -429,13 +429,13 @@ export function CreateOffer() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <button
                   onClick={startFromScratch}
-                  className="group relative bg-gradient-to-br from-[#252A2E] to-[#1A1D1F] hover:from-[#2D3331] hover:to-[#1F2422] border-2 border-gray-800 hover:border-[#C4FF0D]/50 rounded-2xl p-6 sm:p-8 text-left transition-all"
+                  className="group relative bg-gradient-to-br from-[#22262F] to-[#14171E] hover:from-[#2A3040] hover:to-[#2A3040] border-2 border-gray-800 hover:border-[#8FD3FF]/50 rounded-2xl p-6 sm:p-8 text-left transition-all"
                 >
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#C4FF0D]/10 rounded-xl flex items-center justify-center">
-                      <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-[#C4FF0D]" />
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#8FD3FF]/10 rounded-xl flex items-center justify-center">
+                      <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-[#8FD3FF]" />
                     </div>
-                    <ArrowRight className="h-5 w-5 text-gray-600 group-hover:text-[#C4FF0D] transition-colors" />
+                    <ArrowRight className="h-5 w-5 text-gray-600 group-hover:text-[#8FD3FF] transition-colors" />
                   </div>
                   <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Start from Scratch</h3>
                   <p className="text-sm text-gray-400">Create a completely new offer with custom settings</p>
@@ -444,19 +444,19 @@ export function CreateOffer() {
                 {templates.length > 0 ? (
                   <button
                     onClick={() => setShowTemplateSelector(true)}
-                    className="group relative bg-gradient-to-br from-[#C4FF0D]/10 to-[#1A1D1F] hover:from-[#C4FF0D]/20 hover:to-[#1F2422] border-2 border-[#C4FF0D]/30 hover:border-[#C4FF0D]/60 rounded-2xl p-6 sm:p-8 text-left transition-all"
+                    className="group relative bg-gradient-to-br from-[#8FD3FF]/10 to-[#14171E] hover:from-[#8FD3FF]/20 hover:to-[#2A3040] border-2 border-[#8FD3FF]/30 hover:border-[#8FD3FF]/60 rounded-2xl p-6 sm:p-8 text-left transition-all"
                   >
                     <div className="flex items-start justify-between mb-4">
-                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#C4FF0D]/20 rounded-xl flex items-center justify-center">
-                        <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-[#C4FF0D]" />
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#8FD3FF]/20 rounded-xl flex items-center justify-center">
+                        <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-[#8FD3FF]" />
                       </div>
-                      <ArrowRight className="h-5 w-5 text-[#C4FF0D]/60 group-hover:text-[#C4FF0D] transition-colors" />
+                      <ArrowRight className="h-5 w-5 text-[#8FD3FF]/60 group-hover:text-[#8FD3FF] transition-colors" />
                     </div>
                     <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Use a Template</h3>
                     <p className="text-sm text-gray-400">{templates.length} template{templates.length !== 1 ? 's' : ''} available</p>
                   </button>
                 ) : (
-                  <div className="relative bg-[#252A2E] border-2 border-dashed border-gray-700 rounded-2xl p-6 sm:p-8 text-center opacity-60">
+                  <div className="relative bg-[#22262F] border-2 border-dashed border-gray-700 rounded-2xl p-6 sm:p-8 text-center opacity-60">
                     <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-800/50 rounded-xl flex items-center justify-center mx-auto mb-4">
                       <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600" />
                     </div>
@@ -481,7 +481,7 @@ export function CreateOffer() {
                   {templates.map((template) => (
                     <div
                       key={template.id}
-                      className="bg-[#141716] border border-gray-800 hover:border-[#C4FF0D]/50 rounded-xl p-4 transition-all group"
+                      className="bg-[#0B0D12] border border-gray-800 hover:border-[#8FD3FF]/50 rounded-xl p-4 transition-all group"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
@@ -493,13 +493,13 @@ export function CreateOffer() {
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <button
                             onClick={() => setPreviewTemplate(template)}
-                            className="px-3 py-1.5 bg-[#252A2E] hover:bg-[#2D3331] text-gray-300 hover:text-white rounded-lg text-sm font-medium transition-colors"
+                            className="px-3 py-1.5 bg-[#22262F] hover:bg-[#2A3040] text-gray-300 hover:text-white rounded-lg text-sm font-medium transition-colors"
                           >
                             Preview
                           </button>
                           <button
                             onClick={() => loadTemplate(template)}
-                            className="px-3 py-1.5 bg-[#C4FF0D] hover:bg-[#A3D60A] text-black rounded-lg text-sm font-bold transition-colors"
+                            className="px-3 py-1.5 bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-lg text-sm font-bold transition-colors"
                           >
                             Use
                           </button>
@@ -517,7 +517,7 @@ export function CreateOffer() {
       {/* Template Preview Modal */}
       {previewTemplate && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#1A1D1F] border border-gray-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-[#14171E] border border-gray-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-gray-800">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-xl sm:text-2xl font-bold text-white">{previewTemplate.name}</h2>
@@ -535,8 +535,8 @@ export function CreateOffer() {
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="space-y-4">
-                <div className="bg-[#141716] rounded-xl p-4 border border-gray-800">
-                  <h3 className="text-sm font-bold text-[#C4FF0D] mb-2">DEAL STRUCTURE</h3>
+                <div className="bg-[#0B0D12] rounded-xl p-4 border border-gray-800">
+                  <h3 className="text-sm font-bold text-[#8FD3FF] mb-2">DEAL STRUCTURE</h3>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
                       <p className="text-gray-400">Deal Type</p>
@@ -558,15 +558,15 @@ export function CreateOffer() {
                 </div>
 
                 {previewTemplate.ticket_tier_templates && previewTemplate.ticket_tier_templates.length > 0 && (
-                  <div className="bg-[#141716] rounded-xl p-4 border border-gray-800">
-                    <h3 className="text-sm font-bold text-[#C4FF0D] mb-2">TICKET TIERS</h3>
+                  <div className="bg-[#0B0D12] rounded-xl p-4 border border-gray-800">
+                    <h3 className="text-sm font-bold text-[#8FD3FF] mb-2">TICKET TIERS</h3>
                     <div className="space-y-2">
                       {previewTemplate.ticket_tier_templates.map((tier, index) => (
                         <div key={index} className="flex items-center justify-between text-sm">
                           <span className="text-gray-400">{tier.type}</span>
                           <div className="flex items-center gap-4">
                             <span className="text-white font-medium">{tier.default_allotment || 0} tickets</span>
-                            <span className="text-[#C4FF0D] font-bold">${tier.price || 0}</span>
+                            <span className="text-[#8FD3FF] font-bold">${tier.price || 0}</span>
                           </div>
                         </div>
                       ))}
@@ -575,8 +575,8 @@ export function CreateOffer() {
                 )}
 
                 {previewTemplate.expense_categories && previewTemplate.expense_categories.length > 0 && (
-                  <div className="bg-[#141716] rounded-xl p-4 border border-gray-800">
-                    <h3 className="text-sm font-bold text-[#C4FF0D] mb-2">EXPENSES</h3>
+                  <div className="bg-[#0B0D12] rounded-xl p-4 border border-gray-800">
+                    <h3 className="text-sm font-bold text-[#8FD3FF] mb-2">EXPENSES</h3>
                     <div className="space-y-2 text-sm">
                       {previewTemplate.expense_categories.map((category: any, idx: number) => (
                         <div key={idx}>
@@ -598,13 +598,13 @@ export function CreateOffer() {
             <div className="p-6 border-t border-gray-800 flex gap-3">
               <button
                 onClick={() => setPreviewTemplate(null)}
-                className="flex-1 px-4 py-3 bg-[#252A2E] hover:bg-[#2D3331] text-white rounded-xl font-medium transition-colors"
+                className="flex-1 px-4 py-3 bg-[#22262F] hover:bg-[#2A3040] text-white rounded-xl font-medium transition-colors"
               >
                 Close
               </button>
               <button
                 onClick={() => loadTemplate(previewTemplate)}
-                className="flex-1 px-4 py-3 bg-[#C4FF0D] hover:bg-[#A3D60A] text-black rounded-xl font-bold transition-colors"
+                className="flex-1 px-4 py-3 bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-xl font-bold transition-colors"
               >
                 Use This Template
               </button>
@@ -614,7 +614,7 @@ export function CreateOffer() {
       )}
 
       {/* Progress Header - Fixed */}
-      <div className="sticky top-0 z-50 bg-[#0F1113]/95 backdrop-blur-lg border-b border-gray-800">
+      <div className="sticky top-0 z-50 bg-[#1140F0]/95 backdrop-blur-lg border-b border-gray-800">
         <div className="max-w-5xl mx-auto px-6 py-6">
           {/* Progress Info */}
           <div className="flex items-center justify-between mb-4">
@@ -627,20 +627,20 @@ export function CreateOffer() {
                 <div className="relative template-selector-container">
                   <button
                     onClick={() => setShowTemplateSelector(!showTemplateSelector)}
-                    className="px-4 py-2 bg-[#252A29] text-gray-300 hover:text-white hover:bg-[#2D3331] rounded-xl font-medium transition-colors flex items-center gap-2"
+                    className="px-4 py-2 bg-[#22262F] text-gray-300 hover:text-white hover:bg-[#2A3040] rounded-xl font-medium transition-colors flex items-center gap-2"
                   >
                     <FileText className="w-4 h-4" />
                     Load Template
                   </button>
 
                   {showTemplateSelector && (
-                    <div className="absolute right-0 mt-2 w-72 bg-[#1A1F1E] rounded-xl shadow-lg border border-gray-700 z-20">
+                    <div className="absolute right-0 mt-2 w-72 bg-[#14171E] rounded-xl shadow-lg border border-gray-700 z-20">
                       <div className="p-2 max-h-96 overflow-y-auto">
                         {templates.map((template) => (
                           <button
                             key={template.id}
                             onClick={() => loadTemplate(template)}
-                            className="w-full text-left p-3 hover:bg-[#252A29] rounded-lg transition-colors"
+                            className="w-full text-left p-3 hover:bg-[#22262F] rounded-lg transition-colors"
                           >
                             <div className="font-medium text-white">{template.name}</div>
                             {template.description && (
@@ -664,9 +664,9 @@ export function CreateOffer() {
 
           {/* Progress Bar */}
           <div className="relative mb-6">
-            <div className="h-2 bg-[#252A29] rounded-full overflow-hidden">
+            <div className="h-2 bg-[#22262F] rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#C4FF0D] rounded-full transition-all duration-300"
+                className="h-full bg-[#8FD3FF] rounded-full transition-all duration-300"
                 style={{ width: `${(currentStep / steps.length) * 100}%` }}
               ></div>
             </div>
@@ -683,10 +683,10 @@ export function CreateOffer() {
                 <div
                   className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold transition-all ${
                     step.number === currentStep
-                      ? 'bg-[#C4FF0D] text-black scale-110'
+                      ? 'bg-[#8FD3FF] text-[#04214D] scale-110'
                       : step.number < currentStep
-                      ? 'bg-[#C4FF0D]/30 text-[#C4FF0D]'
-                      : 'bg-[#252A29] text-gray-600'
+                      ? 'bg-[#8FD3FF]/30 text-[#8FD3FF]'
+                      : 'bg-[#22262F] text-gray-600'
                   }`}
                 >
                   {step.number < currentStep ? (
@@ -696,7 +696,7 @@ export function CreateOffer() {
                   )}
                 </div>
                 <p className={`text-xs mt-2 ${
-                  step.number === currentStep ? 'text-[#C4FF0D] font-semibold' : 'text-gray-500'
+                  step.number === currentStep ? 'text-[#8FD3FF] font-semibold' : 'text-gray-500'
                 }`}>
                   {step.label}
                 </p>
@@ -708,7 +708,7 @@ export function CreateOffer() {
 
       {/* Main Form Content */}
       <div className="max-w-5xl mx-auto px-6 py-8">
-        <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-8">
+        <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-8">
           {currentStep === 1 && (
             <EventDetailsTab
               eventName={eventName}
@@ -920,7 +920,7 @@ export function CreateOffer() {
           <button
             onClick={handlePrevious}
             disabled={currentStep === 1}
-            className="bg-[#252A29] text-gray-400 hover:text-white hover:bg-[#2D3331] rounded-2xl px-8 py-6 text-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#22262F] text-gray-400 hover:text-white hover:bg-[#2A3040] rounded-2xl px-8 py-6 text-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="h-5 w-5" />
             Previous
@@ -929,7 +929,7 @@ export function CreateOffer() {
           {currentStep < 6 ? (
             <button
               onClick={handleNext}
-              className="bg-[#C4FF0D] text-black hover:bg-[#A3D60A] rounded-2xl px-8 py-6 text-lg font-bold transition-colors flex items-center gap-2"
+              className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] rounded-2xl px-8 py-6 text-lg font-bold transition-colors flex items-center gap-2"
             >
               Next
               <ChevronRight className="h-5 w-5" />
@@ -938,7 +938,7 @@ export function CreateOffer() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="bg-[#C4FF0D] text-black hover:bg-[#A3D60A] rounded-2xl px-8 py-6 text-lg font-bold transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] rounded-2xl px-8 py-6 text-lg font-bold transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Create Offer'}
               <Check className="h-5 w-5" />

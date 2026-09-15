@@ -126,7 +126,7 @@ export function ExpensesTab({
                     placeholder="0.00"
                     min="0"
                     step="0.01"
-                    className="w-full pl-9 pr-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+                    className="w-full pl-9 pr-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
                   />
                 </div>
               </div>
@@ -153,7 +153,7 @@ export function ExpensesTab({
             e.stopPropagation();
             openAddItemModal(category);
           }}
-          className="mt-5 w-full py-3 border border-dashed border-gray-600 rounded-xl text-gray-400 hover:border-[#C4FF0D] hover:text-[#C4FF0D] hover:bg-[#C4FF0D]/5 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+          className="mt-5 w-full py-3 border border-dashed border-gray-600 rounded-xl text-gray-400 hover:border-[#8FD3FF] hover:text-[#8FD3FF] hover:bg-[#8FD3FF]/5 transition-colors text-sm font-medium flex items-center justify-center gap-2"
         >
           <Plus className="h-4 w-4" />
           Add Item
@@ -169,7 +169,7 @@ export function ExpensesTab({
         <p className="text-gray-400 mb-8">Manage all show expenses by category</p>
       </div>
 
-      <div className="bg-[#141716] border border-gray-700 rounded-2xl p-6">
+      <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-6">
         <h3 className="text-xl font-bold text-white mb-6">Variable Expenses</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -179,7 +179,7 @@ export function ExpensesTab({
               step="0.01"
               value={(ascapRate * 100).toFixed(3)}
               onChange={(e) => setAscapRate(parseFloat(e.target.value) / 100)}
-              className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+              className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
             />
             <p className="text-xs text-gray-500 mt-2">Standard: 0.23%</p>
           </div>
@@ -190,7 +190,7 @@ export function ExpensesTab({
               step="0.01"
               value={(bmiRate * 100).toFixed(3)}
               onChange={(e) => setBmiRate(parseFloat(e.target.value) / 100)}
-              className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+              className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
             />
             <p className="text-xs text-gray-500 mt-2">Standard: 0.30%</p>
           </div>
@@ -201,7 +201,7 @@ export function ExpensesTab({
               step="0.001"
               value={(sesacRate * 100).toFixed(4)}
               onChange={(e) => setSesacRate(parseFloat(e.target.value) / 100)}
-              className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+              className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
             />
             <p className="text-xs text-gray-500 mt-2">Standard: 0.0214%</p>
           </div>
@@ -212,7 +212,7 @@ export function ExpensesTab({
               step="0.1"
               value={(ccFeeRate * 100).toFixed(2)}
               onChange={(e) => setCcFeeRate(parseFloat(e.target.value) / 100)}
-              className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+              className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
             />
             <p className="text-xs text-gray-500 mt-2">Standard: 1.2%</p>
           </div>
@@ -223,7 +223,7 @@ export function ExpensesTab({
               step="0.01"
               value={insurancePerAttendee}
               onChange={(e) => setInsurancePerAttendee(parseFloat(e.target.value))}
-              className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D]"
+              className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
             />
             <p className="text-xs text-gray-500 mt-2">Standard: $0.50-$0.75</p>
           </div>
@@ -237,7 +237,7 @@ export function ExpensesTab({
         {renderCategory('Production Expenses', 'production', 'border-orange-500/30', 'bg-orange-500/10')}
       </div>
 
-      <div className="bg-gradient-to-r from-[#C4FF0D]/10 to-[#C4FF0D]/5 border-2 border-[#C4FF0D]/30 rounded-2xl p-6">
+      <div className="bg-gradient-to-r from-[#8FD3FF]/10 to-[#8FD3FF]/5 border-2 border-[#8FD3FF]/30 rounded-2xl p-6">
         <div className="space-y-4">
           <div className="flex justify-between items-center pb-4 border-b border-gray-700">
             <span className="text-lg font-semibold text-white">Fixed Expenses</span>
@@ -265,16 +265,16 @@ export function ExpensesTab({
             </div>
           )}
 
-          <div className="flex justify-between items-center pt-4 border-t-2 border-[#C4FF0D]/50">
+          <div className="flex justify-between items-center pt-4 border-t-2 border-[#8FD3FF]/50">
             <span className="text-xl font-bold text-white">Total All Expenses</span>
-            <span className="text-3xl font-bold text-[#C4FF0D]">{formatCurrency(totalExpenses)}</span>
+            <span className="text-3xl font-bold text-[#8FD3FF]">{formatCurrency(totalExpenses)}</span>
           </div>
         </div>
       </div>
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#141716] border border-gray-700 rounded-2xl p-6 max-w-md w-full mx-4">
+          <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-6 max-w-md w-full mx-4">
             <h3 className="text-xl font-bold text-white mb-4">
               Add Expense Item to {selectedCategory}
             </h3>
@@ -292,7 +292,7 @@ export function ExpensesTab({
               }}
               placeholder="Enter expense item name"
               autoFocus
-              className="w-full px-4 py-3 bg-[#1A1F1E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#C4FF0D] focus:border-[#C4FF0D] mb-4"
+              className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] mb-4"
             />
             <div className="flex gap-3">
               <button
@@ -306,7 +306,7 @@ export function ExpensesTab({
                 type="button"
                 onClick={addExpenseItem}
                 disabled={!newItemName.trim()}
-                className="flex-1 px-4 py-3 bg-[#C4FF0D] hover:bg-[#C4FF0D]/90 text-black font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-3 bg-[#8FD3FF] hover:bg-[#8FD3FF]/90 text-[#04214D] font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Add Item
               </button>

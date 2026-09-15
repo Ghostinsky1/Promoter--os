@@ -102,15 +102,15 @@ export function Templates() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F1113] flex items-center justify-center">
+      <div className="min-h-screen bg-[#1140F0] flex items-center justify-center">
         <div className="text-gray-400">Loading templates...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0F1113]">
-      <div className="bg-[#1A1D1F] border-b border-gray-800">
+    <div className="min-h-screen bg-[#1140F0]">
+      <div className="bg-[#14171E] border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between">
             <div>
@@ -119,7 +119,7 @@ export function Templates() {
             </div>
             <button
               onClick={() => setIsCreating(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#C4FF0D] text-black rounded-lg font-semibold hover:bg-[#A3D60A] transition-all transform hover:scale-105"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#8FD3FF] text-[#04214D] rounded-lg font-semibold hover:bg-[#6FB8F2] transition-all transform hover:scale-105"
             >
               <Plus className="h-5 w-5" />
               Create Template
@@ -130,8 +130,8 @@ export function Templates() {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {templates.length === 0 ? (
-          <div className="bg-[#1A1D1F] rounded-xl border border-gray-800 p-16 text-center">
-            <div className="w-24 h-24 bg-[#252A2E] rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="bg-[#14171E] rounded-xl border border-gray-800 p-16 text-center">
+            <div className="w-24 h-24 bg-[#22262F] rounded-full flex items-center justify-center mx-auto mb-6">
               <FileText className="h-12 w-12 text-gray-500" />
             </div>
             <h3 className="text-2xl font-bold text-white mb-3">No Templates Yet</h3>
@@ -140,7 +140,7 @@ export function Templates() {
             </p>
             <button
               onClick={() => setIsCreating(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#C4FF0D] text-black rounded-lg font-semibold hover:bg-[#A3D60A] transition-all transform hover:scale-105"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#8FD3FF] text-[#04214D] rounded-lg font-semibold hover:bg-[#6FB8F2] transition-all transform hover:scale-105"
             >
               <Plus className="h-5 w-5" />
               Create Template
@@ -151,11 +151,11 @@ export function Templates() {
             {templates.map((template) => (
               <div
                 key={template.id}
-                className="bg-[#1A1D1F] rounded-xl border border-gray-800 p-6 hover:border-[#C4FF0D]/50 transition-all group"
+                className="bg-[#14171E] rounded-xl border border-gray-800 p-6 hover:border-[#8FD3FF]/50 transition-all group"
               >
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-14 h-14 bg-[#252A2E] rounded-xl flex items-center justify-center group-hover:bg-[#C4FF0D]/10 transition-colors">
-                    <FileText className="h-7 w-7 text-[#C4FF0D]" />
+                  <div className="w-14 h-14 bg-[#22262F] rounded-xl flex items-center justify-center group-hover:bg-[#8FD3FF]/10 transition-colors">
+                    <FileText className="h-7 w-7 text-[#8FD3FF]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-bold text-white mb-1 truncate">{template.name}</h3>
@@ -166,13 +166,13 @@ export function Templates() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-5">
-                  <div className="bg-[#252A2E] rounded-lg p-3">
+                  <div className="bg-[#22262F] rounded-lg p-3">
                     <div className="text-xs text-gray-400 mb-1">Deal Type</div>
                     <div className="font-semibold text-sm text-white">
                       {getDealTypeLabel(template.deal_type)}
                     </div>
                   </div>
-                  <div className="bg-[#252A2E] rounded-lg p-3">
+                  <div className="bg-[#22262F] rounded-lg p-3">
                     <div className="text-xs text-gray-400 mb-1">Expenses</div>
                     <div className="font-semibold text-sm text-white">
                       {template.expense_categories?.length || 0} categories
@@ -198,14 +198,14 @@ export function Templates() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => navigate('/offers/create', { state: { template } })}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-[#C4FF0D] text-black rounded-lg text-sm font-semibold hover:bg-[#A3D60A] transition-all transform hover:scale-105"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-[#8FD3FF] text-[#04214D] rounded-lg text-sm font-semibold hover:bg-[#6FB8F2] transition-all transform hover:scale-105"
                   >
                     <Copy className="h-4 w-4" />
                     Use Template
                   </button>
                   <button
                     onClick={() => setEditingTemplate(template)}
-                    className="flex items-center justify-center px-3 py-2.5 bg-[#252A2E] text-gray-300 rounded-lg hover:bg-[#1A1D1F] transition-colors"
+                    className="flex items-center justify-center px-3 py-2.5 bg-[#22262F] text-gray-300 rounded-lg hover:bg-[#14171E] transition-colors"
                   >
                     <Edit className="h-4 w-4" />
                   </button>

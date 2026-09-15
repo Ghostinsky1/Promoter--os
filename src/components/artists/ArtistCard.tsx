@@ -23,7 +23,7 @@ interface ArtistCardProps {
 
 function TravelIndicator({ active, icon: Icon, label }: { active: boolean; icon: typeof Plane; label: string }) {
   return (
-    <div className={`flex items-center gap-1 text-[10px] ${active ? 'text-[#C4FF0D]' : 'text-gray-600'}`} title={label}>
+    <div className={`flex items-center gap-1 text-[10px] ${active ? 'text-[#8FD3FF]' : 'text-gray-600'}`} title={label}>
       <Icon className="w-3 h-3" />
       <span className="hidden sm:inline">{active ? 'Yes' : 'No'}</span>
     </div>
@@ -46,8 +46,8 @@ export function ArtistCard({
   const pendingTasks = tasks.filter(t => !t.completed).length;
 
   return (
-    <div className={`bg-[#1A1D1F] border rounded-2xl transition-all ${
-      expanded ? 'border-[#C4FF0D]/30 shadow-lg shadow-[#C4FF0D]/5' : 'border-gray-800 hover:border-gray-700'
+    <div className={`bg-[#14171E] border rounded-2xl transition-all ${
+      expanded ? 'border-[#8FD3FF]/30 shadow-lg shadow-[#8FD3FF]/5' : 'border-gray-800 hover:border-gray-700'
     }`}>
       {/* Card Header */}
       <div
@@ -78,7 +78,7 @@ export function ArtistCard({
 
           <div className="text-right flex-shrink-0">
             <div className="text-[10px] text-gray-500 uppercase font-medium">Total Cost</div>
-            <div className="text-lg font-bold text-[#C4FF0D]">{formatCurrency(costs.totalCost)}</div>
+            <div className="text-lg font-bold text-[#8FD3FF]">{formatCurrency(costs.totalCost)}</div>
           </div>
         </div>
 
@@ -137,19 +137,19 @@ export function ArtistCard({
 
       {/* Expanded Content */}
       {expanded && (
-        <div className="border-t border-[#2A3330]">
+        <div className="border-t border-[#2A3040]">
           {/* Action Buttons */}
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-[#2A3330] bg-[#141918]/50">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-[#2A3040] bg-[#0B0D12]/50">
             <button
               onClick={e => { e.stopPropagation(); onGenerateSheet(); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#C4FF0D]/10 border border-[#C4FF0D]/30 text-[#C4FF0D] text-xs font-medium rounded-lg hover:bg-[#C4FF0D]/20 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 text-[#8FD3FF] text-xs font-medium rounded-lg hover:bg-[#8FD3FF]/20 transition-colors"
             >
               <FileText className="w-3 h-3" />
               Generate Offer Sheet
             </button>
             <button
               onClick={e => { e.stopPropagation(); onDuplicate(); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#252A2E] text-gray-400 text-xs font-medium rounded-lg hover:bg-[#2D3331] hover:text-white transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#22262F] text-gray-400 text-xs font-medium rounded-lg hover:bg-[#2A3040] hover:text-white transition-colors"
             >
               <Copy className="w-3 h-3" />
               Duplicate
@@ -170,7 +170,7 @@ export function ArtistCard({
           </div>
 
           {/* Cost Summary Bar */}
-          <div className="px-4 py-3 bg-[#141918]/30 border-b border-[#2A3330]">
+          <div className="px-4 py-3 bg-[#0B0D12]/30 border-b border-[#2A3040]">
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               <div>
                 <div className="text-[10px] text-gray-500 uppercase">Guarantee</div>
@@ -190,7 +190,7 @@ export function ArtistCard({
               </div>
               <div>
                 <div className="text-[10px] text-gray-500 uppercase">Total Cost</div>
-                <div className="text-sm font-bold text-[#C4FF0D]">{formatCurrency(costs.totalCost)}</div>
+                <div className="text-sm font-bold text-[#8FD3FF]">{formatCurrency(costs.totalCost)}</div>
               </div>
             </div>
           </div>

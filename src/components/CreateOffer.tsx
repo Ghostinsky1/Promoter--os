@@ -1,0 +1,962 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+import { TicketTier, Expenses, OfferStatus, SupportAct, Template } from '../types';
+import { calculateOffer } from '../lib/calculations';
+import { EventDetailsTab } from './tabs/EventDetailsTab';
+import { ArtistDealTab } from './tabs/ArtistDealTab';
+import { DepositsTab } from './tabs/DepositsTab';
+import { TicketScalingTab } from './tabs/TicketScalingTab';
+import { ExpensesTab } from './tabs/ExpensesTab';
+import { SummaryTab } from './tabs/SummaryTab';
+import { ArrowLeft, ArrowRight, Check, FileText, X, ChevronLeft, ChevronRight, Save } from 'lucide-react';
+
+interface ArtistDeduction {
+  name: string;
+  amount: number;
+}
+
+
+export function CreateOffer() {
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [saving, setSaving] = useState(false);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+  const [showInitialModal, setShowInitialModal] = useState(true);
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
+
+  const [eventName, setEventName] = useState('');
+  const [artistName, setArtistName] = useState('');
+  const [venueName, setVenueName] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [capacity, setCapacity] = useState<number>(0);
+  const [mode] = useState<'estimate' | 'settlement'>('estimate');
+  const [status] = useState<OfferStatus>('planning');
+  const [venueStreet, setVenueStreet] = useState('');
+  const [venueCity, setVenueCity] = useState('');
+  const [venueState, setVenueState] = useState('');
+  const [venueZip, setVenueZip] = useState('');
+
+  const [facilityFeePerTicket, setFacilityFeePerTicket] = useState<number>(2.00);
+  const [ageLimit, setAgeLimit] = useState<string>('All Ages');
+  const [doorsTime, setDoorsTime] = useState<string>('20:00');
+  const [doorsDuration, setDoorsDuration] = useState<number>(60);
+  const [showTime, setShowTime] = useState<string>('21:00');
+  const [showDuration, setShowDuration] = useState<number>(240);
+  const [curfewTime, setCurfewTime] = useState<string>('01:00');
+
+  const [dealType, setDealType] = useState<string>('flat_fee');
+  const [guarantee, setGuarantee] = useState<number>(0);
+  const [artistPercentage, setArtistPercentage] = useState<number>(100);
+  const [taxWithholdingPct, setTaxWithholdingPct] = useState<number>(2);
+  const [depositPct, setDepositPct] = useState<number>(20);
+  const [artistBackendPct, setArtistBackendPct] = useState<number>(85);
+  const [promoterBackendPct, setPromoterBackendPct] = useState<number>(15);
+  const [depositDueTiming, setDepositDueTiming] = useState<string>('30_days_before');
+  const [customDepositDate, setCustomDepositDate] = useState<string>('');
+  const [artistDepositStatus, setArtistDepositStatus] = useState<string>('pending');
+  const [balanceDueTiming, setBalanceDueTiming] = useState<string>('at_settlement');
+  const [customBalanceDueDate, setCustomBalanceDueDate] = useState<string>('');
+  const [venueDeposit, setVenueDeposit] = useState<number>(0);
+  const [venueDepositDueDate, setVenueDepositDueDate] = useState<string>('');
+  const [venueDepositStatus, setVenueDepositStatus] = useState<string>('pending');
+
+  // Payment method state
+  const [paymentMethod, setPaymentMethod] = useState<string>('deposit_balance');
+  const [settlementDays, setSettlementDays] = useState<number>(7);
+  const [fullPaymentDueDate, setFullPaymentDueDate] = useState<string>('');
+
+  const [merchRateSoft, setMerchRateSoft] = useState<number>(100);
+  const [merchRateHard, setMerchRateHard] = useState<number>(100);
+  const [artistDeductions, setArtistDeductions] = useState<ArtistDeduction[]>([]);
+
+  const [ticketTiers, setTicketTiers] = useState<TicketTier[]>([
+    { type: 'GA', allotment: 0, comps: 0, price: 0 }
+  ]);
+  const [salesTaxPct, setSalesTaxPct] = useState<number>(13.18);
+  const [compsArtist, setCompsArtist] = useState<number>(0);
+  const [compsVenue, setCompsVenue] = useState<number>(0);
+  const [compsPromoter, setCompsPromoter] = useState<number>(0);
+
+  const [expenses, setExpenses] = useState<Expenses>({
+    talent: { rider_hospitality: 0 },
+    general: { security: 0, emt: 0, gate_staff: 0 },
+    marketing: { radio: 0, marketing: 0, paid_social: 0 },
+    production: { production: 0, crew_stagehands: 0, camera_operator: 0, technical_director: 0 }
+  });
+
+  const [ascapRate, setAscapRate] = useState<number>(0.0023);
+  const [bmiRate, setBmiRate] = useState<number>(0.003);
+  const [sesacRate, setSesacRate] = useState<number>(0.000214);
+  const [insurancePerAttendee, setInsurancePerAttendee] = useState<number>(0.62);
+  const [ccFeeRate, setCcFeeRate] = useState<number>(0.012);
+
+  const [supportActs, setSupportActs] = useState<SupportAct[]>([]);
+
+  // Accommodation state
+  const [includeHotel, setIncludeHotel] = useState<boolean>(false);
+  const [hotelBudget, setHotelBudget] = useState<number>(0);
+  const [hotelNights, setHotelNights] = useState<number>(1);
+  const [hotelNotes, setHotelNotes] = useState<string>('');
+  const [includeTransport, setIncludeTransport] = useState<boolean>(false);
+  const [transportBudget, setTransportBudget] = useState<number>(0);
+  const [transportNotes, setTransportNotes] = useState<string>('');
+  const [includeFlights, setIncludeFlights] = useState<boolean>(false);
+  const [flightBudget, setFlightBudget] = useState<number>(0);
+  const [flightNotes, setFlightNotes] = useState<string>('');
+  const [includeRider, setIncludeRider] = useState<boolean>(false);
+  const [riderCap, setRiderCap] = useState<number>(100);
+  const [riderNotes, setRiderNotes] = useState<string>('');
+
+  useEffect(() => {
+    loadTemplates();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.template-selector-container')) {
+        setShowTemplateSelector(false);
+      }
+    };
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowTemplateSelector(false);
+      }
+    };
+
+    if (showTemplateSelector) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [showTemplateSelector]);
+
+  const loadTemplates = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: memberData } = await supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (!memberData?.organization_id) return;
+
+      const { data, error } = await supabase
+        .from('templates')
+        .select('*')
+        .eq('organization_id', memberData.organization_id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTemplates(data || []);
+    } catch (error) {
+      console.error('Error loading templates:', error);
+    }
+  };
+
+  const loadTemplate = (template: Template) => {
+    setDealType(template.deal_type || 'flat_fee');
+    setTaxWithholdingPct(template.tax_withholding_pct ?? 2);
+    setDepositPct(template.deposit_pct ?? 20);
+    setDepositDueTiming(template.deposit_due_timing || '30_days_before');
+    setSalesTaxPct(template.sales_tax_pct ?? 13.18);
+
+    if (template.ticket_tier_templates && template.ticket_tier_templates.length > 0) {
+      const tiers: TicketTier[] = template.ticket_tier_templates.map((tt) => ({
+        type: tt.type || 'GA',
+        allotment: tt.default_allotment || 0,
+        comps: tt.default_comps || 0,
+        price: tt.price || 0
+      }));
+      setTicketTiers(tiers);
+    }
+
+    if (template.expense_categories && template.expense_categories.length > 0) {
+      const newExpenses: Expenses = {
+        talent: {},
+        general: {},
+        marketing: {},
+        production: {}
+      };
+
+      template.expense_categories.forEach((category) => {
+        const key = category.title.toLowerCase();
+        let targetCategory: 'talent' | 'general' | 'marketing' | 'production' = 'general';
+
+        if (key === 'talent') targetCategory = 'talent';
+        else if (key === 'marketing') targetCategory = 'marketing';
+        else if (key === 'production') targetCategory = 'production';
+
+        category.items?.forEach((item) => {
+          newExpenses[targetCategory][item.name] = item.default_amount || 0;
+        });
+      });
+
+      setExpenses(newExpenses);
+    }
+
+    setShowTemplateSelector(false);
+    setShowInitialModal(false);
+    setPreviewTemplate(null);
+  };
+
+  const startFromScratch = () => {
+    setShowInitialModal(false);
+  };
+
+  const calculations = calculateOffer(
+    ticketTiers,
+    salesTaxPct,
+    expenses,
+    guarantee,
+    taxWithholdingPct,
+    dealType,
+    mode,
+    artistBackendPct,
+    promoterBackendPct,
+    supportActs,
+    {
+      includeHotel,
+      hotelBudget,
+      hotelNights,
+      includeTransport,
+      transportBudget,
+      includeFlights,
+      flightBudget,
+      includeRider,
+      riderCap
+    },
+    {
+      ascapRate,
+      bmiRate,
+      sesacRate,
+      insurancePerAttendee,
+      ccFeeRate
+    }
+  );
+
+  const steps = [
+    { number: 1, label: 'Event Info', title: 'Event Details' },
+    { number: 2, label: 'Artist Deal', title: 'Artist Deal Structure' },
+    { number: 3, label: 'Deposits', title: 'Deposit Information' },
+    { number: 4, label: 'Tickets', title: 'Ticket Configuration' },
+    { number: 5, label: 'Expenses', title: 'Event Expenses' },
+    { number: 6, label: 'Review', title: 'Review & Submit' },
+  ];
+
+  const handleNext = () => {
+    if (currentStep === 1) {
+      if (!artistName || !venueName || !eventDate || capacity === 0) {
+        alert('Please fill in all event details');
+        return;
+      }
+    }
+    if (currentStep < 6) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!artistName || !venueName || !eventDate || capacity === 0) {
+      alert('Please fill in all event details');
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        alert('You must be logged in to create an offer');
+        navigate('/');
+        return;
+      }
+
+      const { data: memberData, error: memberError } = await supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (memberError) throw memberError;
+
+      if (!memberData?.organization_id) {
+        alert('You must belong to an organization to create offers');
+        navigate('/');
+        return;
+      }
+
+      const showId = `show_${Date.now()}`;
+      const offerId = `offer_${Date.now()}`;
+
+      const venueFullAddress = [
+        venueStreet,
+        `${venueCity}${venueState ? ', ' + venueState : ''}${venueZip ? ' ' + venueZip : ''}`
+      ].filter(Boolean).join('\n');
+
+      const { error: showError } = await supabase.from('shows').insert({
+        id: showId,
+        event_name: eventName || null,
+        artist_name: artistName,
+        venue_name: venueName,
+        event_date: eventDate,
+        capacity: capacity,
+        user_id: user.id,
+        organization_id: memberData.organization_id,
+      });
+
+      if (showError) throw showError;
+
+      const { error: offerError } = await supabase.from('offers').insert({
+        id: offerId,
+        show_id: showId,
+        mode: mode,
+        status: status,
+        deal_type: dealType,
+        guarantee: guarantee,
+        artist_percentage: artistPercentage,
+        tax_withholding_pct: taxWithholdingPct,
+        deposit_pct: depositPct,
+        artist_backend_pct: artistBackendPct,
+        promoter_backend_pct: promoterBackendPct,
+        deposit_due_timing: depositDueTiming,
+        deposit_due_date: customDepositDate,
+        venue_street: venueStreet,
+        venue_city: venueCity,
+        venue_state: venueState,
+        venue_zip: venueZip,
+        venue_full_address: venueFullAddress,
+        artist_deposit_status: artistDepositStatus,
+        balance_due_timing: balanceDueTiming,
+        custom_balance_due_date: customBalanceDueDate || null,
+        venue_deposit: venueDeposit,
+        venue_deposit_due_date: venueDepositDueDate,
+        venue_deposit_status: venueDepositStatus,
+        ticket_tiers: ticketTiers,
+        sales_tax_pct: salesTaxPct,
+        expenses: expenses,
+        calculations: calculations,
+        support_acts: supportActs,
+        user_id: user.id,
+        organization_id: memberData.organization_id,
+        facility_fee_per_ticket: facilityFeePerTicket,
+        comps_artist: compsArtist,
+        comps_venue: compsVenue,
+        comps_promoter: compsPromoter,
+        doors_time: doorsTime,
+        doors_duration: doorsDuration,
+        show_time: showTime,
+        show_duration: showDuration,
+        curfew_time: curfewTime,
+        age_limit: ageLimit,
+        merch_rate_soft: merchRateSoft,
+        merch_rate_hard: merchRateHard,
+        artist_deductions: artistDeductions,
+        ascap_rate: ascapRate,
+        bmi_rate: bmiRate,
+        sesac_rate: sesacRate,
+        insurance_per_attendee: insurancePerAttendee,
+        cc_fee_rate: ccFeeRate,
+        include_hotel: includeHotel,
+        hotel_budget: hotelBudget,
+        hotel_nights: hotelNights,
+        hotel_notes: hotelNotes,
+        include_transport: includeTransport,
+        transport_budget: transportBudget,
+        transport_notes: transportNotes,
+        include_flights: includeFlights,
+        flight_budget: flightBudget,
+        flight_notes: flightNotes,
+        include_rider: includeRider,
+        rider_cap: riderCap,
+        rider_notes: riderNotes,
+        payment_method: paymentMethod,
+        settlement_days: settlementDays,
+        full_payment_due_date: fullPaymentDueDate || null,
+        offer_sent_date: new Date().toISOString().split('T')[0],
+      });
+
+      if (offerError) throw offerError;
+
+      navigate('/offers');
+    } catch (error) {
+      console.error('Error saving offer:', error);
+      alert('Failed to save offer. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0F1113]">
+      {/* Initial Template Selection Modal */}
+      {showInitialModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#1A1D1F] border border-gray-800 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 sm:p-8 border-b border-gray-800">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-2xl sm:text-3xl font-bold text-white">Create New Offer</h2>
+                <button
+                  onClick={() => navigate('/offers')}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              <p className="text-gray-400">Start from scratch or use a template to speed up your workflow</p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 sm:p-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <button
+                  onClick={startFromScratch}
+                  className="group relative bg-gradient-to-br from-[#252A2E] to-[#1A1D1F] hover:from-[#2D3331] hover:to-[#1F2422] border-2 border-gray-800 hover:border-[#C4FF0D]/50 rounded-2xl p-6 sm:p-8 text-left transition-all"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#C4FF0D]/10 rounded-xl flex items-center justify-center">
+                      <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-[#C4FF0D]" />
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-gray-600 group-hover:text-[#C4FF0D] transition-colors" />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Start from Scratch</h3>
+                  <p className="text-sm text-gray-400">Create a completely new offer with custom settings</p>
+                </button>
+
+                {templates.length > 0 ? (
+                  <button
+                    onClick={() => setShowTemplateSelector(true)}
+                    className="group relative bg-gradient-to-br from-[#C4FF0D]/10 to-[#1A1D1F] hover:from-[#C4FF0D]/20 hover:to-[#1F2422] border-2 border-[#C4FF0D]/30 hover:border-[#C4FF0D]/60 rounded-2xl p-6 sm:p-8 text-left transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#C4FF0D]/20 rounded-xl flex items-center justify-center">
+                        <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-[#C4FF0D]" />
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-[#C4FF0D]/60 group-hover:text-[#C4FF0D] transition-colors" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Use a Template</h3>
+                    <p className="text-sm text-gray-400">{templates.length} template{templates.length !== 1 ? 's' : ''} available</p>
+                  </button>
+                ) : (
+                  <div className="relative bg-[#252A2E] border-2 border-dashed border-gray-700 rounded-2xl p-6 sm:p-8 text-center opacity-60">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-800/50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                      <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-500 mb-2">No Templates Yet</h3>
+                    <p className="text-sm text-gray-600">Create offers to save as templates</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Template List */}
+              {showTemplateSelector && templates.length > 0 && (
+                <div className="space-y-3 template-selector-container">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-white">Select a Template</h3>
+                    <button
+                      onClick={() => setShowTemplateSelector(false)}
+                      className="text-gray-400 hover:text-white text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  {templates.map((template) => (
+                    <div
+                      key={template.id}
+                      className="bg-[#141716] border border-gray-800 hover:border-[#C4FF0D]/50 rounded-xl p-4 transition-all group"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-white mb-1 truncate">{template.name}</h4>
+                          {template.description && (
+                            <p className="text-sm text-gray-400 line-clamp-2">{template.description}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <button
+                            onClick={() => setPreviewTemplate(template)}
+                            className="px-3 py-1.5 bg-[#252A2E] hover:bg-[#2D3331] text-gray-300 hover:text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Preview
+                          </button>
+                          <button
+                            onClick={() => loadTemplate(template)}
+                            className="px-3 py-1.5 bg-[#C4FF0D] hover:bg-[#A3D60A] text-black rounded-lg text-sm font-bold transition-colors"
+                          >
+                            Use
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template Preview Modal */}
+      {previewTemplate && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#1A1D1F] border border-gray-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-gray-800">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-white">{previewTemplate.name}</h2>
+                <button
+                  onClick={() => setPreviewTemplate(null)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              {previewTemplate.description && (
+                <p className="text-gray-400">{previewTemplate.description}</p>
+              )}
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-4">
+                <div className="bg-[#141716] rounded-xl p-4 border border-gray-800">
+                  <h3 className="text-sm font-bold text-[#C4FF0D] mb-2">DEAL STRUCTURE</h3>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-gray-400">Deal Type</p>
+                      <p className="text-white font-medium capitalize">{previewTemplate.deal_type.replace('_', ' ')}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400">Deposit %</p>
+                      <p className="text-white font-medium">{previewTemplate.deposit_pct}%</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400">Tax Withholding</p>
+                      <p className="text-white font-medium">{previewTemplate.tax_withholding_pct}%</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400">Sales Tax</p>
+                      <p className="text-white font-medium">{previewTemplate.sales_tax_pct}%</p>
+                    </div>
+                  </div>
+                </div>
+
+                {previewTemplate.ticket_tier_templates && previewTemplate.ticket_tier_templates.length > 0 && (
+                  <div className="bg-[#141716] rounded-xl p-4 border border-gray-800">
+                    <h3 className="text-sm font-bold text-[#C4FF0D] mb-2">TICKET TIERS</h3>
+                    <div className="space-y-2">
+                      {previewTemplate.ticket_tier_templates.map((tier, index) => (
+                        <div key={index} className="flex items-center justify-between text-sm">
+                          <span className="text-gray-400">{tier.type}</span>
+                          <div className="flex items-center gap-4">
+                            <span className="text-white font-medium">{tier.default_allotment || 0} tickets</span>
+                            <span className="text-[#C4FF0D] font-bold">${tier.price || 0}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {previewTemplate.expense_categories && previewTemplate.expense_categories.length > 0 && (
+                  <div className="bg-[#141716] rounded-xl p-4 border border-gray-800">
+                    <h3 className="text-sm font-bold text-[#C4FF0D] mb-2">EXPENSES</h3>
+                    <div className="space-y-2 text-sm">
+                      {previewTemplate.expense_categories.map((category: any, idx: number) => (
+                        <div key={idx}>
+                          <p className="text-gray-400 font-medium mb-1">{category.title}</p>
+                          {category.items?.map((item: any, itemIdx: number) => (
+                            <div key={itemIdx} className="flex items-center justify-between pl-3">
+                              <span className="text-gray-500 text-xs">{item.name}</span>
+                              <span className="text-white font-medium">${item.default_amount?.toLocaleString() || 0}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-800 flex gap-3">
+              <button
+                onClick={() => setPreviewTemplate(null)}
+                className="flex-1 px-4 py-3 bg-[#252A2E] hover:bg-[#2D3331] text-white rounded-xl font-medium transition-colors"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => loadTemplate(previewTemplate)}
+                className="flex-1 px-4 py-3 bg-[#C4FF0D] hover:bg-[#A3D60A] text-black rounded-xl font-bold transition-colors"
+              >
+                Use This Template
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Progress Header - Fixed */}
+      <div className="sticky top-0 z-50 bg-[#0F1113]/95 backdrop-blur-lg border-b border-gray-800">
+        <div className="max-w-5xl mx-auto px-6 py-6">
+          {/* Progress Info */}
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-gray-400 text-sm">Step {currentStep} of {steps.length}</p>
+              <h2 className="text-xl font-bold text-white">{steps[currentStep - 1].title}</h2>
+            </div>
+            <div className="flex items-center gap-3">
+              {templates.length > 0 && (
+                <div className="relative template-selector-container">
+                  <button
+                    onClick={() => setShowTemplateSelector(!showTemplateSelector)}
+                    className="px-4 py-2 bg-[#252A29] text-gray-300 hover:text-white hover:bg-[#2D3331] rounded-xl font-medium transition-colors flex items-center gap-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Load Template
+                  </button>
+
+                  {showTemplateSelector && (
+                    <div className="absolute right-0 mt-2 w-72 bg-[#1A1F1E] rounded-xl shadow-lg border border-gray-700 z-20">
+                      <div className="p-2 max-h-96 overflow-y-auto">
+                        {templates.map((template) => (
+                          <button
+                            key={template.id}
+                            onClick={() => loadTemplate(template)}
+                            className="w-full text-left p-3 hover:bg-[#252A29] rounded-lg transition-colors"
+                          >
+                            <div className="font-medium text-white">{template.name}</div>
+                            {template.description && (
+                              <div className="text-sm text-gray-400 mt-1">{template.description}</div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              <button
+                onClick={() => navigate('/')}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="relative mb-6">
+            <div className="h-2 bg-[#252A29] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#C4FF0D] rounded-full transition-all duration-300"
+                style={{ width: `${(currentStep / steps.length) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Step Indicators */}
+          <div className="flex items-center justify-between">
+            {steps.map((step) => (
+              <div
+                key={step.number}
+                className="flex flex-col items-center cursor-pointer"
+                onClick={() => setCurrentStep(step.number)}
+              >
+                <div
+                  className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold transition-all ${
+                    step.number === currentStep
+                      ? 'bg-[#C4FF0D] text-black scale-110'
+                      : step.number < currentStep
+                      ? 'bg-[#C4FF0D]/30 text-[#C4FF0D]'
+                      : 'bg-[#252A29] text-gray-600'
+                  }`}
+                >
+                  {step.number < currentStep ? (
+                    <Check className="h-6 w-6" />
+                  ) : (
+                    step.number
+                  )}
+                </div>
+                <p className={`text-xs mt-2 ${
+                  step.number === currentStep ? 'text-[#C4FF0D] font-semibold' : 'text-gray-500'
+                }`}>
+                  {step.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Form Content */}
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="bg-[#1A1F1E] border border-gray-800 rounded-3xl p-8">
+          {currentStep === 1 && (
+            <EventDetailsTab
+              eventName={eventName}
+              setEventName={setEventName}
+              artistName={artistName}
+              setArtistName={setArtistName}
+              venueName={venueName}
+              setVenueName={setVenueName}
+              eventDate={eventDate}
+              setEventDate={setEventDate}
+              capacity={capacity}
+              setCapacity={setCapacity}
+              mode={mode}
+              venueStreet={venueStreet}
+              setVenueStreet={setVenueStreet}
+              venueCity={venueCity}
+              setVenueCity={setVenueCity}
+              venueState={venueState}
+              setVenueState={setVenueState}
+              venueZip={venueZip}
+              setVenueZip={setVenueZip}
+              facilityFeePerTicket={facilityFeePerTicket}
+              setFacilityFeePerTicket={setFacilityFeePerTicket}
+              ageLimit={ageLimit}
+              setAgeLimit={setAgeLimit}
+              doorsTime={doorsTime}
+              setDoorsTime={setDoorsTime}
+              doorsDuration={doorsDuration}
+              setDoorsDuration={setDoorsDuration}
+              showTime={showTime}
+              setShowTime={setShowTime}
+              showDuration={showDuration}
+              setShowDuration={setShowDuration}
+              curfewTime={curfewTime}
+              setCurfewTime={setCurfewTime}
+            />
+          )}
+
+          {currentStep === 2 && (
+            <ArtistDealTab
+              dealType={dealType}
+              setDealType={setDealType}
+              guarantee={guarantee}
+              setGuarantee={setGuarantee}
+              artistPercentage={artistPercentage}
+              setArtistPercentage={setArtistPercentage}
+              taxWithholdingPct={taxWithholdingPct}
+              setTaxWithholdingPct={setTaxWithholdingPct}
+              depositPct={depositPct}
+              setDepositPct={setDepositPct}
+              artistBackendPct={artistBackendPct}
+              setArtistBackendPct={setArtistBackendPct}
+              promoterBackendPct={promoterBackendPct}
+              setPromoterBackendPct={setPromoterBackendPct}
+              supportActs={supportActs}
+              setSupportActs={setSupportActs}
+              merchRateSoft={merchRateSoft}
+              setMerchRateSoft={setMerchRateSoft}
+              merchRateHard={merchRateHard}
+              setMerchRateHard={setMerchRateHard}
+              artistDeductions={artistDeductions}
+              setArtistDeductions={setArtistDeductions}
+              ticketTiers={ticketTiers}
+              salesTaxPct={salesTaxPct}
+              expenses={expenses}
+              facilityFeePerTicket={facilityFeePerTicket}
+              ascapRate={ascapRate}
+              bmiRate={bmiRate}
+              sesacRate={sesacRate}
+              insurancePerAttendee={insurancePerAttendee}
+              ccFeeRate={ccFeeRate}
+              includeHotel={includeHotel}
+              setIncludeHotel={setIncludeHotel}
+              hotelBudget={hotelBudget}
+              setHotelBudget={setHotelBudget}
+              hotelNights={hotelNights}
+              setHotelNights={setHotelNights}
+              hotelNotes={hotelNotes}
+              setHotelNotes={setHotelNotes}
+              includeTransport={includeTransport}
+              setIncludeTransport={setIncludeTransport}
+              transportBudget={transportBudget}
+              setTransportBudget={setTransportBudget}
+              transportNotes={transportNotes}
+              setTransportNotes={setTransportNotes}
+              includeFlights={includeFlights}
+              setIncludeFlights={setIncludeFlights}
+              flightBudget={flightBudget}
+              setFlightBudget={setFlightBudget}
+              flightNotes={flightNotes}
+              setFlightNotes={setFlightNotes}
+              includeRider={includeRider}
+              setIncludeRider={setIncludeRider}
+              riderCap={riderCap}
+              setRiderCap={setRiderCap}
+              riderNotes={riderNotes}
+              setRiderNotes={setRiderNotes}
+              paymentMethod={paymentMethod}
+              setPaymentMethod={setPaymentMethod}
+              settlementDays={settlementDays}
+              setSettlementDays={setSettlementDays}
+              fullPaymentDueDate={fullPaymentDueDate}
+              setFullPaymentDueDate={setFullPaymentDueDate}
+              eventDate={eventDate}
+            />
+          )}
+
+          {currentStep === 3 && (
+            <DepositsTab
+              guarantee={guarantee}
+              taxWithholdingPct={taxWithholdingPct}
+              setTaxWithholdingPct={setTaxWithholdingPct}
+              depositPct={depositPct}
+              setDepositPct={setDepositPct}
+              depositDueTiming={depositDueTiming}
+              setDepositDueTiming={setDepositDueTiming}
+              customDepositDate={customDepositDate}
+              setCustomDepositDate={setCustomDepositDate}
+              artistDepositStatus={artistDepositStatus}
+              setArtistDepositStatus={setArtistDepositStatus}
+              balanceDueTiming={balanceDueTiming}
+              setBalanceDueTiming={setBalanceDueTiming}
+              customBalanceDueDate={customBalanceDueDate}
+              setCustomBalanceDueDate={setCustomBalanceDueDate}
+              venueDeposit={venueDeposit}
+              setVenueDeposit={setVenueDeposit}
+              venueDepositDueDate={venueDepositDueDate}
+              setVenueDepositDueDate={setVenueDepositDueDate}
+              venueDepositStatus={venueDepositStatus}
+              setVenueDepositStatus={setVenueDepositStatus}
+              eventDate={eventDate}
+            />
+          )}
+
+          {currentStep === 4 && (
+            <TicketScalingTab
+              ticketTiers={ticketTiers}
+              setTicketTiers={setTicketTiers}
+              salesTaxPct={salesTaxPct}
+              setSalesTaxPct={setSalesTaxPct}
+              mode={mode}
+              compsArtist={compsArtist}
+              setCompsArtist={setCompsArtist}
+              compsVenue={compsVenue}
+              setCompsVenue={setCompsVenue}
+              compsPromoter={compsPromoter}
+              setCompsPromoter={setCompsPromoter}
+            />
+          )}
+
+          {currentStep === 5 && (() => {
+            const supportActsCost = supportActs.reduce((sum, act) => sum + act.guarantee, 0);
+
+            let accommodationTotal = 0;
+            if (includeHotel && hotelBudget) {
+              accommodationTotal += hotelBudget * (hotelNights || 1);
+            }
+            if (includeTransport && transportBudget) {
+              accommodationTotal += transportBudget;
+            }
+            if (includeFlights && flightBudget) {
+              accommodationTotal += flightBudget;
+            }
+            if (includeRider && riderCap) {
+              accommodationTotal += riderCap;
+            }
+
+            return (
+              <ExpensesTab
+                expenses={expenses}
+                setExpenses={setExpenses}
+                ascapRate={ascapRate}
+                setAscapRate={setAscapRate}
+                bmiRate={bmiRate}
+                setBmiRate={setBmiRate}
+                sesacRate={sesacRate}
+                setSesacRate={setSesacRate}
+                insurancePerAttendee={insurancePerAttendee}
+                setInsurancePerAttendee={setInsurancePerAttendee}
+                ccFeeRate={ccFeeRate}
+                setCcFeeRate={setCcFeeRate}
+                supportActsCost={supportActsCost}
+                accommodationCosts={accommodationTotal}
+                estimatedVariableExpenses={calculations.totalExpenses - (supportActsCost + accommodationTotal + Object.values(expenses).reduce((sum, cat) => sum + Object.values(cat).reduce((s, v) => s + v, 0), 0))}
+                artistGuarantee={guarantee}
+              />
+            );
+          })()}
+
+          {currentStep === 6 && (
+            <SummaryTab
+              calculations={calculations}
+              dealType={dealType}
+              guarantee={guarantee}
+              taxWithholdingPct={taxWithholdingPct}
+              depositPct={depositPct}
+              mode={mode}
+              ticketTiers={ticketTiers}
+              salesTaxPct={salesTaxPct}
+              artistName={artistName}
+              venueName={venueName}
+              capacity={capacity}
+            />
+          )}
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="flex items-center justify-between mt-8">
+          <button
+            onClick={handlePrevious}
+            disabled={currentStep === 1}
+            className="bg-[#252A29] text-gray-400 hover:text-white hover:bg-[#2D3331] rounded-2xl px-8 py-6 text-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="h-5 w-5" />
+            Previous
+          </button>
+
+          {currentStep < 6 ? (
+            <button
+              onClick={handleNext}
+              className="bg-[#C4FF0D] text-black hover:bg-[#A3D60A] rounded-2xl px-8 py-6 text-lg font-bold transition-colors flex items-center gap-2"
+            >
+              Next
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="bg-[#C4FF0D] text-black hover:bg-[#A3D60A] rounded-2xl px-8 py-6 text-lg font-bold transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Create Offer'}
+              <Check className="h-5 w-5" />
+            </button>
+          )}
+        </div>
+
+        {/* Save Draft Button */}
+        <div className="text-center mt-6">
+          <button
+            onClick={() => navigate('/')}
+            className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 mx-auto"
+          >
+            <Save className="h-4 w-4" />
+            Save as Draft
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

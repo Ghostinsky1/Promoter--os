@@ -1,0 +1,52 @@
+export interface StripeProduct {
+  id: string;
+  priceId: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  mode: 'subscription' | 'payment';
+  features: string[];
+}
+
+export const STRIPE_PRODUCTS: StripeProduct[] = [
+  {
+    id: 'prod_TWz6FttdA8zmct',
+    priceId: 'price_1SZv8NK0rX2Uf9BVDhRmDFcN',
+    name: 'Starter',
+    description: 'Professional offer generation and management tools',
+    price: 39.00,
+    currency: 'USD',
+    mode: 'subscription',
+    features: [
+      'Up to 10 active events',
+      '1 seat (single user)',
+      'Full Offer Builder (all 4 deal structures)',
+      'Professional PDF generation',
+      'Settlement tracking',
+      'Run of show management'
+    ]
+  },
+  {
+    id: 'prod_TaCkDOjKZfrycS',
+    priceId: 'price_1Sd2LGK0rX2Uf9BVwPgHLijQ',
+    name: 'Pro',
+    description: 'Advanced features for growing concert promoters',
+    price: 99.00,
+    currency: 'USD',
+    mode: 'subscription',
+    features: [
+      'Everything in Starter, plus:',
+      'Unlimited events & offers',
+      'Unlimited tours',
+      'Tour Management tab',
+      'AI Insights & Deal Analyzer',
+      'Deals scored 0-100',
+      'STRONG BUY / PROCEED / CAUTION / PASS recommendations'
+    ]
+  }
+];
+
+export function getProductByPriceId(priceId: string): StripeProduct | undefined {
+  return STRIPE_PRODUCTS.find(product => product.priceId === priceId);
+}

@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase, SUPABASE_URL } from './supabase';
 
 interface CreateCheckoutSessionParams {
   priceId: string;
@@ -19,7 +19,7 @@ export async function createCheckoutSession({
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/stripe-checkout`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -30,6 +30,7 @@ export async function createCheckoutSession({
       mode,
       success_url: successUrl,
       cancel_url: cancelUrl,
+      metadata: { tier: priceId === 'price_1Sd2LGK0rX2Uf9BVwPgHLijQ' ? 'pro' : 'starter' },
     }),
   });
 

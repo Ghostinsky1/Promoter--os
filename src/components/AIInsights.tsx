@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Sparkles, TrendingUp, RefreshCw, Loader2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase, SUPABASE_URL } from '../lib/supabase';
 
 interface Insight {
   type: string;
@@ -40,7 +40,7 @@ export function AIInsights() {
         return;
       }
 
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-insights`;
+      const apiUrl = `${SUPABASE_URL}/functions/v1/ai-insights`;
       const res = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${session.access_token}`,

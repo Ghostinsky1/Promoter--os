@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { supabase, SUPABASE_URL } from '../lib/supabase';
 import { OfferWithShow, CompanySettings, EventArtist } from '../types';
 import { formatCurrency, calculateCategoryTotal, getExpenseBreakdown } from '../lib/calculations';
 import { getProfitIndicator } from '../lib/profitIndicators';
@@ -231,7 +231,7 @@ export function OfferDetails() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session || !isMountedRef.current) return;
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-deal`;
+      const apiUrl = `${SUPABASE_URL}/functions/v1/analyze-deal`;
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },

@@ -1,3 +1,5 @@
+import { createCheckoutSession } from '../lib/stripe';
+import { SUPABASE_URL } from '../lib/supabase';
 import { useState } from 'react';
 import { CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -16,20 +18,12 @@ export function PricingPage() {
     setLoadingPriceId(priceId);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          priceId,
-          successUrl: `${window.location.origin}/success`,
-          cancelUrl: `${window.location.origin}/pricing`,
-        }),
+      const { url } = await createCheckoutSession({
+        priceId,
+        mode: 'subscription',
+        successUrl: `${window.location.origin}/success`,
+        cancelUrl: `${window.location.origin}/pricing`,
       });
-
-      const { url } = await response.json();
       
       if (url) {
         window.location.href = url;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Sparkles, TrendingUp, AlertTriangle, CheckCircle2, RefreshCw, Loader2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase, SUPABASE_URL } from '../lib/supabase';
 
 interface DealAnalyzerProps {
   offerData: {
@@ -60,7 +60,7 @@ export function DealAnalyzer({ offerData, onAnalysisComplete }: DealAnalyzerProp
         throw new Error('Not authenticated');
       }
 
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-deal`;
+      const apiUrl = `${SUPABASE_URL}/functions/v1/analyze-deal`;
       console.log('Calling API:', apiUrl);
       console.log('Request body:', offerData);
 

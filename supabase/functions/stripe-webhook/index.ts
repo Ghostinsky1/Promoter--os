@@ -6,7 +6,7 @@ const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
 const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
 const stripe = new Stripe(stripeSecret, {
   appInfo: {
-    name: 'Bolt Integration',
+    name: 'PROMTP',
     version: '1.0.0',
   },
 });
@@ -131,7 +131,7 @@ async function syncCustomerFromStripe(customerId: string) {
       const { error: noSubError } = await supabase.from('stripe_subscriptions').upsert(
         {
           customer_id: customerId,
-          subscription_status: 'not_started',
+          status: 'not_started',
         },
         {
           onConflict: 'customer_id',
@@ -174,24 +174,42 @@ async function syncCustomerFromStripe(customerId: string) {
     }
     console.info(`Successfully synced subscription for customer: ${customerId}`);
 
-    if (subscription.metadata?.organization_id) {
-      const orgId = subscription.metadata.organization_id;
-      const status = subscription.status === 'trialing' || subscription.status === 'active' ? 'trialing' : 'incomplete';
+    // Map the Stripe subscription onto the organization so the app unlocks.
+    const priceId = subscription.items.data[0].price.id;
+    const tier = subscription.metadata?.tier || (priceId === 'price_1Sd2LGK0rX2Uf9BVwPgHLijQ' ? 'pro' : 'starter');
+    const active = subscription.status === 'trialing' || subscription.status === 'active';
+    const orgStatus = subscription.status === 'trialing' ? 'trialing' : active ? 'active' : subscription.status === 'past_due' ? 'past_due' : 'canceled';
 
+    let orgId = subscription.metadata?.organization_id;
+    if (!orgId) {
+      // Fall back: find the org through stripe_customers -> user -> organization_members
+      const { data: sc } = await supabase.from('stripe_customers').select('user_id').eq('customer_id', customerId).maybeSingle();
+      if (sc?.user_id) {
+        const { data: om } = await supabase.from('organization_members').select('organization_id').eq('user_id', sc.user_id).eq('is_active', true).limit(1).maybeSingle();
+        orgId = om?.organization_id;
+      }
+    }
+
+    if (orgId) {
       const { error: orgError } = await supabase
         .from('organizations')
         .update({
-          subscription_status: status,
+          subscription_status: orgStatus,
+          subscription_tier: active ? tier : undefined,
+          max_offers: active ? (tier === 'starter' ? 10 : -1) : undefined,
           stripe_customer_id: customerId,
-          stripe_subscription_id: subscription.id
+          stripe_subscription_id: subscription.id,
+          updated_at: new Date().toISOString(),
         })
         .eq('id', orgId);
 
       if (orgError) {
         console.error('Error updating organization:', orgError);
       } else {
-        console.info(`Successfully activated organization ${orgId} with status ${status}`);
+        console.info(`Organization ${orgId} -> ${orgStatus} (${tier})`);
       }
+    } else {
+      console.error(`Could not find an organization for Stripe customer ${customerId}`);
     }
   } catch (error) {
     console.error(`Failed to sync subscription for customer ${customerId}:`, error);

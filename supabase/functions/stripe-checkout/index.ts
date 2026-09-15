@@ -11,7 +11,7 @@ if (!stripeSecret) {
 
 const stripe = stripeSecret ? new Stripe(stripeSecret, {
   appInfo: {
-    name: 'Bolt Integration',
+    name: 'PROMTP',
     version: '1.0.0',
   },
 }) : null;
@@ -201,6 +201,13 @@ Deno.serve(async (req) => {
       }
     }
 
+    const sessionMetadata: Record<string, string> = { ...(metadata || {}) };
+    if (user) {
+      const { data: om } = await supabase.from('organization_members').select('organization_id').eq('user_id', user.id).eq('is_active', true).limit(1).maybeSingle();
+      if (om?.organization_id) sessionMetadata.organization_id = om.organization_id;
+    }
+    if (!sessionMetadata.tier) sessionMetadata.tier = price_id === 'price_1Sd2LGK0rX2Uf9BVwPgHLijQ' ? 'pro' : 'starter';
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
@@ -213,16 +220,11 @@ Deno.serve(async (req) => {
       mode,
       success_url,
       cancel_url,
-      metadata: metadata || {},
-      subscription_data: mode === 'subscription' && metadata?.trial_period_days !== undefined
+      metadata: sessionMetadata,
+      subscription_data: mode === 'subscription'
         ? {
-            trial_period_days: metadata.trial_period_days,
-            metadata: metadata || {}
-          }
-        : mode === 'subscription'
-        ? {
-            trial_period_days: 14,
-            metadata: metadata || {}
+            trial_period_days: metadata?.trial_period_days !== undefined ? Number(metadata.trial_period_days) : 14,
+            metadata: sessionMetadata
           }
         : undefined,
     });

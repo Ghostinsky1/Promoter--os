@@ -6,6 +6,11 @@ import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2";
 import {
   analyze, artistCost, calculateOffer, dealSummary, DEFAULT_EXPENSES, settlementActuals, totalExpenses,
 } from "./calc.ts";
+// Same PDF code the app uses, bundled for Deno (rebuild: npm run build:mcp-pdf).
+import { offerPdfBase64, artistSheetBase64, offerPDFFilename } from "./pdf-bundle.js";
+
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const PDF_BUCKET = "offer-pdfs";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 // Public publishable key (same one baked into the frontend).
@@ -34,6 +39,7 @@ class UserError extends Error {}
 // ---------- context ----------
 interface Ctx {
   db: SupabaseClient;
+  token: string;
   userId: string;
   email?: string;
   org: Any;
@@ -62,7 +68,7 @@ async function loadCtxInner(token: string): Promise<Ctx | null> {
     .eq("is_active", true)
     .limit(1)
     .maybeSingle();
-  return { db, userId: data.user.id, email: data.user.email, org: (mem as Any)?.organizations ?? null };
+  return { db, token, userId: data.user.id, email: data.user.email, org: (mem as Any)?.organizations ?? null };
 }
 
 function hasAccess(org: Any): boolean {
@@ -91,6 +97,43 @@ async function getOfferRow(ctx: Ctx, id: string) {
   if (!offer) throw new UserError(`No offer found with id "${id}". Use list_offers to find the right id.`);
   const show = must(await ctx.db.from("shows").select("*").eq("id", (offer as Any).show_id).maybeSingle(), "Loading show");
   return { offer: offer as Any, show: show as Any };
+}
+
+
+// ---------- PDF + email helpers ----------
+async function loadCompanySettings(ctx: Ctx): Promise<Any> {
+  const { data } = await ctx.db.from("company_settings").select("*").eq("organization_id", ctx.org.id).limit(1).maybeSingle();
+  return data || null;
+}
+
+function buildOfferPdf(offer: Any, show: Any, cs: Any, mode: "artist_offer" | "estimate", costsOnly = false) {
+  const full = { ...offer, show };
+  return { filename: offerPDFFilename(full), base64: offerPdfBase64(full, cs, mode, costsOnly) as string };
+}
+
+async function storePdf(ctx: Ctx, filename: string, base64: string): Promise<{ path: string; url: string; expires_in_hours: number }> {
+  if (!SERVICE_ROLE_KEY) throw new UserError("PDF storage is not configured on the server.");
+  const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+  const { data: buckets } = await admin.storage.listBuckets();
+  if (!buckets?.some((b: Any) => b.name === PDF_BUCKET)) {
+    await admin.storage.createBucket(PDF_BUCKET, { public: false, fileSizeLimit: 10 * 1024 * 1024 });
+  }
+  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+  const path = `${ctx.org.id}/${Date.now()}-${filename}`;
+  const up = await admin.storage.from(PDF_BUCKET).upload(path, bytes, { contentType: "application/pdf", upsert: true });
+  if (up.error) throw new Error(`Storing PDF: ${up.error.message}`);
+  const hours = 24;
+  const signed = await admin.storage.from(PDF_BUCKET).createSignedUrl(path, hours * 3600);
+  if (signed.error || !signed.data?.signedUrl) throw new Error(`Creating download link: ${signed.error?.message}`);
+  return { path, url: signed.data.signedUrl, expires_in_hours: hours };
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function fmtLongDate(iso: string) {
+  const [y, m, d] = String(iso || "").slice(0, 10).split("-").map(Number);
+  if (!y || !m || !d) return iso || "";
+  return new Date(y, m - 1, d).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 }
 
 const money = (v: number) => Math.round((v ?? 0) * 100) / 100;
@@ -798,6 +841,137 @@ const tools: Tool[] = [
         }).select().single(), "Creating run of show");
       }
       return { saved: true, run_of_show: data };
+    },
+  },
+  {
+    name: "generate_offer_pdf",
+    title: "Generate offer PDF",
+    description: "Builds the offer PDF exactly as the app does and returns a private download link (valid 24h). mode 'artist_offer' (default) is the clean version safe to send to an artist/agent; 'estimate' is the internal version with profit, break-even and expenses. Optionally also builds the one-page artist sheet for a lineup artist.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        offer_id: { type: "string" },
+        mode: { type: "string", enum: ["artist_offer", "estimate"], default: "artist_offer" },
+        costs_only: { type: "boolean", description: "Leave out revenue projections", default: false },
+        artist_sheet_for: { type: "string", description: "Optional: name (or event_artists id) of a lineup artist to also generate their one-page artist sheet" },
+      },
+      required: ["offer_id"],
+    },
+    annotations: WRITE,
+    run: async (ctx, a) => {
+      requireAccess(ctx);
+      const { offer, show } = await getOfferRow(ctx, a.offer_id);
+      const cs = await loadCompanySettings(ctx);
+      const mode = a.mode === "estimate" ? "estimate" : "artist_offer";
+      const pdf = buildOfferPdf(offer, show, cs, mode, a.costs_only === true);
+      const stored = await storePdf(ctx, pdf.filename, pdf.base64);
+      const out: Any = {
+        offer_id: offer.id, mode, filename: pdf.filename, size_kb: Math.round((pdf.base64.length * 3) / 4 / 1024),
+        download_url: stored.url, link_expires_in_hours: stored.expires_in_hours,
+        note: mode === "estimate" ? "Internal estimate — includes your profit and expenses. Do not send to the artist." : "Artist-safe version.",
+      };
+      if (a.artist_sheet_for) {
+        const { data: artists } = await ctx.db.from("event_artists").select("*").eq("offer_id", offer.id);
+        const q = String(a.artist_sheet_for).toLowerCase();
+        const artist = (artists || []).find((x: Any) => x.id === a.artist_sheet_for || String(x.artist_name || "").toLowerCase() === q)
+          || (artists || []).find((x: Any) => String(x.artist_name || "").toLowerCase().includes(q));
+        if (!artist) throw new UserError(`No lineup artist matching "${a.artist_sheet_for}" on this offer.`);
+        const full = { ...offer, show };
+        const sheetName = `${String(artist.artist_name || "artist").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "")}_artist_sheet.pdf`;
+        const sheet = await storePdf(ctx, sheetName, artistSheetBase64(artist, full, cs) as string);
+        out.artist_sheet = { artist: artist.artist_name, filename: sheetName, download_url: sheet.url };
+      }
+      return out;
+    },
+  },
+  {
+    name: "email_offer",
+    title: "Email offer",
+    description: "Emails the offer PDF from support@gozaentertainment.com on behalf of the signed-in promoter (replies go to the promoter's company email). Defaults: recipient = headliner's contact_email on the lineup, artist-safe PDF attached, promoter CC'd. ALWAYS confirm recipient, subject and message with the user before calling this — it sends a real email.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        offer_id: { type: "string" },
+        to: { type: "array", items: { type: "string" }, description: "Recipient email(s). If omitted, uses the headliner's contact_email." },
+        subject: { type: "string", description: "Defaults to 'Offer: {artist} — {venue} · {date}'" },
+        message: { type: "string", description: "Plain-text body. Defaults to a short professional note. Use blank lines between paragraphs." },
+        mode: { type: "string", enum: ["artist_offer", "estimate"], default: "artist_offer", description: "Which PDF to attach. 'estimate' exposes internal profit — only for the promoter's own team." },
+        attach_pdf: { type: "boolean", default: true },
+        attach_artist_sheet_for: { type: "string", description: "Optional lineup artist name/id — also attaches their one-page artist sheet" },
+        copy_me: { type: "boolean", default: true, description: "CC the signed-in promoter" },
+      },
+      required: ["offer_id"],
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+    run: async (ctx, a) => {
+      requireAccess(ctx);
+      const { offer, show } = await getOfferRow(ctx, a.offer_id);
+      const cs = await loadCompanySettings(ctx);
+      const { data: artists } = await ctx.db.from("event_artists").select("*").eq("offer_id", offer.id).order("sort_order");
+      const headliner = (artists || []).find((x: Any) => x.role === "headliner" && x.contact_email) || (artists || []).find((x: Any) => x.contact_email);
+
+      let to: string[] = Array.isArray(a.to) ? a.to : typeof a.to === "string" ? [a.to] : [];
+      to = to.map((e) => String(e).trim()).filter(Boolean);
+      if (to.length === 0 && headliner?.contact_email) to = [headliner.contact_email];
+      if (to.length === 0) throw new UserError("No recipient: pass `to`, or add a contact_email to the headliner on the lineup (update_lineup_artist).");
+      const bad = to.find((e) => !EMAIL_RE.test(e));
+      if (bad) throw new UserError(`"${bad}" is not a valid email address.`);
+
+      const senderName = cs?.contact_name || cs?.company_name || ctx.email || "";
+      const companyName = cs?.company_name || ctx.org.name || "";
+      const artistName = show.artist_name || offer.artist_name || "the artist";
+      const dateLong = fmtLongDate(show.event_date);
+      const subject = (a.subject && String(a.subject).trim()) || `Offer: ${artistName} — ${show.venue_name}${dateLong ? ` · ${dateLong}` : ""}`;
+      const message = (a.message && String(a.message).trim()) ||
+        `Hi${headliner?.contact_name ? ` ${headliner.contact_name}` : headliner?.artist_name ? ` ${headliner.artist_name} team` : ""},\n\n` +
+        `Please find attached our offer for ${artistName} at ${show.venue_name}${dateLong ? ` on ${dateLong}` : ""}.\n\n` +
+        `Let us know if you have any questions — happy to jump on a call to walk through the details.\n\n` +
+        `Thanks,\n${senderName}${companyName && companyName !== senderName ? `\n${companyName}` : ""}`;
+
+      const attachments: Any[] = [];
+      const mode = a.mode === "estimate" ? "estimate" : "artist_offer";
+      if (a.attach_pdf !== false) {
+        const pdf = buildOfferPdf(offer, show, cs, mode);
+        attachments.push({ filename: pdf.filename, content: pdf.base64, type: "application/pdf" });
+      }
+      if (a.attach_artist_sheet_for) {
+        const q = String(a.attach_artist_sheet_for).toLowerCase();
+        const artist = (artists || []).find((x: Any) => x.id === a.attach_artist_sheet_for || String(x.artist_name || "").toLowerCase() === q)
+          || (artists || []).find((x: Any) => String(x.artist_name || "").toLowerCase().includes(q));
+        if (!artist) throw new UserError(`No lineup artist matching "${a.attach_artist_sheet_for}" on this offer.`);
+        const sheetName = `${String(artist.artist_name || "artist").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "")}_artist_sheet.pdf`;
+        attachments.push({ filename: sheetName, content: artistSheetBase64(artist, { ...offer, show }, cs), type: "application/pdf" });
+      }
+
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${ctx.token}` },
+        body: JSON.stringify({
+          to, subject, message, copy_self: a.copy_me !== false,
+          sender_name: senderName, company_name: companyName, reply_to: cs?.email || undefined, attachments,
+        }),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) throw new UserError(`Email failed: ${out.error || res.status}`);
+
+      // Note it on the offer so there's a record
+      const stamp = `Emailed ${mode === "estimate" ? "internal estimate" : "offer"} to ${to.join(", ")} on ${new Date().toLocaleDateString("en-US")}${attachments.length ? ` (${attachments.map((x) => x.filename).join(", ")})` : ""}`;
+      try {
+        const { data: notesRow } = await ctx.db.from("offer_notes").select("*").eq("offer_id", offer.id).maybeSingle();
+        if (notesRow) {
+          await ctx.db.from("offer_notes").update({ event_notes: notesRow.event_notes ? `${notesRow.event_notes}\n${stamp}` : stamp, updated_at: new Date().toISOString() }).eq("id", notesRow.id);
+        } else {
+          await ctx.db.from("offer_notes").insert({ offer_id: offer.id, organization_id: ctx.org.id, event_notes: stamp, pinned_notes: [] });
+        }
+        if (!offer.offer_sent_date && mode === "artist_offer") {
+          await ctx.db.from("offers").update({ offer_sent_date: new Date().toISOString().slice(0, 10) }).eq("id", offer.id);
+        }
+      } catch (e) { console.warn("note stamp failed", (e as Error).message); }
+
+      return {
+        sent: true, to, cc: a.copy_me !== false ? ctx.email : null, reply_to: out.reply_to || cs?.email || ctx.email,
+        subject, attachments: attachments.map((x) => x.filename), offer_link: `${APP_URL}/offers/${offer.id}`,
+      };
     },
   },
 ];

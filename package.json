@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "build:mcp-pdf": "esbuild scripts/mcp-pdf-entry.ts --bundle --format=esm --platform=browser --minify --outfile=supabase/functions/promtp-mcp/pdf-bundle.js --log-level=error"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^2.9.0",

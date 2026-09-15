@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { safeNext } from '../../lib/safeNext';
 import { supabase } from '../../lib/supabase';
 import { Eye, EyeOff, Music } from 'lucide-react';
 
@@ -10,6 +11,8 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const next = safeNext(searchParams.get('next'));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +29,7 @@ export function LoginForm() {
         setMessage({ type: 'error', text: error.message });
       } else {
         setMessage({ type: 'success', text: 'Successfully logged in!' });
-        navigate('/');
+        navigate(next || '/');
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'An unexpected error occurred' });

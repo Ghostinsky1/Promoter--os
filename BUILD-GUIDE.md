@@ -114,6 +114,7 @@ Every table has RLS ON. Policies check `organization_members` for the signed-in 
 |---|---|---|
 | `stripe-checkout` | DEPLOYED | Creates a Stripe Checkout session. Supports `ui_mode: 'embedded'` (returns `clientSecret` for the in-app form) and the legacy hosted redirect. Tags the session/subscription with `organization_id` + `tier`. `verify_jwt` off (it validates the user's token itself). |
 | `stripe-webhook` | DEPLOYED | Receives Stripe events, syncs `stripe_subscriptions`, and sets the organization's `subscription_status` / `subscription_tier` / `max_offers`. Falls back to `stripe_customers → organization_members` if metadata is missing. `verify_jwt` off (Stripe signs requests). |
+| `promtp-mcp` | DEPLOYED | The **Claude MCP connector** (see `docs/PROMTP-MCP-CONNECTOR.md`). Customers paste `https://azenzsggqexyonafxlsf.supabase.co/functions/v1/promtp-mcp` into Claude; sign-in is Supabase OAuth via `/oauth/consent` on the site. `verify_jwt` off. |
 | `send-email` | DEPLOYED | Sends email through SendGrid for a signed-in user. See §4a. `verify_jwt` off (validates the user's token itself). |
 | `stripe-setup` | DISABLED (410) | One-time helper that created the two products on 2026-09-15. |
 | `email-selftest` | DISABLED (410) | One-time test used on 2026-09-15. |

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import { Header } from './components/layout/Header';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { LoginForm } from './components/auth/LoginForm';
@@ -32,6 +32,13 @@ import TermsPage from './pages/TermsPage';
 import SecurityPage from './pages/SecurityPage';
 import FAQPage from './pages/FAQPage';
 import { useAuth } from './hooks/useAuth';
+import OAuthConsentPage from './pages/OAuthConsentPage';
+import { safeNext } from './lib/safeNext';
+
+function AfterLogin() {
+  const [params] = useSearchParams();
+  return <Navigate to={safeNext(params.get('next')) || '/dashboard'} replace />;
+}
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -47,8 +54,9 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/login" element={!user ? <LoginForm /> : <Navigate to="/dashboard" />} />
+      <Route path="/login" element={!user ? <LoginForm /> : <AfterLogin />} />
       <Route path="/signup" element={!user ? <SignupForm /> : <Navigate to="/dashboard" />} />
+      <Route path="/oauth/consent" element={<OAuthConsentPage />} />
       <Route path="/" element={!user ? <LandingPage /> : <Navigate to="/dashboard" />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms" element={<TermsPage />} />

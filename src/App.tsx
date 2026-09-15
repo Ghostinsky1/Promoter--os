@@ -16,6 +16,7 @@ import { Analytics } from './components/Analytics';
 import { RunOfShow } from './components/RunOfShow';
 import { Settlement } from './components/Settlement';
 import { DealEstimator } from './components/DealEstimator';
+import { ArtistFeeEstimator } from './components/ArtistFeeEstimator';
 import { SubscriptionPage } from './pages/SubscriptionPage';
 import { SuccessPage } from './pages/SuccessPage';
 import { TemplatesPage } from './pages/TemplatesPage';
@@ -68,6 +69,7 @@ function AppRoutes() {
       <Route path="/offers/:id/run-of-show" element={<ProtectedRoute><RunOfShow /></ProtectedRoute>} />
       <Route path="/offers/:id/settlement" element={<ProtectedRoute><Settlement /></ProtectedRoute>} />
       <Route path="/deal-estimator" element={<ProtectedRoute><DealEstimator /></ProtectedRoute>} />
+      <Route path="/artist-fee" element={<ProtectedRoute><ArtistFeeEstimator /></ProtectedRoute>} />
       <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
       <Route path="/tours" element={<ProtectedRoute><ToursPage /></ProtectedRoute>} />
       <Route path="/tours/create" element={<ProtectedRoute><CreateTourPage /></ProtectedRoute>} />

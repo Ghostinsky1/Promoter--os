@@ -50,14 +50,27 @@ export function useOrganization() {
       setLoading(true);
       setError(null);
 
-      const { data: memberData, error: memberError } = await supabase
+      let { data: memberData, error: memberError } = await supabase
         .from('organization_members')
         .select('*')
         .eq('user_id', user!.id)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
+
+      if (!memberError && !memberData) {
+        // No organization yet (older account, or the signup trigger didn't run) — create one server-side.
+        const { error: ensureError } = await supabase.rpc('ensure_my_organization');
+        if (ensureError) throw ensureError;
+        ({ data: memberData, error: memberError } = await supabase
+          .from('organization_members')
+          .select('*')
+          .eq('user_id', user!.id)
+          .eq('is_active', true)
+          .maybeSingle());
+      }
 
       if (memberError) throw memberError;
+      if (!memberData) throw new Error('No organization found for this account.');
       setMembership(memberData);
 
       const { data: orgData, error: orgError } = await supabase

@@ -61,8 +61,8 @@ Supabase  (project "Promoter--os", ref azenzsggqexyonafxlsf, us-east-2)
 ```
 
 ### Access model (how a user gets in)
-1. Sign up → Supabase Auth creates the user → a DB trigger creates a `user_roles` row.
-2. The signup flow creates an `organizations` row + `organization_members` row (role = owner). New orgs start on a **14-day trial**, tier `starter`.
+1. Sign up → Supabase Auth creates the user → DB triggers create a `user_roles` row **and** the organization: `handle_new_user_organization()` → `ensure_organization_for_user()` creates `organizations` (14-day trial, tier `starter`), the owner `organization_members` row and `company_settings`, all server-side (SECURITY DEFINER, so RLS can't block it). The browser inserts nothing at signup. `useOrganization` calls `ensure_my_organization()` as a fallback for any account that somehow has none.
+2. Sign-up email checks (`src/lib/emailValidation.ts`): format, typo suggestions (gmial→gmail), and a block list of placeholder/disposable domains (test.com, example.com, mailinator…). If Supabase "Confirm email" is ON, the signup page shows a "Check your inbox" screen with a resend button; when OFF it goes straight to `/pricing`.
 3. `useOrganization.hasActiveAccess()` decides if the app is usable: `subscription_status = 'active'`, or `trialing` and trial not expired.
 4. Features are gated by `subscription_tier` (starter / pro / agency_scale) in `lib/subscriptionTiers.ts`.
 
@@ -137,7 +137,7 @@ Every table has RLS ON. Policies check `organization_members` for the signed-in 
 - Recipient is prefilled from the headliner's `contact_email` on the artist cards when one exists.
 - Limits: 10 recipients, 8 MB of attachments per email.
 - Reusing it elsewhere: `sendEmail({ to, subject, message, copySelf, attachments })` from `src/lib/email.ts` works from any screen.
-- **Account emails (sign-up confirmation, password reset)** still go through Supabase's built-in mailer (rate-limited, generic). To send those through SendGrid too: Supabase → Authentication → SMTP Settings → Enable custom SMTP: host `smtp.sendgrid.net`, port `587`, username `apikey`, password = the SendGrid API key, sender `support@gozaentertainment.com`. Only Jose should paste the key there.
+- **Account emails (sign-up confirmation, password reset)** go through Supabase Auth's mailer. To require a real, confirmed email at sign-up: (1) Supabase → Project Settings → Authentication → SMTP Settings → Enable custom SMTP: host `smtp.sendgrid.net`, port `587`, username `apikey`, password = the SendGrid API key, sender `support@gozaentertainment.com`, sender name `PROMTP`; (2) Authentication → Sign In / Providers → Email → turn ON **Confirm email**. (3) Authentication → URL Configuration → Site URL = the live site, and add `https://<site>/pricing` to Redirect URLs. Do step 1 before step 2 — without custom SMTP Supabase only sends ~2 emails/hour. Only Jose should paste the key.
 
 ### Migrations gotchas already solved (don't re-break these)
 - `expense_items` was referenced by a migration but never created in Bolt's files → created by hand before that migration.

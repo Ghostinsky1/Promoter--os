@@ -5206,3 +5206,48 @@ DROP POLICY IF EXISTS "Authenticated users can create organizations" ON public.o
 CREATE POLICY "Authenticated users can create organizations"
   ON public.organizations FOR INSERT TO authenticated
   WITH CHECK ((select auth.uid()) IS NOT NULL);
+
+-- ============================================================================
+-- 2026-09-15: Organizations are created server-side at signup (trigger), plus
+-- a self-service fallback. Fixes "new row violates row-level security" /
+-- "0 rows" on signup, which left accounts with no organization.
+-- ============================================================================
+CREATE OR REPLACE FUNCTION public.ensure_organization_for_user(p_user_id uuid, p_email text, p_org_name text DEFAULT NULL, p_full_name text DEFAULT NULL)
+RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_org_id uuid; v_name text; v_slug text; v_base text; v_n int := 0;
+BEGIN
+  SELECT organization_id INTO v_org_id FROM organization_members WHERE user_id = p_user_id AND is_active = true LIMIT 1;
+  IF v_org_id IS NOT NULL THEN RETURN v_org_id; END IF;
+  v_name := NULLIF(trim(coalesce(p_org_name, '')), '');
+  IF v_name IS NULL THEN v_name := split_part(coalesce(p_email, 'promoter'), '@', 1); END IF;
+  v_base := trim(both '-' from regexp_replace(lower(v_name), '[^a-z0-9]+', '-', 'g'));
+  IF v_base = '' THEN v_base := 'org'; END IF;
+  v_slug := v_base;
+  WHILE EXISTS (SELECT 1 FROM organizations WHERE slug = v_slug) LOOP v_n := v_n + 1; v_slug := v_base || '-' || v_n; END LOOP;
+  INSERT INTO organizations (name, slug, subscription_tier, subscription_status, max_offers, max_seats, trial_ends_at)
+  VALUES (v_name, v_slug, 'starter', 'trialing', 10, 1, now() + interval '14 days') RETURNING id INTO v_org_id;
+  INSERT INTO organization_members (organization_id, user_id, role, is_active) VALUES (v_org_id, p_user_id, 'owner', true) ON CONFLICT (organization_id, user_id) DO NOTHING;
+  INSERT INTO company_settings (user_id, organization_id, company_name, contact_name, email)
+  SELECT p_user_id, v_org_id, v_name, NULLIF(trim(coalesce(p_full_name, '')), ''), p_email
+  WHERE NOT EXISTS (SELECT 1 FROM company_settings WHERE organization_id = v_org_id);
+  RETURN v_org_id;
+END; $$;
+
+CREATE OR REPLACE FUNCTION public.handle_new_user_organization() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  PERFORM public.ensure_organization_for_user(NEW.id, NEW.email, NEW.raw_user_meta_data->>'organization_name', NEW.raw_user_meta_data->>'full_name');
+  RETURN NEW;
+EXCEPTION WHEN OTHERS THEN RAISE WARNING 'handle_new_user_organization failed for %: %', NEW.id, SQLERRM; RETURN NEW;
+END; $$;
+DROP TRIGGER IF EXISTS on_auth_user_created_organization ON auth.users;
+CREATE TRIGGER on_auth_user_created_organization AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user_organization();
+
+CREATE OR REPLACE FUNCTION public.ensure_my_organization() RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_email text; v_meta jsonb;
+BEGIN
+  IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Not signed in'; END IF;
+  SELECT email, raw_user_meta_data INTO v_email, v_meta FROM auth.users WHERE id = auth.uid();
+  RETURN public.ensure_organization_for_user(auth.uid(), v_email, v_meta->>'organization_name', v_meta->>'full_name');
+END; $$;
+GRANT EXECUTE ON FUNCTION public.ensure_my_organization() TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.ensure_organization_for_user(uuid, text, text, text) FROM public, anon, authenticated;

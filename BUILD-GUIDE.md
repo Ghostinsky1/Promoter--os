@@ -17,7 +17,7 @@ Supabase  (project "Promoter--os", ref azenzsggqexyonafxlsf, us-east-2)
       |
       +--> Postgres (19 tables, RLS on every one)
       +--> Auth (email + password sign-in)
-      +--> Edge Functions (Deno) — Stripe checkout/webhook, AI insights, deal analyzer  [NOT deployed yet]
+      +--> Edge Functions (Deno) — stripe-checkout + stripe-webhook [LIVE]; ai-insights, analyze-deal [not deployed]
 ```
 
 **Key architectural decision:** the frontend is a *static site* that talks to Supabase directly with the **publishable (public) key**. Row Level Security on every table is what keeps users inside their own organization's data. There are no server-side secrets in the frontend; the only secrets (Stripe, AI keys) live in Supabase edge-function settings.
@@ -109,14 +109,24 @@ Every table has RLS ON. Policies check `organization_members` for the signed-in 
 ### Helper SQL functions
 `unlock_full_access(email)`, `grant_admin_access(email)` (admin flag only), `has_feature_access(feature)`, `get_user_organization()`, `list_users_and_organizations()` (admins only).
 
-### Edge functions (NOT deployed yet — optional)
-| Function | Purpose | Needs |
+### Edge functions
+| Function | Status | Purpose |
 |---|---|---|
-| `stripe-checkout` | Creates Stripe Checkout session for a plan | `STRIPE_SECRET_KEY` |
-| `stripe-webhook` | Marks org subscription active/canceled | `STRIPE_WEBHOOK_SECRET` |
-| `ai-insights` | AI commentary on an offer | AI API key |
-| `analyze-deal` | AI deal analysis | AI API key |
-The app works without them; Pricing/checkout buttons and AI panels just won't function until they're deployed.
+| `stripe-checkout` | DEPLOYED | Creates a Stripe Checkout session. Supports `ui_mode: 'embedded'` (returns `clientSecret` for the in-app form) and the legacy hosted redirect. Tags the session/subscription with `organization_id` + `tier`. `verify_jwt` off (it validates the user's token itself). |
+| `stripe-webhook` | DEPLOYED | Receives Stripe events, syncs `stripe_subscriptions`, and sets the organization's `subscription_status` / `subscription_tier` / `max_offers`. Falls back to `stripe_customers → organization_members` if metadata is missing. `verify_jwt` off (Stripe signs requests). |
+| `stripe-setup` | DISABLED (410) | One-time helper that created the two products on 2026-09-15. |
+| `ai-insights`, `analyze-deal` | NOT deployed | Need an AI API key as a secret. AI panels won't work until then. |
+
+### Stripe (live account acct_1UG2vlGeegvFIqAC)
+- Products/prices (lookup keys `promtp_starter`, `promtp_pro`):
+  - Starter $39/mo — `prod_VGaRoeNJvg9HvX` / `price_1UG3GwGeegvFIqACVrur7gDr`
+  - Pro $99/mo — `prod_VGaR1UwVJxWBa1` / `price_1UG3GxGeegvFIqACTTpeqq4n`
+- Both carry a 14-day trial (set in `stripe-checkout`, `subscription_data.trial_period_days`).
+- Secrets in Supabase (Edge Functions → Secrets): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`.
+- Webhook endpoint: `https://azenzsggqexyonafxlsf.supabase.co/functions/v1/stripe-webhook` (events: checkout.session.completed, customer.subscription.updated/deleted, payment_intent.succeeded).
+- Publishable key is baked into `src/lib/stripe.ts` (public by design).
+- **Checkout is IN-APP:** `/checkout?price=<price_id>` (`src/pages/CheckoutPage.tsx`) renders Stripe Embedded Checkout inside PROMTP; `/checkout` is allowed without an active subscription in `ProtectedRoute`. Pricing page and SubscriptionPage buttons navigate there. Return URL is `/success?session_id=…`.
+- If price IDs ever change, update: `src/stripe-config.ts`, `PRO_PRICE_ID` in `src/lib/stripe.ts`, and the `pro` mapping in both edge functions.
 
 ### Migrations gotchas already solved (don't re-break these)
 - `expense_items` was referenced by a migration but never created in Bolt's files → created by hand before that migration.

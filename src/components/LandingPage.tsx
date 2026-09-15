@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   CheckCircle2, X, FileText, DollarSign, Sparkles, Calendar,
   Upload, BarChart3, Clock, TrendingUp, Award, Target,
-  Star, Music, Mic, Guitar, Ticket, Radio, Disc, Users, ChevronDown
+  Star, Music, Mic, Guitar, Ticket, Radio, Disc, Users, ChevronDown, MessageSquare, Zap
 } from 'lucide-react';
 
 export function LandingPage() {
@@ -656,6 +656,110 @@ export function LandingPage() {
                 See all shows at a glance. Filter by status, venue, artist.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ---------- MCP connector: run your events from a chat ---------- */}
+      <section id="ai-connector" className="py-20 px-4 sm:px-6 bg-[#08090D] relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(60% 50% at 50% 0%, rgba(143,211,255,0.12) 0%, rgba(8,9,13,0) 70%)' }} />
+        <div className="max-w-7xl mx-auto relative">
+
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 mb-5">
+              <Zap className="h-3.5 w-3.5 text-[#8FD3FF]" />
+              <span className="font-label text-[11px] tracking-[0.2em] text-[#8FD3FF] uppercase">New · AI Connector</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-white leading-tight">
+              Your events are one chat away.
+            </h2>
+            <p className="text-[#A8B2C1] text-base sm:text-lg max-w-2xl mx-auto">
+              Connect PROMOTER OS to your own AI and run the whole night by typing. Ask for the numbers,
+              build the offer, email the agent — without opening the app.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-start">
+
+            {/* chat mockup */}
+            <div className="bg-[#14171E] border border-[#2A3040] rounded-3xl p-4 sm:p-6 shadow-2xl">
+              <div className="flex items-center gap-2 mb-5 pb-4 border-b border-[#2A3040]">
+                <MessageSquare className="h-4 w-4 text-[#8FD3FF] flex-shrink-0" />
+                <span className="font-label text-[11px] tracking-[0.18em] text-gray-400 uppercase truncate">
+                  Your AI · PROMOTER OS connected
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-end">
+                  <div className="bg-[#8FD3FF] text-[#04214D] rounded-2xl rounded-br-md px-4 py-2.5 text-sm font-semibold max-w-[85%]">
+                    What's my break-even on the Kansas City show?
+                  </div>
+                </div>
+                <div className="flex justify-start">
+                  <div className="bg-[#22262F] text-gray-200 rounded-2xl rounded-bl-md px-4 py-3 text-sm max-w-[90%] border border-[#2A3040]">
+                    411 tickets — 65% of the room. At 100% sold you clear <span className="text-[#8FD3FF] font-semibold">$5,501</span>.
+                    Capital needed up front is $800.
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <div className="bg-[#8FD3FF] text-[#04214D] rounded-2xl rounded-br-md px-4 py-2.5 text-sm font-semibold max-w-[85%]">
+                    Build the same offer for Nov 14 at $2,500 and email it to the agent.
+                  </div>
+                </div>
+                <div className="flex justify-start">
+                  <div className="bg-[#22262F] text-gray-200 rounded-2xl rounded-bl-md px-4 py-3 text-sm max-w-[90%] border border-[#2A3040]">
+                    Offer created and the PDF is attached. Here's the draft — say the word and it goes out.
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-5 border-t border-[#2A3040]">
+                <p className="font-label text-[11px] tracking-[0.18em] text-gray-500 uppercase mb-2">Nothing sends without your yes</p>
+                <p className="text-[#A8B2C1] text-sm leading-relaxed">
+                  It drafts, calculates and shows you the result first. Emails, settlements and anything that
+                  leaves your hands wait for you to confirm.
+                </p>
+              </div>
+            </div>
+
+            {/* what it does */}
+            <div>
+              <div className="space-y-3 mb-8">
+                {[
+                  ['Ask anything about your shows', 'Offers, lineups, tasks, run of show, settlements — answered in plain language.'],
+                  ['Build and edit offers by typing', 'Deal terms, ticket scaling and expenses, recalculated as you talk.'],
+                  ['Run the numbers before you commit', 'What-if a guarantee, a ticket price or a whole deal structure. Nothing is saved until you say so.'],
+                  ['Generate the PDF and send it', 'The same offer sheet the app makes, emailed to the agent from your own address.'],
+                ].map(([title, body]) => (
+                  <div key={title} className="flex gap-3 p-4 rounded-2xl bg-[#14171E] border border-[#2A3040]">
+                    <CheckCircle2 className="h-5 w-5 text-[#8FD3FF] flex-shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <h3 className="text-white font-bold text-sm mb-1">{title}</h3>
+                      <p className="text-[#A8B2C1] text-sm leading-relaxed">{body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-2xl border border-[#2A3040] bg-[#0B0D12] p-5">
+                <p className="font-label text-[11px] tracking-[0.18em] text-[#8FD3FF] uppercase mb-2">How it works</p>
+                <p className="text-[#A8B2C1] text-sm leading-relaxed mb-4">
+                  Paste one link into Claude — or any assistant that supports MCP — sign in once, and approve the
+                  connection. It only ever sees your own organization's data, every action runs under your login,
+                  and you can disconnect it at any time.
+                </p>
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="w-full sm:w-auto bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] px-6 py-3 rounded-xl font-bold transition-colors text-sm"
+                >
+                  Start free trial
+                </button>
+                <p className="text-gray-500 text-xs mt-3">Included on every plan. No extra setup fee.</p>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>

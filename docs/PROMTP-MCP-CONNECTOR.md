@@ -15,8 +15,11 @@ Lets any paying PROMTP customer connect their account to Claude (claude.ai custo
 - Paywall: tools refuse unless org `subscription_status` is `active`, or `trialing` with trial not expired. `create_offer` respects `max_offers`.
 - Math in `calc.ts` is ported 1:1 from `src/lib/calculations.ts`, `breakEvenCalculations.ts`, `artistCalculations.ts`, Settlement and ArtistDealTab (verified identical output). If app formulas change, update `calc.ts` too.
 
-### Tools (17)
-get_account · list_offers · get_offer · create_offer · update_offer · calculate_deal (what-if, never saves) · analyze_offer · preview_settlement (save=true writes settlement + marks settled) · add_lineup_artist · update_lineup_artist · add_task · list_tasks · update_task · delete_task · add_note · get_run_of_show · update_run_of_show
+### Tools (19)
+get_account · list_offers · get_offer · create_offer · update_offer · calculate_deal (what-if, never saves) · analyze_offer · preview_settlement (save=true writes settlement + marks settled) · add_lineup_artist · update_lineup_artist · add_task · list_tasks · update_task · delete_task · add_note · get_run_of_show · update_run_of_show · **generate_offer_pdf** (builds the app's PDF server-side, stores it in the private `offer-pdfs` bucket, returns a 24h signed link; optional artist sheet) · **email_offer** (sends the PDF via the `send-email` function as the signed-in promoter; defaults to the headliner's contact_email; stamps a note + `offer_sent_date` on the offer)
+
+### PDF engine in Deno
+`supabase/functions/promtp-mcp/pdf-bundle.js` is the app's own `generateOfferPDF` / `generateArtistOfferSheet` (jsPDF + fonts) bundled with esbuild — rebuild with `npm run build:mcp-pdf` whenever the PDF code changes. It's 1.3 MB, too big to paste into the Supabase deploy tool, so **the deployed `index.ts` is a one-line import of the repo's `promtp-mcp/index.ts` from jsDelivr pinned to a commit SHA** (`https://cdn.jsdelivr.net/gh/Ghostinsky1/Promoter--os@<sha>/supabase/functions/promtp-mcp/index.ts`). To ship changes: push to GitHub → redeploy the one-liner with the new SHA.
 
 ### Frontend pieces
 - `src/pages/OAuthConsentPage.tsx` at route `/oauth/consent` (public route; sends to `/login?next=…` if signed out).

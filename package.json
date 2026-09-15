@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^2.9.0",
+    "@stripe/stripe-js": "^4.10.0",
     "@supabase/supabase-js": "^2.57.4",
     "jspdf": "^3.0.4",
     "jspdf-autotable": "^5.0.2",

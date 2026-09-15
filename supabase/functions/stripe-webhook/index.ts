@@ -176,7 +176,7 @@ async function syncCustomerFromStripe(customerId: string) {
 
     // Map the Stripe subscription onto the organization so the app unlocks.
     const priceId = subscription.items.data[0].price.id;
-    const tier = subscription.metadata?.tier || (priceId === 'price_1Sd2LGK0rX2Uf9BVwPgHLijQ' ? 'pro' : 'starter');
+    const tier = subscription.metadata?.tier || (priceId === 'price_1UG3GxGeegvFIqACTTpeqq4n' ? 'pro' : 'starter');
     const active = subscription.status === 'trialing' || subscription.status === 'active';
     const orgStatus = subscription.status === 'trialing' ? 'trialing' : active ? 'active' : subscription.status === 'past_due' ? 'past_due' : 'canceled';
 

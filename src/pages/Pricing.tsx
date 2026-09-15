@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PricingCard } from '../components/PricingCard';
 import { STRIPE_PRODUCTS } from '../stripe-config';
-import { createCheckoutSession } from '../lib/stripe';
 import { supabase } from '../lib/supabase';
 
 export function Pricing() {
@@ -16,31 +15,12 @@ export function Pricing() {
   }, []);
 
   const handleSubscribe = async (priceId: string) => {
-    try {
-      const { url } = await createCheckoutSession({
-        priceId,
-        mode: 'subscription',
-        successUrl: `${window.location.origin}/success`,
-        cancelUrl: `${window.location.origin}/pricing`
-      });
-
-      if (!url) {
-        throw new Error('No checkout URL received');
-      }
-
-      window.location.href = url;
-    } catch (error: any) {
-      console.error('Checkout error:', error);
-
-      if (error.message?.includes('authentication') || error.message?.includes('token')) {
-        alert('Please log in to subscribe to a plan.');
-        navigate('/login');
-      } else if (error.message?.includes('STRIPE_SECRET_KEY')) {
-        alert('Payment system is not configured. Please contact support or configure Stripe integration.');
-      } else {
-        alert(`Failed to start checkout: ${error.message || 'Please try again.'}`);
-      }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/login');
+      return;
     }
+    navigate(`/checkout?price=${encodeURIComponent(priceId)}`);
   };
 
   return (

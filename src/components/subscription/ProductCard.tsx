@@ -1,36 +1,19 @@
 import React, { useState } from 'react';
 import { StripeProduct } from '../../stripe-config';
 import { Check, Loader2 } from 'lucide-react';
-import { createCheckoutSession } from '../../lib/stripe';
+import { useNavigate } from 'react-router-dom';
 
 interface ProductCardProps {
   product: StripeProduct;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const handlePurchase = async () => {
     setLoading(true);
-    try {
-      const successUrl = `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`;
-      const cancelUrl = window.location.href;
-
-      const { url } = await createCheckoutSession({
-        priceId: product.priceId,
-        mode: product.mode,
-        successUrl,
-        cancelUrl,
-      });
-
-      if (url) {
-        window.location.href = url;
-      }
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-    } finally {
-      setLoading(false);
-    }
+    navigate(`/checkout?price=${encodeURIComponent(product.priceId)}`);
   };
 
   return (

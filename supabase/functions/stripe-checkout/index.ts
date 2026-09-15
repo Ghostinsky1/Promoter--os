@@ -50,7 +50,8 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Stripe is not configured. Please add STRIPE_SECRET_KEY to your environment variables.' }, 500);
     }
 
-    const { price_id, success_url, cancel_url, mode, email, metadata } = await req.json();
+    const { price_id, success_url, cancel_url, return_url, ui_mode, mode, email, metadata } = await req.json();
+    const embedded = ui_mode === 'embedded';
 
     const isSignupFlow = metadata?.signup_flow === 'true';
 
@@ -58,15 +59,20 @@ Deno.serve(async (req) => {
     let userEmail = email;
 
     if (!isSignupFlow) {
-      const error = validateParameters(
-        { price_id, success_url, cancel_url, mode },
-        {
-          cancel_url: 'string',
-          price_id: 'string',
-          success_url: 'string',
-          mode: { values: ['payment', 'subscription'] },
-        },
-      );
+      const error = embedded
+        ? validateParameters(
+            { price_id, return_url, mode },
+            { price_id: 'string', return_url: 'string', mode: { values: ['payment', 'subscription'] } },
+          )
+        : validateParameters(
+            { price_id, success_url, cancel_url, mode },
+            {
+              cancel_url: 'string',
+              price_id: 'string',
+              success_url: 'string',
+              mode: { values: ['payment', 'subscription'] },
+            },
+          );
 
       if (error) {
         return corsResponse({ error }, 400);
@@ -206,7 +212,7 @@ Deno.serve(async (req) => {
       const { data: om } = await supabase.from('organization_members').select('organization_id').eq('user_id', user.id).eq('is_active', true).limit(1).maybeSingle();
       if (om?.organization_id) sessionMetadata.organization_id = om.organization_id;
     }
-    if (!sessionMetadata.tier) sessionMetadata.tier = price_id === 'price_1Sd2LGK0rX2Uf9BVwPgHLijQ' ? 'pro' : 'starter';
+    if (!sessionMetadata.tier) sessionMetadata.tier = price_id === 'price_1UG3GxGeegvFIqACTTpeqq4n' ? 'pro' : 'starter';
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -218,8 +224,7 @@ Deno.serve(async (req) => {
         },
       ],
       mode,
-      success_url,
-      cancel_url,
+      ...(embedded ? { ui_mode: 'embedded', return_url } : { success_url, cancel_url }),
       metadata: sessionMetadata,
       subscription_data: mode === 'subscription'
         ? {
@@ -231,7 +236,7 @@ Deno.serve(async (req) => {
 
     console.log(`Created checkout session ${session.id} for customer ${customerId}`);
 
-    return corsResponse({ sessionId: session.id, url: session.url });
+    return corsResponse({ sessionId: session.id, url: session.url, clientSecret: session.client_secret });
   } catch (error: any) {
     console.error(`Checkout error: ${error.message}`);
     return corsResponse({ error: error.message }, 500);

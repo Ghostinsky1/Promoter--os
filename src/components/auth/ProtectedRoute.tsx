@@ -13,7 +13,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { organization, loading: orgLoading, hasActiveAccess } = useOrganization();
   const location = useLocation();
 
-  const allowedWithoutSubscription = ['/pricing', '/success', '/subscription'];
+  const allowedWithoutSubscription = ['/pricing', '/checkout', '/success', '/subscription'];
   const isAllowedPath = allowedWithoutSubscription.some(path => location.pathname.startsWith(path));
 
   if (authLoading || orgLoading) {

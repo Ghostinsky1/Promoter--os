@@ -24,6 +24,7 @@ import { CreateTourPage } from './pages/CreateTourPage';
 import { TourDetailsPage } from './pages/TourDetailsPage';
 import { PricingPage } from './components/PricingPage';
 import { Pricing } from './pages/Pricing';
+import { CheckoutPage } from './pages/CheckoutPage';
 import { Success } from './pages/Success';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
@@ -55,6 +56,7 @@ function AppRoutes() {
 
       {/* Protected routes */}
       <Route path="/pricing" element={<Pricing />} />
+      <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
       <Route path="/success" element={<Success />} />
       <Route path="/dashboard" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       <Route path="/offers" element={<ProtectedRoute><OffersList /></ProtectedRoute>} />

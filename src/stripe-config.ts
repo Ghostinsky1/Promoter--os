@@ -11,8 +11,8 @@ export interface StripeProduct {
 
 export const STRIPE_PRODUCTS: StripeProduct[] = [
   {
-    id: 'prod_TWz6FttdA8zmct',
-    priceId: 'price_1SZv8NK0rX2Uf9BVDhRmDFcN',
+    id: 'prod_VGaRoeNJvg9HvX',
+    priceId: 'price_1UG3GwGeegvFIqACVrur7gDr',
     name: 'Starter',
     description: 'Professional offer generation and management tools',
     price: 39.00,
@@ -28,8 +28,8 @@ export const STRIPE_PRODUCTS: StripeProduct[] = [
     ]
   },
   {
-    id: 'prod_TaCkDOjKZfrycS',
-    priceId: 'price_1Sd2LGK0rX2Uf9BVwPgHLijQ',
+    id: 'prod_VGaR1UwVJxWBa1',
+    priceId: 'price_1UG3GxGeegvFIqACTTpeqq4n',
     name: 'Pro',
     description: 'Advanced features for growing concert promoters',
     price: 99.00,

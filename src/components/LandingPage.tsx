@@ -62,10 +62,10 @@ export function LandingPage() {
           <div className="flex items-center gap-3">
             <img
               src="/untitled_project_-_standard_1_(13).png"
-              alt="PROMTP Logo"
+              alt="PROMOTER OS Logo"
               className="w-10 h-10 object-contain"
             />
-            <span className="text-2xl font-bold text-white">PROMTP</span>
+            <span className="text-2xl font-bold text-white">PROMOTER OS</span>
           </div>
 
           <div className="hidden md:flex items-center gap-8">
@@ -313,7 +313,7 @@ export function LandingPage() {
               <span className="text-red-400">Spreadsheets Cost Promoters Money.</span>
               <br />
               <span className="bg-gradient-to-r from-[#8FD3FF] to-[#6FB8F2] bg-clip-text text-transparent">
-                PROMTP Saves It.
+                PROMOTER OS Saves It.
               </span>
             </h2>
             <p className="text-lg text-[#A8B2C1] max-w-2xl mx-auto">
@@ -414,7 +414,7 @@ export function LandingPage() {
               <div className="flex-1 bg-[#22262F] border border-gray-800 rounded-xl p-5 hover:border-[#8FD3FF]/30 transition-colors">
                 <h3 className="text-xl font-bold text-white mb-2">Create the Offer</h3>
                 <p className="text-[#A8B2C1] text-sm leading-relaxed mb-3">
-                  Enter the artist, venue, date, and deal type. PROMTP calculates break-even, fees, and profit automatically.
+                  Enter the artist, venue, date, and deal type. PROMOTER OS calculates break-even, fees, and profit automatically.
                 </p>
                 <div className="flex items-center gap-2 text-[#8FD3FF] text-sm font-bold">
                   <FileText className="h-4 w-4" />
@@ -570,7 +570,7 @@ export function LandingPage() {
               </p>
               <p className="text-2xl md:text-3xl font-bold mb-8">
                 <span className="bg-gradient-to-r from-[#8FD3FF] to-[#6FB8F2] bg-clip-text text-transparent">
-                  PROMTP will save you time — and money.
+                  PROMOTER OS will save you time — and money.
                 </span>
               </p>
               <button
@@ -883,19 +883,19 @@ export function LandingPage() {
               Frequently Asked Questions
             </h2>
             <p className="text-lg text-[#A8B2C1]">
-              Everything you need to know about PROMTP
+              Everything you need to know about PROMOTER OS
             </p>
           </div>
 
           <div className="space-y-4">
             {[
               {
-                question: "What is PROMTP?",
-                answer: "PROMTP is a professional offer management platform designed specifically for concert promoters. It helps you create, manage, and analyze event offers with advanced calculations and AI-powered insights."
+                question: "What is PROMOTER OS?",
+                answer: "PROMOTER OS is a professional offer management platform designed specifically for concert promoters. It helps you create, manage, and analyze event offers with advanced calculations and AI-powered insights."
               },
               {
                 question: "How does the free trial work?",
-                answer: "You get full access to PROMTP for 7 days, completely free. No credit card required. Try all features including AI insights and professional PDF generation."
+                answer: "You get full access to PROMOTER OS for 7 days, completely free. No credit card required. Try all features including AI insights and professional PDF generation."
               },
               {
                 question: "Can I cancel my subscription anytime?",
@@ -910,7 +910,7 @@ export function LandingPage() {
                 answer: "Absolutely. We use bank-level encryption (AES-256), secure authentication, and industry-standard security practices. Your data is backed up daily and never shared with third parties."
               },
               {
-                question: "Can multiple people in my organization use PROMTP?",
+                question: "Can multiple people in my organization use PROMOTER OS?",
                 answer: "Yes! Our Pro plan supports 2 seats and Agency supports 5+. Each team member gets their own login with appropriate permissions."
               }
             ].map((faq, index) => (
@@ -1011,10 +1011,10 @@ export function LandingPage() {
               <div className="flex items-center gap-2 mb-4">
                 <img
                   src="/untitled_project_-_standard_1_(13).png"
-                  alt="PROMTP Logo"
+                  alt="PROMOTER OS Logo"
                   className="w-8 h-8 object-contain"
                 />
-                <span className="text-xl font-bold text-white">PROMTP</span>
+                <span className="text-xl font-bold text-white">PROMOTER OS</span>
               </div>
               <p className="text-sm text-[#A8B2C1]">
                 Concert promotion software built by promoters, for promoters.
@@ -1049,7 +1049,7 @@ export function LandingPage() {
           </div>
 
           <div className="border-t border-gray-800 pt-8 text-center text-sm text-[#6B7280]">
-            <p>&copy; 2025 PROMTP. All rights reserved.</p>
+            <p>&copy; 2025 PROMOTER OS. All rights reserved.</p>
           </div>
         </div>
       </footer>

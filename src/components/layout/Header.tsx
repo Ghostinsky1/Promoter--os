@@ -83,11 +83,11 @@ export function Header() {
             >
               <img
                 src="/untitled_project_-_standard_1_(13).png"
-                alt="PROMTP Logo"
+                alt="PROMOTER OS Logo"
                 className="w-10 h-10 object-contain transform group-hover:scale-110 transition-transform"
               />
               <span className="text-2xl font-bold text-white">
-                PROMTP
+                PROMOTER OS
               </span>
             </Link>
 

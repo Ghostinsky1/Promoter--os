@@ -1,4 +1,4 @@
-# PROMTP (PromoterOS) — Architecture & Build Guide
+# PROMOTER OS — Architecture & Build Guide (formerly PROMTP)
 
 Artist offer, deal estimate and settlement tool for promoters. Paste this into a new chat to bring an assistant fully up to speed on **how it's built and how it deploys**.
 
@@ -127,17 +127,17 @@ Every table has RLS ON. Policies check `organization_members` for the signed-in 
 - Secrets in Supabase (Edge Functions → Secrets): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`.
 - Webhook endpoint: `https://azenzsggqexyonafxlsf.supabase.co/functions/v1/stripe-webhook` (events: checkout.session.completed, customer.subscription.updated/deleted, payment_intent.succeeded).
 - Publishable key is baked into `src/lib/stripe.ts` (public by design).
-- **Checkout is IN-APP:** `/checkout?price=<price_id>` (`src/pages/CheckoutPage.tsx`) renders Stripe Embedded Checkout inside PROMTP; `/checkout` is allowed without an active subscription in `ProtectedRoute`. Pricing page and SubscriptionPage buttons navigate there. Return URL is `/success?session_id=…`.
+- **Checkout is IN-APP:** `/checkout?price=<price_id>` (`src/pages/CheckoutPage.tsx`) renders Stripe Embedded Checkout inside PROMOTER OS; `/checkout` is allowed without an active subscription in `ProtectedRoute`. Pricing page and SubscriptionPage buttons navigate there. Return URL is `/success?session_id=…`.
 - If price IDs ever change, update: `src/stripe-config.ts`, `PRO_PRICE_ID` in `src/lib/stripe.ts`, and the `pro` mapping in both edge functions.
 
 ### 4a. Email (SendGrid)
-- Secret in Supabase (Edge Functions → Secrets): `SENDGRID_API_KEY`. Optional overrides: `SENDGRID_FROM_EMAIL` (default `support@gozaentertainment.com`), `SENDGRID_FROM_NAME` (default `PROMTP · Goza Entertainment`).
+- Secret in Supabase (Edge Functions → Secrets): `SENDGRID_API_KEY`. Optional overrides: `SENDGRID_FROM_EMAIL` (default `support@gozaentertainment.com`), `SENDGRID_FROM_NAME` (default `PROMOTER OS · Goza Entertainment`).
 - SendGrid domain authentication is set up for `gozaentertainment.com`, so the from-address is trusted.
 - **How a send works:** Offer page → **Email** button → `EmailOfferModal` (to / subject / message, "Attach PDF" with Artist Offer or Internal Estimate mode, "Send me a copy") → builds the PDF in the browser as base64 → `lib/email.ts` POSTs to `${SUPABASE_URL}/functions/v1/send-email` with the user's session token → function checks the user, builds a branded HTML email (black header, blue rule, plain-text fallback), sets **Reply-To = the email saved in Company Settings** (falls back to the signed-in user's login email if blank), and calls SendGrid `POST /v3/mail/send`.
 - Recipient is prefilled from the headliner's `contact_email` on the artist cards when one exists.
 - Limits: 10 recipients, 8 MB of attachments per email.
 - Reusing it elsewhere: `sendEmail({ to, subject, message, copySelf, attachments })` from `src/lib/email.ts` works from any screen.
-- **Account emails (sign-up confirmation, password reset)** go through Supabase Auth's mailer. To require a real, confirmed email at sign-up: (1) Supabase → Project Settings → Authentication → SMTP Settings → Enable custom SMTP: host `smtp.sendgrid.net`, port `587`, username `apikey`, password = the SendGrid API key, sender `support@gozaentertainment.com`, sender name `PROMTP`; (2) Authentication → Sign In / Providers → Email → turn ON **Confirm email**. (3) Authentication → URL Configuration → Site URL = the live site, and add `https://<site>/pricing` to Redirect URLs. Do step 1 before step 2 — without custom SMTP Supabase only sends ~2 emails/hour. Only Jose should paste the key.
+- **Account emails (sign-up confirmation, password reset)** go through Supabase Auth's mailer. To require a real, confirmed email at sign-up: (1) Supabase → Project Settings → Authentication → SMTP Settings → Enable custom SMTP: host `smtp.sendgrid.net`, port `587`, username `apikey`, password = the SendGrid API key, sender `support@gozaentertainment.com`, sender name `PROMOTER OS`; (2) Authentication → Sign In / Providers → Email → turn ON **Confirm email**. (3) Authentication → URL Configuration → Site URL = the live site, and add `https://<site>/pricing` to Redirect URLs. Do step 1 before step 2 — without custom SMTP Supabase only sends ~2 emails/hour. Only Jose should paste the key.
 
 ### Migrations gotchas already solved (don't re-break these)
 - `expense_items` was referenced by a migration but never created in Bolt's files → created by hand before that migration.
@@ -182,7 +182,7 @@ No environment variables required — the public Supabase URL/key are baked into
 
 ## 7. Live coordinates
 
-- **Site:** `promtp.gozaentertainment.com` (currently still pointing at the old Bolt deployment until Cloudflare DNS is switched)
+- **Site:** https://promoteros.com (Cloudflare Worker `promtp` — the worker keeps its old internal name; renaming it would break the Git-connected build). Preview URL: https://promoter--os1.jhuaroco.workers.dev
 - **Hosting:** Cloudflare Workers (Git-connected build)
 - **Backend/DB:** Supabase project `Promoter--os` (ref `azenzsggqexyonafxlsf`, us-east-2)
 - **Repo:** GitHub, private

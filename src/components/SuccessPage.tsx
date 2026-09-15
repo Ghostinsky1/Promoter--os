@@ -63,7 +63,7 @@ export function SuccessPage() {
         </div>
 
         <h1 className="text-3xl font-bold text-white mb-4">
-          Welcome to PROMTP!
+          Welcome to PROMOTER OS!
         </h1>
 
         <p className="text-lg text-gray-400 mb-8">

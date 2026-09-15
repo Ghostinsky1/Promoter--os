@@ -30,10 +30,10 @@ export function Pricing() {
           <div className="inline-flex items-center gap-3 mb-6">
             <img
               src="/untitled_project_-_standard_1_(13).png"
-              alt="PROMTP Logo"
+              alt="PROMOTER OS Logo"
               className="w-16 h-16 object-contain"
             />
-            <span className="text-4xl font-bold text-white">PROMTP</span>
+            <span className="text-4xl font-bold text-white">PROMOTER OS</span>
           </div>
           <h1 className="text-5xl font-bold text-white mb-6">
             Choose Your Plan

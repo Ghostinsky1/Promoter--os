@@ -131,10 +131,10 @@ export function SignupWithOrganization() {
           <div className="inline-flex items-center gap-3 mb-4">
             <img
               src="/untitled_project_-_standard_1_(13).png"
-              alt="PROMTP Logo"
+              alt="PROMOTER OS Logo"
               className="w-12 h-12 object-contain"
             />
-            <span className="text-3xl font-bold text-white">PROMTP</span>
+            <span className="text-3xl font-bold text-white">PROMOTER OS</span>
           </div>
           <p className="text-gray-400">Create your account</p>
         </div>

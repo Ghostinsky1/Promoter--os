@@ -21,7 +21,7 @@ export default function TermsPage() {
               Last Updated: December 2024
             </p>
             <p>
-              Please read these Terms of Service carefully before using PROMTP. By accessing or
+              Please read these Terms of Service carefully before using PROMOTER OS. By accessing or
               using our service, you agree to be bound by these terms.
             </p>
           </section>
@@ -29,7 +29,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">Acceptance of Terms</h2>
             <p>
-              By creating an account or using PROMTP, you acknowledge that you have read,
+              By creating an account or using PROMOTER OS, you acknowledge that you have read,
               understood, and agree to be bound by these Terms of Service and our Privacy Policy.
               If you do not agree, you may not use our service.
             </p>
@@ -38,7 +38,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">Description of Service</h2>
             <p>
-              PROMTP is a professional offer management platform designed for concert promoters
+              PROMOTER OS is a professional offer management platform designed for concert promoters
               and event organizers. Our service helps you create, manage, and analyze event offers
               with advanced calculation tools and AI-powered insights.
             </p>
@@ -49,7 +49,7 @@ export default function TermsPage() {
             <h3 className="text-xl font-semibold text-white mb-3">Eligibility</h3>
             <p className="mb-4">
               You must be at least 18 years old and legally capable of entering into binding
-              contracts to use PROMTP.
+              contracts to use PROMOTER OS.
             </p>
 
             <h3 className="text-xl font-semibold text-white mb-3">Account Security</h3>
@@ -105,13 +105,13 @@ export default function TermsPage() {
             <h2 className="text-2xl font-bold text-white mb-4">Intellectual Property</h2>
             <h3 className="text-xl font-semibold text-white mb-3">Our Rights</h3>
             <p className="mb-4">
-              PROMTP and all associated content, features, and functionality are owned by us
+              PROMOTER OS and all associated content, features, and functionality are owned by us
               and protected by copyright, trademark, and other intellectual property laws.
             </p>
 
             <h3 className="text-xl font-semibold text-white mb-3">Your Content</h3>
             <p>
-              You retain all rights to the content you create using PROMTP. By using our service,
+              You retain all rights to the content you create using PROMOTER OS. By using our service,
               you grant us a limited license to store, process, and display your content solely
               to provide the service to you.
             </p>
@@ -120,7 +120,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">Data and Privacy</h2>
             <p>
-              Your use of PROMTP is also governed by our Privacy Policy. We implement
+              Your use of PROMOTER OS is also governed by our Privacy Policy. We implement
               industry-standard security measures to protect your data, but we cannot guarantee
               absolute security.
             </p>
@@ -129,7 +129,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">Limitation of Liability</h2>
             <p>
-              PROMTP is provided "as is" without warranties of any kind. We are not liable for
+              PROMOTER OS is provided "as is" without warranties of any kind. We are not liable for
               any indirect, incidental, special, consequential, or punitive damages arising from
               your use of the service. Our total liability shall not exceed the amount you paid
               us in the 12 months preceding the claim.
@@ -173,7 +173,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">Contact Information</h2>
             <p>
-              If you have questions about these Terms, please contact us at support@promtp.com
+              If you have questions about these Terms, please contact us at support@gozaentertainment.com
             </p>
           </section>
         </div>

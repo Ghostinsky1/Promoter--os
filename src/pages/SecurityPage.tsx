@@ -23,7 +23,7 @@ export default function SecurityPage() {
         <div className="prose prose-invert max-w-none space-y-8 text-[#A8B2C1]">
           <section>
             <p className="text-lg">
-              At PROMTP, security is our top priority. We implement industry-leading security
+              At PROMOTER OS, security is our top priority. We implement industry-leading security
               measures to protect your data and ensure the integrity of our platform.
             </p>
           </section>
@@ -153,7 +153,7 @@ export default function SecurityPage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">Infrastructure & Hosting</h2>
             <p className="mb-4">
-              PROMTP is built on trusted, secure infrastructure:
+              PROMOTER OS is built on trusted, secure infrastructure:
             </p>
             <ul className="list-disc list-inside space-y-2 ml-4">
               <li><strong>Supabase:</strong> Enterprise-grade PostgreSQL database with built-in security</li>
@@ -196,7 +196,7 @@ export default function SecurityPage() {
               If you discover a security vulnerability, please report it responsibly:
             </p>
             <p className="text-white font-semibold">
-              Email: security@promtp.com
+              Email: support@gozaentertainment.com
             </p>
             <p className="mt-4 text-sm">
               We take all security reports seriously and will respond promptly. We appreciate

@@ -14,7 +14,7 @@ async function authHeader() {
 
 /**
  * In-app checkout: asks the backend for an embedded Checkout session and returns its
- * client secret, which <EmbeddedCheckout> uses to render the payment form inside PROMTP.
+ * client secret, which <EmbeddedCheckout> uses to render the payment form inside PROMOTER OS.
  */
 export async function createEmbeddedCheckout(priceId: string): Promise<string> {
   const response = await fetch(`${SUPABASE_URL}/functions/v1/stripe-checkout`, {

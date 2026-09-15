@@ -10,7 +10,7 @@ import { supabase } from '../lib/supabase';
 const stripePromise = STRIPE_PUBLISHABLE_KEY.startsWith('pk_') ? loadStripe(STRIPE_PUBLISHABLE_KEY) : null;
 
 /**
- * In-app checkout. The Stripe payment form renders right here, inside PROMTP —
+ * In-app checkout. The Stripe payment form renders right here, inside PROMOTER OS —
  * no redirect to a Stripe-hosted page. On completion Stripe returns the user to /success.
  */
 export function CheckoutPage() {
@@ -49,8 +49,8 @@ export function CheckoutPage() {
           {/* Plan summary */}
           <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-8">
             <div className="inline-flex items-center gap-3 mb-6">
-              <img src="/untitled_project_-_standard_1_(13).png" alt="PROMTP" className="w-10 h-10 object-contain" />
-              <span className="text-2xl font-bold text-white">PROMTP</span>
+              <img src="/untitled_project_-_standard_1_(13).png" alt="PROMOTER OS" className="w-10 h-10 object-contain" />
+              <span className="text-2xl font-bold text-white">PROMOTER OS</span>
             </div>
             <p className="text-sm uppercase tracking-wider text-gray-500 mb-2">You're subscribing to</p>
             <h1 className="text-3xl font-bold text-white mb-1">{product.name}</h1>

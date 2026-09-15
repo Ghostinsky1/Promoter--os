@@ -21,7 +21,7 @@ export default function PrivacyPage() {
               Last Updated: December 2024
             </p>
             <p>
-              At PROMTP, we take your privacy seriously. This Privacy Policy explains how we collect,
+              At PROMOTER OS, we take your privacy seriously. This Privacy Policy explains how we collect,
               use, disclose, and safeguard your information when you use our service.
             </p>
           </section>
@@ -123,7 +123,7 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-bold text-white mb-4">Contact Us</h2>
             <p>
               If you have questions about this Privacy Policy or how we handle your information,
-              please contact us at privacy@promtp.com
+              please contact us at support@gozaentertainment.com
             </p>
           </section>
         </div>

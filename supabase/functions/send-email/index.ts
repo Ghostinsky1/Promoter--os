@@ -1,14 +1,14 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 
-// Sends transactional email through SendGrid on behalf of a signed-in PROMTP user.
+// Sends transactional email through SendGrid on behalf of a signed-in PROMOTER OS user.
 // Secrets required (Supabase → Edge Functions → Secrets): SENDGRID_API_KEY
 // Optional: SENDGRID_FROM_EMAIL (default support@gozaentertainment.com), SENDGRID_FROM_NAME
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
 const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY');
 const FROM_EMAIL = Deno.env.get('SENDGRID_FROM_EMAIL') ?? 'support@gozaentertainment.com';
-const FROM_NAME = Deno.env.get('SENDGRID_FROM_NAME') ?? 'PROMTP · Goza Entertainment';
+const FROM_NAME = Deno.env.get('SENDGRID_FROM_NAME') ?? 'PROMOTER OS · Goza Entertainment';
 
 const MAX_ATTACHMENT_BYTES = 8 * 1024 * 1024; // SendGrid caps total message size at ~30MB
 const MAX_RECIPIENTS = 10;
@@ -51,7 +51,7 @@ function brandedHtml(opts: { title: string; message: string; senderName: string;
           <a href="mailto:${escapeHtml(opts.senderEmail)}" style="color:#1140F0;">${escapeHtml(opts.senderEmail)}</a></p>
         </td></tr>
         <tr><td style="padding:16px 28px;background:#F6F8FB;border-top:1px solid #D2DAE6;font-size:11px;color:#6B7280;letter-spacing:1px;text-transform:uppercase;">
-          Sent with PROMTP · ${company} · Reply to this email to reach the sender
+          Sent with PROMOTER OS · ${company} · Reply to this email to reach the sender
         </td></tr>
       </table>
     </td></tr>
@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
         { type: 'text/plain', value: `${message}\n\n— ${senderName}\n${replyTo}` },
         { type: 'text/html', value: brandedHtml({ title: subject, message, senderName, senderEmail: replyTo, company }) },
       ],
-      categories: ['promtp'],
+      categories: ['promoteros'],
       custom_args: { user_id: user.id },
     };
     if (sgAttachments.length) payload.attachments = sgAttachments;

@@ -2,7 +2,7 @@ import jsPDF from 'jspdf';
 import { ArchivoBlackTTF, ChakraPetchTTF, SairaRegularTTF, SairaBoldTTF } from './pdfFonts';
 
 /**
- * PROMTP print theme — matches gozaentertainment.com but built for paper:
+ * PROMOTER OS print theme — matches gozaentertainment.com but built for paper:
  * white background, black ink, a single electric-blue accent, very light ice tints.
  * No dark bands or heavy fills (cheap to print). All positions are computed from the
  * page width so the same helpers work for pt- and mm-based documents.
@@ -106,8 +106,8 @@ export function drawHeader(doc: jsPDF, o: HeaderOpts): number {
 
   // Top strip: wordmark left, company right, blue rule under it
   doc.setFont('ArchivoBlack', 'normal'); doc.setFontSize(11); doc.setTextColor(...PDF.blue);
-  doc.text('PROMTP', m, y);
-  const wm = doc.getTextWidth('PROMTP');
+  doc.text('PROMOTER OS', m, y);
+  const wm = doc.getTextWidth('PROMOTER OS');
   label(doc, o.docType, m + wm + 14 * u, y, { color: PDF.muted });
   if (o.companyName) label(doc, o.companyName, w - m, y, { align: 'right', color: PDF.navy });
   rule(doc, m, y + 8 * u, w - m, PDF.blue, 1.2);
@@ -145,7 +145,7 @@ export function drawFooters(doc: jsPDF, companyName?: string, contact?: string) 
     doc.setPage(p);
     const y = h - 28 * u;
     rule(doc, m, y - 10 * u, w - m, PDF.rule, 0.6);
-    label(doc, [companyName, contact].filter(Boolean).join('  ·  ') || 'PROMTP', m, y, { color: PDF.muted, size: 6.5 });
+    label(doc, [companyName, contact].filter(Boolean).join('  ·  ') || 'PROMOTER OS', m, y, { color: PDF.muted, size: 6.5 });
     label(doc, `Page ${p} of ${total}`, w - m, y, { align: 'right', color: PDF.muted, size: 6.5 });
   }
 }

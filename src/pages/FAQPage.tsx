@@ -37,14 +37,14 @@ export default function FAQPage() {
 
   const faqs = [
     {
-      question: 'What is PROMTP?',
+      question: 'What is PROMOTER OS?',
       answer:
-        'PROMTP is a professional offer management platform designed specifically for concert promoters and event organizers. It helps you create, manage, and analyze event offers with advanced calculation tools, AI-powered insights, and professional PDF generation.',
+        'PROMOTER OS is a professional offer management platform designed specifically for concert promoters and event organizers. It helps you create, manage, and analyze event offers with advanced calculation tools, AI-powered insights, and professional PDF generation.',
     },
     {
       question: 'How does the free trial work?',
       answer:
-        'You get full access to PROMTP for 7 days, completely free. No credit card required to start. You can create unlimited offers, use all features including AI insights, and export professional PDFs. Cancel anytime during the trial with no charges.',
+        'You get full access to PROMOTER OS for 7 days, completely free. No credit card required to start. You can create unlimited offers, use all features including AI insights, and export professional PDFs. Cancel anytime during the trial with no charges.',
     },
     {
       question: 'What happens after the trial ends?',
@@ -77,14 +77,14 @@ export default function FAQPage() {
         'Absolutely. We use bank-level encryption for all data (AES-256), secure authentication, and industry-standard security practices. Your data is backed up daily and protected by row-level security. We never share your data with third parties. See our Security page for more details.',
     },
     {
-      question: 'Can multiple people in my organization use PROMTP?',
+      question: 'Can multiple people in my organization use PROMOTER OS?',
       answer:
         'Yes! Our Professional and Enterprise plans support multiple team members. You can invite colleagues, set permissions, and collaborate on offers together. Each team member gets their own login.',
     },
     {
       question: 'What types of deal structures do you support?',
       answer:
-        'PROMTP supports all common deal structures including flat guarantees, percentage of gross splits, guarantee plus percentage deals, and backend deals. You can customize revenue splits, add bonuses, and configure complex profit-sharing arrangements.',
+        'PROMOTER OS supports all common deal structures including flat guarantees, percentage of gross splits, guarantee plus percentage deals, and backend deals. You can customize revenue splits, add bonuses, and configure complex profit-sharing arrangements.',
     },
     {
       question: 'Can I export my offers to PDF?',
@@ -97,7 +97,7 @@ export default function FAQPage() {
         'While our subscriptions are non-refundable, we encourage you to use the 7-day free trial to fully test the platform before subscribing. If you experience issues with the service, contact our support team and we\'ll work to resolve them.',
     },
     {
-      question: 'How do tours work in PROMTP?',
+      question: 'How do tours work in PROMOTER OS?',
       answer:
         'You can group multiple shows into tours, making it easy to manage multi-date runs. Create a tour, add shows, and track the overall profitability across all dates. Perfect for routing artists through multiple markets.',
     },
@@ -114,17 +114,17 @@ export default function FAQPage() {
     {
       question: 'Is there a mobile app?',
       answer:
-        'PROMTP is a responsive web application that works perfectly on mobile devices, tablets, and desktops. Access your offers from anywhere with an internet connection. No app download required.',
+        'PROMOTER OS is a responsive web application that works perfectly on mobile devices, tablets, and desktops. Access your offers from anywhere with an internet connection. No app download required.',
     },
     {
       question: 'What if I need help or have questions?',
       answer:
-        'We offer email support for all users. Professional and Enterprise plans include priority support with faster response times. We also provide comprehensive documentation and video tutorials to help you get the most out of PROMTP.',
+        'We offer email support for all users. Professional and Enterprise plans include priority support with faster response times. We also provide comprehensive documentation and video tutorials to help you get the most out of PROMOTER OS.',
     },
     {
       question: 'Can I import data from spreadsheets?',
       answer:
-        'While PROMTP doesn\'t currently have automated spreadsheet import, you can quickly recreate your offers using our templates feature. Once set up, you\'ll save hours compared to manual spreadsheet work.',
+        'While PROMOTER OS doesn\'t currently have automated spreadsheet import, you can quickly recreate your offers using our templates feature. Once set up, you\'ll save hours compared to manual spreadsheet work.',
     },
     {
       question: 'Do you offer discounts for annual plans?',
@@ -132,9 +132,9 @@ export default function FAQPage() {
         'Yes! Save up to 20% by choosing annual billing instead of monthly. Annual plans are billed once per year and provide significant savings for long-term users.',
     },
     {
-      question: 'What makes PROMTP different from spreadsheets?',
+      question: 'What makes PROMOTER OS different from spreadsheets?',
       answer:
-        'PROMTP eliminates manual calculations, reduces errors, provides AI-powered insights, generates professional PDFs instantly, tracks all your offers in one place, and gives you analytics across your entire business. It\'s purpose-built for promoters, not general-purpose like spreadsheets.',
+        'PROMOTER OS eliminates manual calculations, reduces errors, provides AI-powered insights, generates professional PDFs instantly, tracks all your offers in one place, and gives you analytics across your entire business. It\'s purpose-built for promoters, not general-purpose like spreadsheets.',
     },
   ];
 
@@ -154,7 +154,7 @@ export default function FAQPage() {
             Frequently Asked Questions
           </h1>
           <p className="text-lg text-[#A8B2C1]">
-            Everything you need to know about PROMTP
+            Everything you need to know about PROMOTER OS
           </p>
         </div>
 
@@ -176,7 +176,7 @@ export default function FAQPage() {
             Can't find the answer you're looking for? Our support team is here to help.
           </p>
           <a
-            href="mailto:support@promtp.com"
+            href="mailto:support@gozaentertainment.com"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#8FD3FF] text-[#04214D] font-semibold rounded-lg hover:bg-[#6FB8F2] transition-colors"
           >
             Contact Support

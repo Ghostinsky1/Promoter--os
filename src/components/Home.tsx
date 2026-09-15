@@ -4,7 +4,6 @@ import {
   TrendingUp,
   Calendar,
   MapPin,
-  Bell,
   Plus,
   Sparkles
 } from 'lucide-react';
@@ -181,7 +180,7 @@ export function Home() {
       <TrialBanner />
       <div className="min-h-screen">
       <div className="px-6 pt-10 pb-2">
-        <div className="flex items-end justify-between max-w-7xl mx-auto">
+        <div className="flex flex-wrap items-end justify-between gap-6 max-w-7xl mx-auto">
           <div>
             <p className="font-label text-[#04214D] text-[11px] tracking-[0.22em] uppercase mb-2">
               [ 01 ] Today · {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -191,26 +190,21 @@ export function Home() {
             </h1>
           </div>
 
-          <button className="w-11 h-11 rounded-full bg-[#14171E] border border-gray-800 p-0 hover:bg-[#22262F] flex items-center justify-center transition-colors flex-shrink-0">
-            <Bell className="h-5 w-5 text-gray-400" />
-          </button>
+          <div className="flex flex-wrap gap-3 items-center">
+            <button onClick={() => navigate('/tours')} className="px-5 py-3 rounded-xl text-white text-sm border border-[#2A3040]" style={{ background: 'linear-gradient(180deg, #2A3040 0%, #14171E 100%)', boxShadow: '0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)' }}>
+              View Tours
+            </button>
+            <button onClick={() => navigate('/offers')} className="px-5 py-3 rounded-xl text-white text-sm border border-[#2A3040]" style={{ background: 'linear-gradient(180deg, #2A3040 0%, #14171E 100%)', boxShadow: '0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)' }}>
+              All Offers
+            </button>
+            <button onClick={() => navigate('/offers/create')} className="px-5 py-3 rounded-xl bg-[#8FD3FF] text-[#04214D] text-sm flex items-center gap-2">
+              <Plus className="h-4 w-4" strokeWidth={2.5} /> New Offer
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="px-6 py-6 max-w-7xl mx-auto space-y-6">
-        {/* Primary actions */}
-        <div className="flex flex-wrap gap-3 justify-end -mt-14 mb-2">
-          <button onClick={() => navigate('/tours')} className="px-5 py-3 rounded-xl text-white text-sm border border-[#2A3040]" style={{ background: 'linear-gradient(180deg, #2A3040 0%, #14171E 100%)', boxShadow: '0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)' }}>
-            View Tours
-          </button>
-          <button onClick={() => navigate('/offers')} className="px-5 py-3 rounded-xl text-white text-sm border border-[#2A3040]" style={{ background: 'linear-gradient(180deg, #2A3040 0%, #14171E 100%)', boxShadow: '0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)' }}>
-            All Offers
-          </button>
-          <button onClick={() => navigate('/offers/create')} className="px-5 py-3 rounded-xl bg-[#8FD3FF] text-[#04214D] text-sm flex items-center gap-2">
-            <Plus className="h-4 w-4" strokeWidth={2.5} /> New Offer
-          </button>
-        </div>
-
         {/* KPI row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[

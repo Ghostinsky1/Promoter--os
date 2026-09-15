@@ -29,6 +29,7 @@ export function EmailOfferModal({ offer, companySettings, artists, costsOnly, on
 
   const senderName = companySettings?.contact_name || companySettings?.company_name || '';
   const companyName = companySettings?.company_name || '';
+  const replyTo = (companySettings?.email || '').trim();
 
   const [to, setTo] = useState(headliner?.contact_email || '');
   const [subject, setSubject] = useState(`Offer: ${offer.show.artist_name} — ${offer.show.venue_name}${eventDate ? ` · ${eventDate}` : ''}`);
@@ -67,6 +68,7 @@ export function EmailOfferModal({ offer, companySettings, artists, costsOnly, on
         copySelf,
         senderName: senderName || undefined,
         companyName: companyName || undefined,
+        replyTo: replyTo || undefined,
         attachments,
       });
       setSent(result.sent_to);
@@ -88,7 +90,7 @@ export function EmailOfferModal({ offer, companySettings, artists, costsOnly, on
             <p className="font-label text-[11px] tracking-[0.2em] text-[#8FD3FF] uppercase mb-1">[ Email ]</p>
             <h2 className="text-xl sm:text-2xl font-bold text-white">Send this offer</h2>
             <p className="text-gray-400 text-sm mt-1">
-              Sent from support@gozaentertainment.com · replies go to your account email
+              Sent from support@gozaentertainment.com · replies go to {replyTo || 'your account email'}
             </p>
           </div>
           <button className="text-gray-400 hover:text-white transition-colors" onClick={onClose} aria-label="Close">

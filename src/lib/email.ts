@@ -13,11 +13,12 @@ export interface SendEmailInput {
   copySelf?: boolean;
   senderName?: string;
   companyName?: string;
+  replyTo?: string;
   attachments?: EmailAttachment[];
 }
 
 /** Sends an email through the `send-email` edge function (SendGrid). Throws on failure. */
-export async function sendEmail(input: SendEmailInput): Promise<{ sent_to: string[]; copied: string | null }> {
+export async function sendEmail(input: SendEmailInput): Promise<{ sent_to: string[]; reply_to: string; copied: string | null }> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) throw new Error('You need to be signed in to send email.');
 
@@ -34,6 +35,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{ sent_to: strin
       copy_self: input.copySelf === true,
       sender_name: input.senderName,
       company_name: input.companyName,
+      reply_to: input.replyTo,
       attachments: input.attachments ?? [],
     }),
   });

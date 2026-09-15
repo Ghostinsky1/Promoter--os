@@ -81,6 +81,8 @@ Deno.serve(async (req) => {
     const copySelf = body.copy_self === true;
     const senderName = String(body.sender_name ?? '').trim() || user.email;
     const company = body.company_name ? String(body.company_name) : undefined;
+    // Replies go to the company email from Settings when set, otherwise the sender's login email
+    const replyTo = body.reply_to && EMAIL_RE.test(String(body.reply_to).trim()) ? String(body.reply_to).trim() : user.email;
     const attachments: { filename: string; content: string; type?: string }[] = Array.isArray(body.attachments) ? body.attachments : [];
 
     if (recipients.length === 0) return cors({ error: 'At least one recipient is required' }, 400);
@@ -110,11 +112,11 @@ Deno.serve(async (req) => {
     const payload: Record<string, unknown> = {
       personalizations: [personalization],
       from: { email: FROM_EMAIL, name: FROM_NAME },
-      reply_to: { email: user.email, name: senderName },
+      reply_to: { email: replyTo, name: senderName },
       subject,
       content: [
-        { type: 'text/plain', value: `${message}\n\n— ${senderName}\n${user.email}` },
-        { type: 'text/html', value: brandedHtml({ title: subject, message, senderName, senderEmail: user.email, company }) },
+        { type: 'text/plain', value: `${message}\n\n— ${senderName}\n${replyTo}` },
+        { type: 'text/html', value: brandedHtml({ title: subject, message, senderName, senderEmail: replyTo, company }) },
       ],
       categories: ['promtp'],
       custom_args: { user_id: user.id },
@@ -129,7 +131,7 @@ Deno.serve(async (req) => {
 
     if (res.status === 202) {
       console.log(`Email sent by ${user.email} to ${recipients.join(', ')} (${sgAttachments.length} attachment(s))`);
-      return cors({ ok: true, sent_to: recipients, copied: copySelf ? user.email : null });
+      return cors({ ok: true, sent_to: recipients, reply_to: replyTo, copied: copySelf ? user.email : null });
     }
 
     const errText = await res.text();

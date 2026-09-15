@@ -73,7 +73,7 @@ export function Header() {
 
   return (
     <>
-      <header className="bg-[#14171E] border-b border-gray-800 sticky top-0 z-50">
+      <header className="sticky top-0 z-50 border-b border-[#2A3040]" style={{ background: "linear-gradient(180deg, rgba(23,26,32,0.96) 0%, rgba(8,9,13,0.96) 100%)", backdropFilter: "blur(14px)", boxShadow: "0 12px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link
@@ -129,7 +129,7 @@ export function Header() {
                     </button>
 
                     {userMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-64 bg-[#22262F] rounded-xl shadow-xl border border-gray-800 py-2">
+                      <div className="absolute right-0 mt-2 w-64 z-[70] bg-[#14171E] rounded-xl shadow-2xl border border-[#2A3040] py-2">
                         <div className="px-4 py-3 border-b border-gray-800">
                           {companyName && (
                             <div className="text-sm font-semibold text-white truncate mb-1">{companyName}</div>

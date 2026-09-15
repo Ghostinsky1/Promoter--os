@@ -614,7 +614,7 @@ export function CreateOffer() {
       )}
 
       {/* Progress Header - Fixed */}
-      <div className="sticky top-0 z-50 bg-[#1140F0]/95 backdrop-blur-lg border-b border-gray-800">
+      <div className="sticky top-16 z-40 bg-[#1140F0]/95 backdrop-blur-lg border-b border-[#04214D]/30">
         <div className="max-w-5xl mx-auto px-6 py-6">
           {/* Progress Info */}
           <div className="flex items-center justify-between mb-4">

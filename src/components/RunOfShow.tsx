@@ -292,7 +292,7 @@ export function RunOfShow() {
 
   return (
     <div className="min-h-screen bg-[#1140F0]">
-      <div className="bg-[#14171E] border-b border-gray-800 sticky top-0 z-10">
+      <div className="bg-[#14171E] border-b border-gray-800 sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

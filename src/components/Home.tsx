@@ -179,26 +179,21 @@ export function Home() {
   return (
     <>
       <TrialBanner />
-      <div className="min-h-screen bg-black">
-      <div className="sticky top-0 z-50 bg-black/95 backdrop-blur-lg border-b border-gray-900">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <div className="flex items-center gap-3">
-              <img
-                src="/untitled_project_-_standard_1_(13).png"
-                alt="PROMTP Logo"
-                className="w-12 h-12 object-contain"
-              />
-              <div>
-                <p className="text-gray-500 text-xs">Welcome back,</p>
-                <h1 className="text-white font-bold text-lg">{user?.email?.split('@')[0] || 'User'}</h1>
-              </div>
-            </div>
-
-            <button className="w-10 h-10 rounded-full bg-[#14171E] border border-gray-800 p-0 hover:bg-[#22262F] flex items-center justify-center transition-colors">
-              <Bell className="h-5 w-5 text-gray-400" />
-            </button>
+      <div className="min-h-screen">
+      <div className="px-6 pt-10 pb-2">
+        <div className="flex items-end justify-between max-w-7xl mx-auto">
+          <div>
+            <p className="font-label text-[#04214D] text-[11px] tracking-[0.22em] uppercase mb-2">
+              [ 01 ] Today · {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </p>
+            <h1 className="text-[#08090D] text-4xl md:text-5xl leading-none">
+              Welcome back, {user?.email?.split('@')[0] || 'User'}.
+            </h1>
           </div>
+
+          <button className="w-11 h-11 rounded-full bg-[#14171E] border border-gray-800 p-0 hover:bg-[#22262F] flex items-center justify-center transition-colors flex-shrink-0">
+            <Bell className="h-5 w-5 text-gray-400" />
+          </button>
         </div>
       </div>
 

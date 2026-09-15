@@ -70,7 +70,9 @@ export function generateArtistOfferSheet(
   doc.setFillColor(...lightGray);
   doc.setDrawColor(...borderGray);
   doc.setLineWidth(0.5);
-  const eventBoxH = 70;
+  const addressLines = (offer.venue_full_address || '').split('\n').map(l => l.trim()).filter(Boolean);
+  const infoLines = [offer.show.venue_name, ...addressLines, formatDateLong(offer.show.event_date)];
+  const eventBoxH = 32 + infoLines.length * 12 + 6;
   drawRoundedRect(doc, margin, y, contentWidth, eventBoxH, 8);
 
   doc.setFont('helvetica', 'bold');
@@ -81,11 +83,7 @@ export function generateArtistOfferSheet(
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(...darkGray);
-  doc.text(offer.show.venue_name, margin + 14, y + 32);
-  if (offer.venue_full_address) {
-    doc.text(offer.venue_full_address, margin + 14, y + 44);
-  }
-  doc.text(formatDateLong(offer.show.event_date), margin + 14, y + 56);
+  infoLines.forEach((line, i) => doc.text(line, margin + 14, y + 32 + i * 12));
 
   if (offer.show.capacity) {
     doc.setFont('helvetica', 'bold');

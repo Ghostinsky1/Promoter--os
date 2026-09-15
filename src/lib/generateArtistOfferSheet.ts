@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import { calculateArtistCost } from './artistCalculations';
 import type { EventArtist, OfferWithShow, CompanySettings } from '../types';
+import { PDF, useBrandFonts, drawHeader, drawFooters } from './pdfTheme';
 
 function drawRoundedRect(doc: jsPDF, x: number, y: number, width: number, height: number, radius: number) {
   doc.roundedRect(x, y, width, height, radius, radius, 'FD');
@@ -40,34 +41,25 @@ export function generateArtistOfferSheet(
   const pageWidth = 612;
   const contentWidth = pageWidth - margin * 2;
 
-  const black: [number, number, number] = [15, 17, 19];
-  const darkGray: [number, number, number] = [107, 114, 128];
-  const gray: [number, number, number] = [156, 163, 175];
-  const lightGray: [number, number, number] = [249, 250, 251];
-  const borderGray: [number, number, number] = [229, 231, 235];
-  const green: [number, number, number] = [16, 185, 129];
-  const limeGreen: [number, number, number] = [196, 255, 13];
+  useBrandFonts(doc);
+  const black: [number, number, number] = PDF.ink;
+  const darkGray: [number, number, number] = PDF.muted;
+  const gray: [number, number, number] = PDF.muted;
+  const lightGray: [number, number, number] = PDF.iceTint;
+  const borderGray: [number, number, number] = PDF.rule;
+  const green: [number, number, number] = PDF.good;
+  const limeGreen: [number, number, number] = PDF.blue;
 
   const costs = calculateArtistCost(artist);
-  let y = 30;
-
-  if (companySettings?.logo_url) {
-    try {
-      doc.addImage(companySettings.logo_url, 'PNG', (pageWidth - 80) / 2, y, 80, 40);
-      y += 52;
-    } catch (_) { /* skip logo */ }
-  }
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.setTextColor(...black);
-  doc.text('ARTIST OFFER', margin, y);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...darkGray);
-  doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), pageWidth - margin, y, { align: 'right' });
-  y += 24;
+  let y = drawHeader(doc, {
+    docType: 'Artist Offer',
+    title: artist.artist_name || offer.show.artist_name,
+    subtitle: `${ROLE_LABELS[artist.role] || artist.role} · ${offer.show.event_name || offer.show.artist_name}`,
+    lines: [offer.show.venue_name, ...(offer.venue_full_address || '').split('\n').filter(Boolean)],
+    right: [formatDateLong(offer.show.event_date), `Prepared ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`],
+    companyName: companySettings?.company_name,
+    logoUrl: companySettings?.logo_url,
+  });
 
   doc.setDrawColor(...limeGreen);
   doc.setLineWidth(3);
@@ -318,5 +310,6 @@ export function generateArtistOfferSheet(
     doc.text(parts.join('  |  '), pageWidth / 2, y, { align: 'center' });
   }
 
+  drawFooters(doc, companySettings?.company_name, [companySettings?.email, companySettings?.phone].filter(Boolean).join('  ·  '));
   return doc;
 }

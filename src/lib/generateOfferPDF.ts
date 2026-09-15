@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import { OfferWithShow, CompanySettings } from '../types';
 import { convertTo12Hour } from './timeHelpers';
 import { PDFMode, PDF_MODES } from './pdfModes';
+import { PDF, useBrandFonts, drawHeader, drawFooters, tableTheme, label as brandLabel } from './pdfTheme';
 
 // Helper function to draw rounded rectangle
 function drawRoundedRect(doc: jsPDF, x: number, y: number, width: number, height: number, radius: number) {
@@ -22,16 +23,17 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
   const pageHeight = 792;
   const contentWidth = pageWidth - (margin * 2);
 
-  const black = [0, 0, 0];
-  const white = [255, 255, 255];
-  const limeGreen = [196, 255, 13];
-  const gray = [75, 85, 99];
-  const lightGray = [249, 250, 251];
-  const borderGray = [229, 231, 235];
-  const darkGray = [107, 114, 128];
-  const green = [16, 185, 129];
-  const lightGreen = [240, 253, 244];
-  const orange = [249, 115, 22];
+  useBrandFonts(doc);
+  const black = PDF.ink;
+  const white = PDF.white;
+  const limeGreen = PDF.blue;        // accent borders / highlight rows
+  const gray = PDF.text;
+  const lightGray = PDF.iceTint;     // card fills (very light, ink-cheap)
+  const borderGray = PDF.rule;
+  const darkGray = PDF.muted;
+  const green = PDF.good;
+  const lightGreen = PDF.iceTint;
+  const orange = PDF.warn;
 
   const facilityFee = offer.facility_fee_per_ticket ?? 2.00;
   const totalAllotment = offer.ticket_tiers.reduce((sum, t) => sum + t.allotment, 0);
@@ -56,57 +58,16 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
   const artistDeductionsTotal = (offer.artist_deductions || []).reduce((sum, d) => sum + (d.amount || 0), 0);
   const yourProfit = netGrossPotential - totalFixedExpenses - totalVariableExpenses - artistWalkout;
 
-  let y = mode === 'artist_offer' ? 20 : margin;
-
-  // === COMPACT HEADER WITH LOGO ===
-  // Logo centered at top (if available)
-  if (companySettings?.logo_url) {
-    try {
-      const logoWidth = 80;
-      const logoHeight = 40;
-      const logoX = (pageWidth - logoWidth) / 2;
-      doc.addImage(companySettings.logo_url, 'PNG', logoX, y, logoWidth, logoHeight);
-      y += logoHeight + 12;
-    } catch (e) {
-      // If logo fails to load, just skip it
-      console.error('Failed to add logo:', e);
-    }
-  }
-
-  // Event name/Artist name
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.setTextColor(...black);
-  const artistName = (offer.show.event_name || offer.show.artist_name || '').toUpperCase();
-  doc.text(artistName, margin, y, { maxWidth: 400 });
-
-  // Venue name and date on same line
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(...darkGray);
-  doc.text(offer.show.venue_name, margin, y + 18);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text(formatDateShort(offer.show.event_date), pageWidth - margin, y, { align: 'right' });
-
-  // Venue address (if available)
-  if (offer.venue_full_address) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...darkGray);
-    const addressLines = offer.venue_full_address.split('\n');
-    let addressY = y + 28;
-    addressLines.forEach((line: string) => {
-      if (line.trim()) {
-        doc.text(line, margin, addressY);
-        addressY += 10;
-      }
-    });
-    y += 35 + (addressLines.length * 10);
-  } else {
-    y += 35;
-  }
+  const addressLines = (offer.venue_full_address || '').split('\n').map((l: string) => l.trim()).filter(Boolean);
+  let y = drawHeader(doc, {
+    docType: mode === 'artist_offer' ? 'Artist Offer' : 'Internal Estimate',
+    title: (offer.show.event_name || offer.show.artist_name || ''),
+    subtitle: offer.show.venue_name,
+    lines: addressLines,
+    right: [formatDateLong(offer.show.event_date), `Offer #${offer.id.replace('offer_', '').slice(-6)}`, `Prepared ${formatDateShort(new Date())}`],
+    companyName: companySettings?.company_name,
+    logoUrl: companySettings?.logo_url,
+  });
 
   // === DEAL CARDS (Three Modern Rounded Cards) ===
   const cardY = y;
@@ -253,36 +214,15 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
     margin: { left: margin, right: margin },
     head: [tableHeaders],
     body: tableData,
-    theme: 'grid',
-    styles: {
-      fontSize: 8,
-      cellPadding: 5,
-      lineColor: borderGray,
-      lineWidth: 1,
-      textColor: black,
-      font: 'helvetica'
-    },
-    headStyles: {
-      fillColor: lightGray,
-      textColor: black,
-      fontStyle: 'bold',
-      halign: 'center',
-      fontSize: 9,
-      cellPadding: 6
-    },
-    bodyStyles: {
-      fillColor: white
-    },
-    alternateRowStyles: {
-      fillColor: lightGray
-    },
+    ...tableTheme(),
+    headStyles: { ...tableTheme().headStyles, halign: 'center', cellPadding: 6 },
     columnStyles,
     didParseCell: function(data) {
       if (data.row.index === tableData.length - 1) {
-        data.cell.styles.fillColor = limeGreen;
-        data.cell.styles.textColor = black;
+        data.cell.styles.fillColor = PDF.tint;
+        data.cell.styles.textColor = PDF.ink;
         data.cell.styles.fontStyle = 'bold';
-        data.cell.styles.fontSize = 12;
+        data.cell.styles.fontSize = 11;
       }
     }
   });
@@ -668,33 +608,17 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
     y += 4;
   }
 
-  doc.setDrawColor(...limeGreen);
-  doc.setLineWidth(mode === 'artist_offer' ? 4 : 3);
-  doc.line(margin, y, pageWidth - margin, y);
-  y += mode === 'artist_offer' ? 18 : 12;
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(mode === 'artist_offer' ? 8 : 7);
-  doc.setTextColor(...darkGray);
-  const contactName = companySettings?.contact_name || 'Promoter';
-  const contactEmail = companySettings?.email || 'contact@promoter.com';
-  const contactPhone = companySettings?.phone ? ` | ${companySettings.phone}` : '';
-  const contactText = `Contact: ${contactName} | ${contactEmail}${contactPhone}`;
-  doc.text(contactText, margin, y);
-  const generatedText = `Generated: ${formatDateLong(new Date())} | ${companySettings?.company_name || 'PromoterOS'}`;
-  doc.text(generatedText, pageWidth - margin, y, { align: 'right' });
-
   doc.addPage();
   y = mode === 'artist_offer' ? 25 : margin + 15;
 
-  doc.setFont('helvetica', 'bold');
+  doc.setFont('ArchivoBlack', 'normal');
   doc.setFontSize(mode === 'artist_offer' ? 14 : 12);
   doc.setTextColor(...black);
   doc.text('DEAL TERMS & CONDITIONS', margin, y);
   y += mode === 'artist_offer' ? 12 : 8;
 
   doc.setDrawColor(...limeGreen);
-  doc.setLineWidth(mode === 'artist_offer' ? 3 : 2);
+  doc.setLineWidth(1);
   doc.line(margin, y, pageWidth - margin, y);
   y += mode === 'artist_offer' ? 20 : 15;
 
@@ -1021,14 +945,17 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
     doc.setFontSize(mode === 'artist_offer' ? 8 : 7);
     doc.setTextColor(...gray);
 
-    const terms = companySettings.legal_terms.split('\n').filter(line => line.trim());
+    const terms = companySettings.legal_terms.split('\n').map(l => l.replace(/^[\s•·\-–]+/, '').trim()).filter(line => line.length > 1);
     const termLineSpacing = mode === 'artist_offer' ? 10 : 7;
     terms.forEach(term => {
       if (y > pageHeight - margin - 80) {
         doc.addPage();
         y = margin + 20;
       }
-      const lines = doc.splitTextToSize(`• ${term.trim()}`, contentWidth - 20);
+      const isHeading = /^\d+\.\s/.test(term);
+      doc.setFont('Saira', isHeading ? 'bold' : 'normal');
+      doc.setTextColor(...(isHeading ? PDF.ink : PDF.text));
+      const lines = doc.splitTextToSize(isHeading ? term : `• ${term}`, contentWidth - 20);
       lines.forEach((line: string) => {
         doc.text(line, margin + 20, y);
         y += termLineSpacing;
@@ -1074,18 +1001,12 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
   y += mode === 'artist_offer' ? 18 : 15;
   doc.text('Date: __________', pageWidth / 2 + 10, y);
 
-  const totalPages = doc.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
-    doc.setPage(i);
-    doc.setFontSize(8);
-    doc.setTextColor(...darkGray);
-    doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
-
-    if (pdfMode.watermark) {
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.setTextColor(150, 150, 150);
-      doc.text(pdfMode.watermark, pageWidth / 2, pageHeight - 35, { align: 'center' });
+  drawFooters(doc, companySettings?.company_name, [companySettings?.email, companySettings?.phone].filter(Boolean).join('  ·  '));
+  if (pdfMode.watermark) {
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      brandLabel(doc, pdfMode.watermark, pageWidth / 2, pageHeight - 40, { align: 'center', color: PDF.muted, size: 7 });
     }
   }
 

@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import { OfferWithShow, CompanySettings } from '../types';
 import { formatCurrency } from './calculations';
 import { parseLocalDate } from './dateHelpers';
+import { PDF, useBrandFonts, drawHeader, drawFooters, tableTheme, label as brandLabel } from './pdfTheme';
 
 interface ActualTicketTier {
   type: string;
@@ -31,66 +32,21 @@ interface Settlement {
 
 export function generateSettlementPDF(offer: OfferWithShow, settlement: Settlement, companySettings?: CompanySettings) {
   const doc = new jsPDF();
-  let yPos = 12;
-
-  if (companySettings?.logo_url) {
-    try {
-      doc.addImage(companySettings.logo_url, 'PNG', 15, yPos, 20, 20);
-    } catch (error) {
-      console.error('Failed to add logo:', error);
-    }
-  }
-
-  if (companySettings) {
-    doc.setFontSize(9);
-    doc.setTextColor(100);
-    doc.text(companySettings.company_name || '', 195, yPos + 2, { align: 'right' });
-    if (companySettings.email) {
-      doc.text(companySettings.email, 195, yPos + 7, { align: 'right' });
-    }
-    if (companySettings.phone) {
-      doc.text(companySettings.phone, 195, yPos + 12, { align: 'right' });
-    }
-    doc.setTextColor(0);
-  }
-
-  yPos = 38;
-
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.text('SETTLEMENT REPORT', 105, yPos, { align: 'center' });
-
-  yPos += 15;
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Generated: ${new Date().toLocaleDateString()}`, 105, yPos, { align: 'center' });
-
-  yPos += 15;
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('EVENT INFORMATION', 20, yPos);
-
-  yPos += 8;
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Artist: ${offer.show.artist_name}`, 20, yPos);
-  yPos += 6;
-  doc.text(`Venue: ${offer.show.venue_name}`, 20, yPos);
-  yPos += 6;
+  useBrandFonts(doc);
   const eventDate = parseLocalDate(offer.show.event_date);
-  const dateStr = eventDate ? eventDate.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }) : 'Invalid date';
-  doc.text(`Date: ${dateStr}`, 20, yPos);
-  yPos += 6;
-  doc.text(`Capacity: ${offer.show.capacity}`, 20, yPos);
+  const dateStr = eventDate ? eventDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Invalid date';
+  let yPos = drawHeader(doc, {
+    docType: 'Settlement Report',
+    title: offer.show.event_name || offer.show.artist_name,
+    subtitle: offer.show.venue_name,
+    lines: [`Capacity ${offer.show.capacity}`],
+    right: [dateStr, `Settled ${settlement.settled_at ? new Date(settlement.settled_at).toLocaleDateString() : new Date().toLocaleDateString()}`],
+    companyName: companySettings?.company_name,
+    logoUrl: companySettings?.logo_url,
+  });
 
   yPos += 15;
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('FINANCIAL SUMMARY', 20, yPos);
+  brandLabel(doc, '[ 01 ]  Financial summary', 20, yPos, { color: PDF.blue });
 
   yPos += 2;
   autoTable(doc, {
@@ -99,7 +55,7 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
     body: [
       [
         'Revenue',
-        formatCurrency(offer.calculations.grossRevenue),
+        formatCurrency((offer.calculations as any).grossRevenue ?? offer.calculations.netGross ?? offer.calculations.grossPotential ?? 0),
         formatCurrency(settlement.actual_revenue),
         formatCurrency(settlement.variance_revenue),
       ],
@@ -116,9 +72,7 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
         formatCurrency(settlement.variance_profit),
       ],
     ],
-    theme: 'grid',
-    headStyles: { fillColor: [71, 85, 105], fontStyle: 'bold' },
-    styles: { fontSize: 9 },
+    ...tableTheme(doc),
     columnStyles: {
       0: { fontStyle: 'bold' },
       3: {
@@ -132,9 +86,7 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
 
   yPos = (doc as any).lastAutoTable.finalY + 15;
 
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('ATTENDANCE BREAKDOWN', 20, yPos);
+  brandLabel(doc, '[ 02 ]  Attendance breakdown', 20, yPos, { color: PDF.blue });
 
   yPos += 2;
   const attendanceData = settlement.actual_attendance.map(tier => [
@@ -150,9 +102,7 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
     startY: yPos,
     head: [['Tier', 'Price', 'Projected', 'Actual', 'Variance', 'Revenue']],
     body: attendanceData,
-    theme: 'grid',
-    headStyles: { fillColor: [71, 85, 105], fontStyle: 'bold' },
-    styles: { fontSize: 9 },
+    ...tableTheme(doc),
   });
 
   yPos = (doc as any).lastAutoTable.finalY + 15;
@@ -162,9 +112,7 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
     yPos = 20;
   }
 
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('EXPENSE BREAKDOWN', 20, yPos);
+  brandLabel(doc, '[ 03 ]  Expense breakdown', 20, yPos, { color: PDF.blue });
 
   yPos += 2;
   const expenseData: any[] = [];
@@ -172,7 +120,7 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
   (['talent', 'general', 'marketing', 'production'] as const).forEach(category => {
     const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
     expenseData.push([
-      { content: categoryName, colSpan: 4, styles: { fontStyle: 'bold', fillColor: [226, 232, 240] } }
+      { content: categoryName, colSpan: 4, styles: { fontStyle: 'bold', fillColor: PDF.tint, textColor: PDF.navy } }
     ]);
 
     Object.entries(offer.expenses[category]).forEach(([key, projectedValue]) => {
@@ -191,9 +139,8 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
     startY: yPos,
     head: [['Expense Item', 'Projected', 'Actual', 'Variance']],
     body: expenseData,
-    theme: 'grid',
-    headStyles: { fillColor: [71, 85, 105], fontStyle: 'bold' },
-    styles: { fontSize: 8 },
+    ...tableTheme(doc),
+
     columnStyles: {
       3: {
         textColor: (rowIndex: number, _column: number) => {
@@ -216,9 +163,7 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
       yPos = 20;
     }
 
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('SETTLEMENT NOTES', 20, yPos);
+    brandLabel(doc, '[ 04 ]  Settlement notes', 20, yPos, { color: PDF.blue });
 
     yPos += 8;
     doc.setFontSize(9);
@@ -238,9 +183,7 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
       yPos += 15;
     }
 
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('TERMS & CONDITIONS', 20, yPos);
+    brandLabel(doc, '[ 05 ]  Terms & conditions', 20, yPos, { color: PDF.blue });
 
     yPos += 8;
     doc.setFontSize(8);
@@ -263,19 +206,7 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
     doc.setTextColor(0);
   }
 
-  const pageCount = (doc as any).internal.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text(
-      `Page ${i} of ${pageCount}`,
-      105,
-      doc.internal.pageSize.height - 10,
-      { align: 'center' }
-    );
-  }
-
   const filename = `Settlement_${offer.show.artist_name.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+  drawFooters(doc, companySettings?.company_name, [companySettings?.email, companySettings?.phone].filter(Boolean).join('  ·  '));
   doc.save(filename);
 }

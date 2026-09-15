@@ -75,6 +75,15 @@
   [class~="bg-[#8FD3FF]"]:hover {
     background: linear-gradient(180deg, #D6EEFF 0%, #8FD3FF 100%) !important;
   }
+  /* Everything sitting on a solid ice surface reads in navy — no ice-on-ice, no gray-on-ice */
+  [class~="bg-[#8FD3FF]"] :is(h1, h2, h3, h4, h5, p, span, div, a, label, li, svg):not([class*="bg-[#0"]):not([class*="bg-black"]):not([class*="bg-[#14171E]"]) {
+    color: #04214D !important;
+  }
+  [class~="bg-[#8FD3FF]"] :is(h1, h2, h3, h4, h5, p, span, div, a, label, li, svg) ~ * {
+    opacity: 1;
+  }
+  /* Tinted ice boxes keep their ice icon, but never a gray one */
+  [class*="bg-[#8FD3FF]/"] svg { color: #8FD3FF; }
   /* Inputs sit on dark, not on blue */
   input, select, textarea {
     background-color: #0B0D12;

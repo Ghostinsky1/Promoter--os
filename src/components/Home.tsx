@@ -153,10 +153,10 @@ export function Home() {
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
-      case 'confirmed': return 'bg-[#8FD3FF]/20 text-[#8FD3FF] border-0';
-      case 'settled': return 'bg-green-500/20 text-green-400 border-0';
-      case 'offer_sent': return 'bg-blue-500/20 text-blue-400 border-0';
-      default: return 'bg-purple-500/20 text-purple-400 border-0';
+      case 'confirmed': return 'bg-[#1140F0] text-white';
+      case 'settled': return 'bg-[#8FD3FF] text-[#04214D]';
+      case 'offer_sent': return 'bg-[#8FD3FF]/15 text-[#8FD3FF] border border-[#8FD3FF]/40';
+      default: return 'bg-[#2A3040] text-gray-300';
     }
   };
 
@@ -198,270 +198,168 @@ export function Home() {
       </div>
 
       <div className="px-6 py-6 max-w-7xl mx-auto space-y-6">
-        <div>
-          <div className="grid grid-cols-1 gap-2">
-            <div
-              onClick={() => navigate('/offers/create')}
-              className="bg-gradient-to-r from-purple-600 to-purple-500 rounded-[20px] p-4 cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all shadow-lg"
-            >
-              <div className="flex items-center justify-between">
-                <div className="text-white">
-                  <p className="text-[10px] font-medium opacity-80 mb-0.5">Quick Action</p>
-                  <h4 className="text-lg font-bold leading-tight">Create New Offer</h4>
-                </div>
-                <div className="bg-white/20 rounded-full p-2 flex-shrink-0">
-                  <Plus className="h-5 w-5 text-white" strokeWidth={2.5} />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div
-                onClick={() => navigate('/tours')}
-                className="bg-gradient-to-br from-blue-600 to-cyan-500 rounded-[20px] p-4 cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all shadow-lg"
-              >
-                <div className="text-white">
-                  <p className="text-[10px] font-medium opacity-80 mb-0.5">Quick Action</p>
-                  <h4 className="text-base font-bold leading-tight">View Tours</h4>
-                </div>
-              </div>
-
-              <div
-                onClick={() => navigate('/offers')}
-                className="bg-gradient-to-br from-green-600 to-green-500 rounded-[20px] p-4 cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all shadow-lg"
-              >
-                <div className="text-white">
-                  <p className="text-[10px] font-medium opacity-80 mb-0.5">Quick Action</p>
-                  <h4 className="text-base font-bold leading-tight">All Offers</h4>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Primary actions */}
+        <div className="flex flex-wrap gap-3 justify-end -mt-14 mb-2">
+          <button onClick={() => navigate('/tours')} className="px-5 py-3 rounded-xl text-white text-sm border border-[#2A3040]" style={{ background: 'linear-gradient(180deg, #2A3040 0%, #14171E 100%)', boxShadow: '0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)' }}>
+            View Tours
+          </button>
+          <button onClick={() => navigate('/offers')} className="px-5 py-3 rounded-xl text-white text-sm border border-[#2A3040]" style={{ background: 'linear-gradient(180deg, #2A3040 0%, #14171E 100%)', boxShadow: '0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)' }}>
+            All Offers
+          </button>
+          <button onClick={() => navigate('/offers/create')} className="px-5 py-3 rounded-xl bg-[#8FD3FF] text-[#04214D] text-sm flex items-center gap-2">
+            <Plus className="h-4 w-4" strokeWidth={2.5} /> New Offer
+          </button>
         </div>
 
+        {/* KPI row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: 'Active events', value: `${stats?.activeEvents || 0}` },
+            { label: 'Profit this month', value: `$${((stats?.monthProfit || 0) / 1000).toFixed(1)}K` },
+            { label: 'Revenue', value: `$${((stats?.revenue || 0) / 1000).toFixed(1)}K` },
+            { label: 'Margin', value: `${Math.round(stats?.margin || 0)}%` },
+          ].map((k) => (
+            <div key={k.label} className="bg-[#14171E] border border-gray-800 rounded-[22px] p-6">
+              <p className="font-display text-4xl text-[#8FD3FF] mb-1" style={{ textShadow: '0 0 18px rgba(143,211,255,0.45)' }}>{k.value}</p>
+              <p className="font-label text-[11px] tracking-[0.22em] uppercase text-gray-500">{k.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Next event */}
         {nextEvent && (
           <div
             onClick={() => navigate(`/offers/${nextEvent.id}`)}
-            className="bg-gradient-to-br from-[#8FD3FF] to-[#6FB8F2] border-0 rounded-3xl p-6 relative overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+            className="bg-[#14171E] border border-gray-800 rounded-[22px] p-7 relative overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
           >
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <div className="bg-black/20 text-[#04214D] border-0 text-xs font-bold px-3 py-1 rounded-full">
-                  NEXT EVENT
-                </div>
-                <span className="text-[#04214D]/70 text-sm font-semibold">
-                  IN {nextEvent.daysUntil} {nextEvent.daysUntil === 1 ? 'DAY' : 'DAYS'}
-                </span>
-              </div>
-
-              <h2 className="text-3xl font-bold text-[#04214D] mb-2">{nextEvent.artist}</h2>
-              <div className="flex items-center gap-2 text-[#04214D]/80 mb-1">
-                <MapPin className="h-4 w-4" />
-                <span className="font-semibold">{nextEvent.venue}</span>
-              </div>
-              <div className="flex items-center gap-2 text-[#04214D]/80 mb-6">
-                <Calendar className="h-4 w-4" />
-                <span className="font-semibold">{nextEvent.date}</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-black/10 rounded-2xl p-4">
-                  <p className="text-[#04214D]/70 text-xs mb-1">Expected Profit</p>
-                  <p className="text-2xl font-bold text-[#04214D]">
-                    ${(nextEvent.profit / 1000).toFixed(1)}K
-                  </p>
-                </div>
-                <div className="bg-black/10 rounded-2xl p-4">
-                  <p className="text-[#04214D]/70 text-xs mb-1">Capacity</p>
-                  <p className="text-2xl font-bold text-[#04214D]">{nextEvent.capacity}</p>
-                </div>
-              </div>
-
-              <button className="w-full mt-4 bg-black text-[#8FD3FF] hover:bg-gray-900 rounded-2xl py-4 font-bold transition-colors">
-                View Event Details →
-              </button>
+            <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-[#8FD3FF]" style={{ boxShadow: '0 0 10px #8FD3FF' }}></div>
+            <div className="absolute bottom-4 left-4 w-2 h-2 rounded-full bg-[#3A4150]"></div>
+            <div className="flex items-center justify-between mb-5">
+              <span className="font-label text-[11px] tracking-[0.22em] uppercase text-[#8FD3FF]">[ 02 ] Next event</span>
+              <span className="font-label text-[11px] tracking-[0.22em] uppercase text-gray-500">In {nextEvent.daysUntil} {nextEvent.daysUntil === 1 ? 'day' : 'days'}</span>
             </div>
-
-            <div className="absolute -right-12 -top-12 w-64 h-64 bg-white/20 rounded-full blur-3xl"></div>
+            <h2 className="text-3xl md:text-4xl text-white mb-3 leading-none">{nextEvent.artist}</h2>
+            <div className="flex flex-wrap gap-x-6 gap-y-1 text-gray-400 mb-6">
+              <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[#8FD3FF]" />{nextEvent.venue}</span>
+              <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-[#8FD3FF]" />{nextEvent.date}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="bg-[#08090D] border border-[#2A3040] rounded-2xl p-4">
+                <p className="font-label text-[10px] tracking-[0.2em] uppercase text-gray-500 mb-1">Expected profit</p>
+                <p className="font-display text-2xl text-[#8FD3FF]">${(nextEvent.profit / 1000).toFixed(1)}K</p>
+              </div>
+              <div className="bg-[#08090D] border border-[#2A3040] rounded-2xl p-4">
+                <p className="font-label text-[10px] tracking-[0.2em] uppercase text-gray-500 mb-1">Capacity</p>
+                <p className="font-display text-2xl text-white">{nextEvent.capacity}</p>
+              </div>
+            </div>
+            <button className="w-full bg-[#8FD3FF] text-[#04214D] rounded-xl py-4 text-sm">
+              View event details →
+            </button>
           </div>
         )}
 
-        <div>
-          <h3 className="text-white font-bold text-lg mb-4">Today's Snapshot</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-blue-500" />
-                </div>
-              </div>
-              <p className="text-gray-500 text-xs mb-1">Active Events</p>
-              <p className="text-4xl font-bold text-white">{stats?.activeEvents || 0}</p>
-            </div>
-
-            <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-green-500" />
-                </div>
-              </div>
-              <p className="text-gray-500 text-xs mb-1">This Month</p>
-              <p className="text-4xl font-bold text-green-500">
-                ${((stats?.monthProfit || 0) / 1000).toFixed(1)}K
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4 text-center">
-            <p className="text-gray-500 text-xs mb-2">Revenue</p>
-            <p className="text-xl font-bold text-white">
-              ${((stats?.revenue || 0) / 1000).toFixed(1)}K
-            </p>
-          </div>
-
-          <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4 text-center">
-            <p className="text-gray-500 text-xs mb-2">Shows</p>
-            <p className="text-xl font-bold text-white">{stats?.totalShows || 0}</p>
-          </div>
-
-          <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4 text-center">
-            <p className="text-gray-500 text-xs mb-2">Margin</p>
-            <p className="text-xl font-bold text-[#8FD3FF]">
-              {Math.round(stats?.margin || 0)}%
-            </p>
-          </div>
-        </div>
-
+        {/* Coming up */}
         {upcomingEvents.length > 0 && (
-          <div>
+          <div className="bg-[#14171E] border border-gray-800 rounded-[22px] p-7">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-bold text-lg">Coming Up</h3>
-              <button
-                onClick={() => navigate('/offers')}
-                className="text-[#8FD3FF] hover:text-[#6FB8F2] text-sm transition-colors"
-              >
-                View All →
+              <div className="flex items-baseline gap-3">
+                <span className="font-label text-[11px] tracking-[0.22em] uppercase text-[#8FD3FF]">[ 03 ]</span>
+                <h2 className="text-2xl text-white">Coming up</h2>
+              </div>
+              <button onClick={() => navigate('/offers')} className="text-[#8FD3FF] hover:text-white text-xs transition-colors">
+                View all →
               </button>
             </div>
-
-            <div className="space-y-3">
-              {upcomingEvents.map((event, index) => (
+            <div className="hidden md:grid grid-cols-[2fr_1.6fr_1fr_1fr_1.1fr] gap-3 px-3 pb-2 font-label text-[11px] tracking-[0.2em] uppercase text-gray-500">
+              <span>Artist</span><span>Venue</span><span>Date</span><span>Net profit</span><span>Status</span>
+            </div>
+            <div>
+              {upcomingEvents.map((event) => (
                 <div
                   key={event.id}
                   onClick={() => navigate(`/offers/${event.id}`)}
-                  className="bg-[#14171E] border border-gray-800 rounded-2xl p-4 active:bg-[#22262F] transition-colors cursor-pointer"
+                  className="grid grid-cols-2 md:grid-cols-[2fr_1.6fr_1fr_1fr_1.1fr] gap-3 items-center px-3 py-4 border-t border-[#1F2430] hover:bg-white/[0.03] cursor-pointer transition-colors"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className={`w-2 h-2 rounded-full ${
-                          event.daysUntil <= 3 ? 'bg-[#8FD3FF]' : 'bg-blue-500'
-                        }`}></div>
-                        <h4 className="text-white font-bold">{event.artist}</h4>
-                      </div>
-                      <p className="text-gray-500 text-sm mb-2">{event.venue}</p>
-                      <div className="flex items-center gap-4 text-xs">
-                        <span className="text-gray-400">{event.date}</span>
-                        <span className="text-[#8FD3FF] font-semibold">
-                          {event.daysUntil} {event.daysUntil === 1 ? 'day' : 'days'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="text-green-500 font-bold text-lg">
-                        ${(event.profit / 1000).toFixed(1)}K
-                      </p>
-                      <div className={`mt-1 text-xs px-2 py-1 rounded-full inline-block ${getStatusBadgeColor(event.status)}`}>
-                        {event.status.replace('_', ' ').toUpperCase()}
-                      </div>
-                    </div>
-                  </div>
+                  <span className="text-white font-semibold">{event.artist}</span>
+                  <span className="text-gray-400">{event.venue}</span>
+                  <span className="text-gray-400">{event.date} <span className="text-[#8FD3FF] text-xs ml-1">{event.daysUntil}d</span></span>
+                  <span className="text-[#8FD3FF] font-semibold">${(event.profit / 1000).toFixed(1)}K</span>
+                  <span className={`justify-self-start font-label text-[10px] tracking-[0.16em] uppercase px-2.5 py-1 rounded-md ${getStatusBadgeColor(event.status)}`}>
+                    {event.status.replace('_', ' ')}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        <div className="bg-gradient-to-br from-blue-600 to-cyan-500 border-0 rounded-3xl p-6 relative overflow-hidden">
-          <div className="relative z-10">
-            <p className="text-blue-100 text-sm mb-2">Revenue Forecast</p>
-            <h3 className="text-5xl font-bold text-white mb-2">
+        {/* Forecast + tours */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="bg-[#14171E] border border-gray-800 rounded-[22px] p-7 relative overflow-hidden">
+            <p className="font-label text-[11px] tracking-[0.22em] uppercase text-gray-500 mb-2">Revenue forecast · next 30 days</p>
+            <h3 className="font-display text-5xl text-[#8FD3FF] mb-6" style={{ textShadow: '0 0 18px rgba(143,211,255,0.45)' }}>
               ${((stats?.forecastRevenue || 0) / 1000).toFixed(1)}K
             </h3>
-            <p className="text-blue-100 text-sm mb-6">Next 30 days projection</p>
-
             <div className="flex items-end justify-around h-24 gap-2">
-              <div className="w-full bg-white/40 rounded-t-xl" style={{height: '40%'}}></div>
-              <div className="w-full bg-white/40 rounded-t-xl" style={{height: '60%'}}></div>
-              <div className="w-full bg-white/60 rounded-t-xl" style={{height: '85%'}}></div>
-              <div className="w-full bg-white/80 rounded-t-xl" style={{height: '100%'}}></div>
-              <div className="w-full bg-white/60 rounded-t-xl" style={{height: '75%'}}></div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
-              <span className="text-2xl font-bold text-white">{stats?.activeTours || 0}</span>
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Active Tours</p>
-              <h4 className="text-2xl font-bold text-white">{stats?.totalShows || 0} Shows</h4>
+              {[40, 60, 85, 100, 75].map((h, i) => (
+                <div key={i} className="w-full rounded-t-lg" style={{ height: `${h}%`, background: i === 3 ? '#8FD3FF' : 'rgba(143,211,255,0.28)' }}></div>
+              ))}
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-white text-sm font-semibold">Upcoming</span>
-                <span className="text-white font-bold">{stats?.upcomingShows || 0}</span>
+          <div className="bg-[#14171E] border border-gray-800 rounded-[22px] p-7">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-[#08090D] border border-[#2A3040] flex items-center justify-center">
+                <span className="font-display text-2xl text-[#8FD3FF]">{stats?.activeTours || 0}</span>
               </div>
-              <div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-purple-600 to-purple-500 rounded-full transition-all duration-1000"
-                  style={{width: `${upcomingProgress}%`}}
-                ></div>
+              <div>
+                <p className="font-label text-[11px] tracking-[0.22em] uppercase text-gray-500">Active tours</p>
+                <h4 className="text-2xl text-white">{stats?.totalShows || 0} shows</h4>
               </div>
             </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-white text-sm font-semibold">Completed</span>
-                <span className="text-green-500 font-bold">{stats?.completedShows || 0}</span>
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-label text-[11px] tracking-[0.2em] uppercase text-gray-400">Upcoming</span>
+                  <span className="text-white font-semibold">{stats?.upcomingShows || 0}</span>
+                </div>
+                <div className="w-full h-2 bg-[#08090D] rounded-full overflow-hidden">
+                  <div className="h-full bg-[#8FD3FF] rounded-full transition-all duration-1000" style={{ width: `${upcomingProgress}%` }}></div>
+                </div>
               </div>
-              <div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-green-500 rounded-full transition-all duration-1000"
-                  style={{width: `${completedProgress}%`}}
-                ></div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-label text-[11px] tracking-[0.2em] uppercase text-gray-400">Completed</span>
+                  <span className="text-white font-semibold">{stats?.completedShows || 0}</span>
+                </div>
+                <div className="w-full h-2 bg-[#08090D] rounded-full overflow-hidden">
+                  <div className="h-full bg-[#6FB8F2] rounded-full transition-all duration-1000" style={{ width: `${completedProgress}%` }}></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {showAILearning && (
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-0 rounded-3xl p-8 text-center">
+          <div className="bg-[#14171E] border border-gray-800 rounded-[22px] p-8 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#8FD3FF] to-[#6FB8F2] rounded-3xl mb-4">
               <Sparkles className="h-8 w-8 text-[#04214D]" />
             </div>
 
-            <h4 className="text-2xl font-bold text-[#04214D] mb-2">AI Learning Mode</h4>
-            <p className="text-gray-700 mb-6">
+            <h4 className="text-2xl text-white mb-2">AI Learning Mode</h4>
+            <p className="text-gray-400 mb-6">
               Need {5 - settledShows} more settled {5 - settledShows === 1 ? 'show' : 'shows'} to generate insights
             </p>
 
             <div className="max-w-xs mx-auto">
               <div className="flex items-center justify-between mb-2 text-sm">
-                <span className="text-gray-600 font-semibold">Progress</span>
-                <span className="text-[#04214D] font-bold">{settledShows} / 5</span>
+                <span className="text-gray-400 font-semibold">Progress</span>
+                <span className="text-[#8FD3FF] font-bold">{settledShows} / 5</span>
               </div>
-              <div className="w-full h-3 bg-purple-200 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-[#08090D] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-1000"
+                  className="h-full bg-[#8FD3FF] transition-all duration-1000"
                   style={{width: `${(settledShows / 5) * 100}%`}}
                 ></div>
               </div>

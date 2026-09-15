@@ -59,20 +59,20 @@
 
 @layer components {
   /* Black glossy cards, like the site's property cards */
-  [class*="bg-[#14171E]"] {
+  [class~="bg-[#14171E]"] {
     background: linear-gradient(180deg, #171A20 0%, #0B0D12 100%) !important;
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
-  [class*="bg-[#14171E]"][class*="border"] {
+  [class~="bg-[#14171E]"][class*="border"] {
     border-color: #2A3040 !important;
   }
   /* Ice-blue chrome buttons */
-  [class*="bg-[#8FD3FF]"] {
+  [class~="bg-[#8FD3FF]"] {
     background: linear-gradient(180deg, #BFE6FF 0%, #6FB8F2 100%) !important;
     color: #04214D !important;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.7);
   }
-  [class*="bg-[#8FD3FF]"]:hover {
+  [class~="bg-[#8FD3FF]"]:hover {
     background: linear-gradient(180deg, #D6EEFF 0%, #8FD3FF 100%) !important;
   }
   /* Inputs sit on dark, not on blue */

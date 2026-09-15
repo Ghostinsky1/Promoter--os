@@ -7,6 +7,7 @@ import { getProfitIndicator } from '../lib/profitIndicators';
 import { calculateArtistsSummary } from '../lib/artistCalculations';
 import { CalculationsBreakdown } from './CalculationsBreakdown';
 import { PDFPreview } from './PDFPreview';
+import { EmailOfferModal } from './EmailOfferModal';
 import { EditableNum } from './EditableNum';
 import { parseLocalDate } from '../lib/dateHelpers';
 import { useEstimateState, buildUpdatePayload } from '../hooks/useEstimateState';
@@ -17,7 +18,7 @@ import { EventTasks } from './EventTasks';
 import { EventNotesPanel } from './EventNotesPanel';
 import { ArtistsDashboard } from './artists/ArtistsDashboard';
 import { generateArtistOfferSheet } from '../lib/generateArtistOfferSheet';
-import { ArrowLeft, Calendar, MapPin, Users, CreditCard as Edit, FileDown, Eye, BarChart3, Copy, Film, Trash2, Calculator, Sparkles, Save, Undo2, Loader2, Check } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, CreditCard as Edit, FileDown, Eye, Mail, BarChart3, Copy, Film, Trash2, Calculator, Sparkles, Save, Undo2, Loader2, Check } from 'lucide-react';
 
 export function OfferDetails() {
   const { id } = useParams();
@@ -29,6 +30,7 @@ export function OfferDetails() {
   const [costsOnly, setCostsOnly] = useState(false);
   const [dealScore, setDealScore] = useState<number | null>(null);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [showEmail, setShowEmail] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -333,6 +335,9 @@ export function OfferDetails() {
                   <input type="checkbox" checked={costsOnly} onChange={(e) => setCostsOnly(e.target.checked)} className="w-4 h-4 text-[#8FD3FF] bg-[#22262F] border-gray-700 rounded focus:ring-2 focus:ring-[#8FD3FF]" />
                   <span className="font-medium">Costs Only</span>
                 </label>
+                <button onClick={() => setShowEmail(true)} className="bg-[#22262F] hover:bg-[#2A3040] border border-[#2A3040] text-white px-4 py-2 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm">
+                  <Mail className="h-4 w-4 text-[#8FD3FF]" />Email
+                </button>
                 <button onClick={handleDownloadPDF} className="bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] px-4 py-2 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm">
                   <FileDown className="h-4 w-4" />Download
                 </button>
@@ -849,6 +854,9 @@ export function OfferDetails() {
 
       {showPDFPreview && offer && (
         <PDFPreview offer={offer} companySettings={companySettings} costsOnly={costsOnly} onClose={() => setShowPDFPreview(false)} />
+      )}
+      {showEmail && offer && (
+        <EmailOfferModal offer={offer} companySettings={companySettings} artists={eventArtists} costsOnly={costsOnly} onClose={() => setShowEmail(false)} />
       )}
     </div>
   );

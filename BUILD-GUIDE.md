@@ -17,7 +17,7 @@ Supabase  (project "Promoter--os", ref azenzsggqexyonafxlsf, us-east-2)
       |
       +--> Postgres (19 tables, RLS on every one)
       +--> Auth (email + password sign-in)
-      +--> Edge Functions (Deno) — stripe-checkout + stripe-webhook [LIVE]; ai-insights, analyze-deal [not deployed]
+      +--> Edge Functions (Deno) — stripe-checkout, stripe-webhook, send-email [LIVE]; ai-insights, analyze-deal [not deployed]
 ```
 
 **Key architectural decision:** the frontend is a *static site* that talks to Supabase directly with the **publishable (public) key**. Row Level Security on every table is what keeps users inside their own organization's data. There are no server-side secrets in the frontend; the only secrets (Stripe, AI keys) live in Supabase edge-function settings.
@@ -48,12 +48,12 @@ Supabase  (project "Promoter--os", ref azenzsggqexyonafxlsf, us-east-2)
 │   │   ├── supabase.ts         # Supabase client (public URL + key baked in, .env overrides)
 │   │   ├── calculations.ts / breakEvenCalculations.ts / artistCalculations.ts
 │   │   ├── generateOfferPDF.ts / generateArtistOfferSheet.ts / generateSettlementPDF.ts / generateRunOfShowPDF.ts
-│   │   └── subscriptionTiers.ts / stripe.ts
+│   │   └── subscriptionTiers.ts / stripe.ts / email.ts (send-email client)
 │   └── types/index.ts
 ├── public/                     # logo PNGs + favicon
 ├── supabase/
 │   ├── schema.sql              # the whole database in one file (already applied to Promoter--os)
-│   └── functions/              # stripe-checkout, stripe-webhook, ai-insights, analyze-deal
+│   └── functions/              # stripe-checkout, stripe-webhook, send-email, ai-insights, analyze-deal
 ├── docs/                       # admin commands, setup notes, testing guide
 ├── wrangler.jsonc              # Cloudflare deploy config
 ├── vite.config.ts / tailwind.config.js / tsconfig*.json
@@ -114,7 +114,9 @@ Every table has RLS ON. Policies check `organization_members` for the signed-in 
 |---|---|---|
 | `stripe-checkout` | DEPLOYED | Creates a Stripe Checkout session. Supports `ui_mode: 'embedded'` (returns `clientSecret` for the in-app form) and the legacy hosted redirect. Tags the session/subscription with `organization_id` + `tier`. `verify_jwt` off (it validates the user's token itself). |
 | `stripe-webhook` | DEPLOYED | Receives Stripe events, syncs `stripe_subscriptions`, and sets the organization's `subscription_status` / `subscription_tier` / `max_offers`. Falls back to `stripe_customers → organization_members` if metadata is missing. `verify_jwt` off (Stripe signs requests). |
+| `send-email` | DEPLOYED | Sends email through SendGrid for a signed-in user. See §4a. `verify_jwt` off (validates the user's token itself). |
 | `stripe-setup` | DISABLED (410) | One-time helper that created the two products on 2026-09-15. |
+| `email-selftest` | DISABLED (410) | One-time test used on 2026-09-15. |
 | `ai-insights`, `analyze-deal` | NOT deployed | Need an AI API key as a secret. AI panels won't work until then. |
 
 ### Stripe (live account acct_1UG2vlGeegvFIqAC)
@@ -127,6 +129,15 @@ Every table has RLS ON. Policies check `organization_members` for the signed-in 
 - Publishable key is baked into `src/lib/stripe.ts` (public by design).
 - **Checkout is IN-APP:** `/checkout?price=<price_id>` (`src/pages/CheckoutPage.tsx`) renders Stripe Embedded Checkout inside PROMTP; `/checkout` is allowed without an active subscription in `ProtectedRoute`. Pricing page and SubscriptionPage buttons navigate there. Return URL is `/success?session_id=…`.
 - If price IDs ever change, update: `src/stripe-config.ts`, `PRO_PRICE_ID` in `src/lib/stripe.ts`, and the `pro` mapping in both edge functions.
+
+### 4a. Email (SendGrid)
+- Secret in Supabase (Edge Functions → Secrets): `SENDGRID_API_KEY`. Optional overrides: `SENDGRID_FROM_EMAIL` (default `support@gozaentertainment.com`), `SENDGRID_FROM_NAME` (default `PROMTP · Goza Entertainment`).
+- SendGrid domain authentication is set up for `gozaentertainment.com`, so the from-address is trusted.
+- **How a send works:** Offer page → **Email** button → `EmailOfferModal` (to / subject / message, "Attach PDF" with Artist Offer or Internal Estimate mode, "Send me a copy") → builds the PDF in the browser as base64 → `lib/email.ts` POSTs to `${SUPABASE_URL}/functions/v1/send-email` with the user's session token → function checks the user, builds a branded HTML email (black header, blue rule, plain-text fallback), sets **Reply-To = the signed-in user's email**, and calls SendGrid `POST /v3/mail/send`.
+- Recipient is prefilled from the headliner's `contact_email` on the artist cards when one exists.
+- Limits: 10 recipients, 8 MB of attachments per email.
+- Reusing it elsewhere: `sendEmail({ to, subject, message, copySelf, attachments })` from `src/lib/email.ts` works from any screen.
+- **Account emails (sign-up confirmation, password reset)** still go through Supabase's built-in mailer (rate-limited, generic). To send those through SendGrid too: Supabase → Authentication → SMTP Settings → Enable custom SMTP: host `smtp.sendgrid.net`, port `587`, username `apikey`, password = the SendGrid API key, sender `support@gozaentertainment.com`. Only Jose should paste the key there.
 
 ### Migrations gotchas already solved (don't re-break these)
 - `expense_items` was referenced by a migration but never created in Bolt's files → created by hand before that migration.

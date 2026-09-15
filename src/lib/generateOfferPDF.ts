@@ -10,7 +10,16 @@ function drawRoundedRect(doc: jsPDF, x: number, y: number, width: number, height
   doc.roundedRect(x, y, width, height, radius, radius, 'FD');
 }
 
-export function generateOfferPDF(offer: OfferWithShow, companySettings?: CompanySettings, preview: boolean = false, costsOnly: boolean = false, mode: PDFMode = 'estimate') {
+export type PDFOutput = 'save' | 'preview' | 'base64';
+
+export function offerPDFFilename(offer: OfferWithShow): string {
+  const clean = (t: string) => t.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  const baseName = clean(offer.show.event_name || offer.show.artist_name || 'Offer');
+  const date = (offer.show.event_date || '').slice(0, 10) || clean(formatDateShort(offer.show.event_date));
+  return `${baseName}_Offer_${date}.pdf`;
+}
+
+export function generateOfferPDF(offer: OfferWithShow, companySettings?: CompanySettings, preview: boolean = false, costsOnly: boolean = false, mode: PDFMode = 'estimate', output?: PDFOutput): string | void {
   const pdfMode = PDF_MODES[mode];
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -1010,14 +1019,17 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
     }
   }
 
-  if (preview) {
+  const out: PDFOutput = output ?? (preview ? 'preview' : 'save');
+  if (out === 'base64') {
+    // raw base64 (no data: prefix) for email attachments
+    return doc.output('datauristring').split(',')[1];
+  }
+  if (out === 'preview') {
     const pdfBlob = doc.output('blob');
     const pdfUrl = URL.createObjectURL(pdfBlob);
     window.open(pdfUrl, '_blank');
   } else {
-    const baseName = (offer.show.event_name || offer.show.artist_name).replace(/\s+/g, '_');
-    const filename = `${baseName}_Offer_${formatDateShort(offer.show.event_date)}.pdf`;
-    doc.save(filename);
+    doc.save(offerPDFFilename(offer));
   }
 }
 

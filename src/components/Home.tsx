@@ -175,6 +175,14 @@ export function Home() {
     return <SubscriptionRequired />;
   }
 
+  const firstName = (() => {
+    const meta = (user as any)?.user_metadata || {};
+    const full = String(meta.full_name || meta.name || '').trim();
+    if (full) return full.split(/\s+/)[0];
+    const local = (user?.email || '').split('@')[0];
+    return local ? local.charAt(0).toUpperCase() + local.slice(1) : 'there';
+  })();
+
   return (
     <>
       <TrialBanner />
@@ -186,7 +194,7 @@ export function Home() {
               [ 01 ] Today · {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </p>
             <h1 className="text-[#08090D] text-4xl md:text-5xl leading-none">
-              Welcome back, {user?.email?.split('@')[0] || 'User'}.
+              Welcome back, {firstName}.
             </h1>
           </div>
 

@@ -7,6 +7,13 @@ import { useAuth } from '../hooks/useAuth';
 import { generateRunOfShowPDF } from '../lib/generateRunOfShowPDF';
 import { convertTo12Hour, addMinutesToTime } from '../lib/timeHelpers';
 
+function formatEventDate(value: string, opts?: Intl.DateTimeFormatOptions) {
+  if (!value) return '';
+  const [y, m, d] = value.slice(0, 10).split('-').map(Number);
+  const date = y && m && d ? new Date(y, m - 1, d) : new Date(value);
+  return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', opts);
+}
+
 export function RunOfShow() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -294,43 +301,43 @@ export function RunOfShow() {
     <div className="min-h-screen bg-[#1140F0]">
       <div className="bg-[#14171E] border-b border-gray-800 sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
               <button
                 onClick={() => navigate(`/offers/${id}`)}
-                className="p-2 hover:bg-[#22262F] rounded-lg transition-colors text-gray-400"
+                className="p-2 hover:bg-[#22262F] rounded-lg transition-colors text-gray-400 flex-shrink-0"
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <div>
+              <div className="min-w-0">
                 <h1 className="text-2xl font-bold text-white">Run of Show</h1>
-                <p className="text-sm text-gray-400">
-                  {offerData.show.artist_name} • {offerData.show.venue_name} • {new Date(eventDate).toLocaleDateString()}
+                <p className="text-sm text-gray-400 truncate">
+                  {offerData.show.artist_name} • {offerData.show.venue_name} • {formatEventDate(eventDate)}
                 </p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-3 sm:flex gap-2">
               <button
                 onClick={saveSchedule}
                 disabled={saving}
-                className="flex items-center gap-2 px-4 py-2 bg-[#22262F] border border-gray-800 text-white rounded-xl hover:bg-[#2A3040] transition-colors disabled:opacity-50 font-bold"
+                className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-[#22262F] border border-gray-800 text-white rounded-xl hover:bg-[#2A3040] transition-colors disabled:opacity-50 font-bold text-sm"
               >
                 <Save className="h-4 w-4" />
                 {saving ? 'Saving...' : 'Save'}
               </button>
               <button
                 onClick={() => setShowPreview(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#22262F] border border-gray-800 text-white rounded-xl hover:bg-[#2A3040] transition-colors font-bold"
+                className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-[#22262F] border border-gray-800 text-white rounded-xl hover:bg-[#2A3040] transition-colors font-bold text-sm"
               >
                 <Eye className="h-4 w-4" />
                 Preview
               </button>
               <button
                 onClick={() => generateRunOfShowPDF(offerData, schedule, venueContact, eventDate, companySettings)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#8FD3FF] text-[#04214D] rounded-xl hover:bg-[#6FB8F2] transition-colors font-bold"
+                className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-[#8FD3FF] text-[#04214D] rounded-xl hover:bg-[#6FB8F2] transition-colors font-bold text-sm"
               >
                 <Download className="h-4 w-4" />
-                Download PDF
+                <span className="hidden sm:inline">Download PDF</span><span className="sm:hidden">PDF</span>
               </button>
             </div>
           </div>
@@ -566,7 +573,7 @@ export function RunOfShow() {
               <div>
                 <h2 className="text-2xl font-bold text-white">Run of Show Preview</h2>
                 <p className="text-sm text-gray-400 mt-1">
-                  {offerData?.show.artist_name} • {new Date(eventDate).toLocaleDateString()}
+                  {offerData?.show.artist_name} • {formatEventDate(eventDate)}
                 </p>
               </div>
               <button
@@ -586,7 +593,7 @@ export function RunOfShow() {
                       Event Information
                     </h3>
                     <div className="space-y-2 text-sm">
-                      <div><span className="text-gray-400">Date:</span> <span className="font-medium text-white ml-2">{new Date(eventDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
+                      <div><span className="text-gray-400">Date:</span> <span className="font-medium text-white ml-2">{formatEventDate(eventDate, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
                       <div><span className="text-gray-400">Venue:</span> <span className="font-medium text-white ml-2">{offerData?.show.venue_name}</span></div>
                       <div><span className="text-gray-400">Capacity:</span> <span className="font-medium text-white ml-2">{offerData?.show.capacity}</span></div>
                     </div>

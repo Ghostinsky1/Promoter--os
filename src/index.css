@@ -150,3 +150,15 @@
     transform: translateY(-20px) rotate(5deg);
   }
 }
+
+
+/* ---------- Mobile safety ---------- */
+html, body { overflow-x: clip; max-width: 100%; }
+#root { max-width: 100%; overflow-x: clip; }
+img, svg, video, canvas { max-width: 100%; }
+@media (max-width: 640px) {
+  h1 { font-size: clamp(1.35rem, 6.2vw, 1.75rem) !important; line-height: 1.1; overflow-wrap: anywhere; }
+  h2 { font-size: clamp(1.1rem, 5vw, 1.35rem) !important; line-height: 1.15; overflow-wrap: anywhere; }
+  .text-5xl, .text-4xl { font-size: clamp(1.75rem, 8vw, 2.5rem) !important; line-height: 1.05 !important; }
+  .text-3xl { font-size: clamp(1.4rem, 6.5vw, 1.875rem) !important; line-height: 1.1 !important; }
+}

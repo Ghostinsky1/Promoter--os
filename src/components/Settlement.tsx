@@ -459,9 +459,9 @@ export function Settlement() {
           Back to Offer
         </button>
 
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold text-white">
                 {offer.show.event_name || offer.show.artist_name}
               </h1>
@@ -473,7 +473,7 @@ export function Settlement() {
                 {settlement.settled_at ? 'Settled' : 'Draft'}
               </div>
             </div>
-            <div className="flex items-center gap-4 text-gray-400">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-gray-400 text-sm">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 <span>{offer.show.venue_name}</span>
@@ -489,10 +489,10 @@ export function Settlement() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="grid grid-cols-2 lg:flex items-center gap-3">
             <button
               onClick={handleExportPDF}
-              className="bg-[#14171E] border border-gray-700 text-white hover:border-[#8FD3FF] hover:text-[#8FD3FF] px-4 py-2.5 rounded-2xl font-medium transition-all flex items-center gap-2"
+              className="bg-[#14171E] border border-gray-700 text-white hover:border-[#8FD3FF] hover:text-[#8FD3FF] px-4 py-2.5 rounded-2xl font-medium transition-all flex items-center justify-center gap-2"
             >
               <FileDown className="h-4 w-4" />
               Export PDF
@@ -500,10 +500,10 @@ export function Settlement() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] px-6 py-2.5 rounded-2xl font-semibold transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] px-4 lg:px-6 py-2.5 rounded-2xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="h-5 w-5" />
-              {saving ? 'Saving...' : 'Save Settlement'}
+              {saving ? 'Saving...' : 'Save'}
             </button>
           </div>
         </div>

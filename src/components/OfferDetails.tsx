@@ -325,22 +325,24 @@ export function OfferDetails() {
         {/* Header Card */}
         <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4 mb-4">
           <div className="mb-4">
-            <div className="flex items-start justify-between mb-2">
-              <div>
-                <h1 className="text-xl font-bold text-white">{offer.show.event_name || offer.show.artist_name}</h1>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2">
+              <div className="min-w-0">
+                <h1 className="text-xl font-bold text-white break-words">{offer.show.event_name || offer.show.artist_name}</h1>
                 {offer.show.event_name && <p className="text-sm text-gray-400 mt-0.5">{offer.show.artist_name}</p>}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3 sm:flex-shrink-0">
                 <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer">
                   <input type="checkbox" checked={costsOnly} onChange={(e) => setCostsOnly(e.target.checked)} className="w-4 h-4 text-[#8FD3FF] bg-[#22262F] border-gray-700 rounded focus:ring-2 focus:ring-[#8FD3FF]" />
                   <span className="font-medium">Costs Only</span>
                 </label>
-                <button onClick={() => setShowEmail(true)} className="bg-[#22262F] hover:bg-[#2A3040] border border-[#2A3040] text-white px-4 py-2 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-[#8FD3FF]" />Email
-                </button>
-                <button onClick={handleDownloadPDF} className="bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] px-4 py-2 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm">
-                  <FileDown className="h-4 w-4" />Download
-                </button>
+                <div className="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto">
+                  <button onClick={() => setShowEmail(true)} className="bg-[#22262F] hover:bg-[#2A3040] border border-[#2A3040] text-white px-4 py-2 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 text-sm">
+                    <Mail className="h-4 w-4 text-[#8FD3FF]" />Email
+                  </button>
+                  <button onClick={handleDownloadPDF} className="bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] px-4 py-2 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 text-sm">
+                    <FileDown className="h-4 w-4" />Download
+                  </button>
+                </div>
               </div>
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-gray-400 text-xs">

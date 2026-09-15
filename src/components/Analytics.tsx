@@ -434,7 +434,7 @@ export function Analytics() {
             </div>
           </div>
 
-          <div className="mb-6 p-6 bg-black/40 rounded-2xl border border-gray-700">
+          <div className="mb-6 p-4 sm:p-6 bg-black/40 rounded-2xl border border-gray-700 overflow-x-auto">
             <div className="min-w-[600px]">
               <svg viewBox="0 0 600 200" className="w-full" style={{ height: '200px' }}>
                 {[0, 25, 50, 75, 100].map((value, i) => (

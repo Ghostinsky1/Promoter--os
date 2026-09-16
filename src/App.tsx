@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Header } from './components/layout/Header';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { LoginForm } from './components/auth/LoginForm';
@@ -34,10 +34,19 @@ import FAQPage from './pages/FAQPage';
 import { useAuth } from './hooks/useAuth';
 import OAuthConsentPage from './pages/OAuthConsentPage';
 import { safeNext } from './lib/safeNext';
+import { initFacebookPixel, trackPageView } from './lib/facebookPixel';
 
 function AfterLogin() {
   const [params] = useSearchParams();
   return <Navigate to={safeNext(params.get('next')) || '/dashboard'} replace />;
+}
+
+/** Meta PageView on first load and on every client-side route change. */
+function PixelPageViews() {
+  const location = useLocation();
+  useEffect(() => { initFacebookPixel(); }, []);
+  useEffect(() => { trackPageView(); }, [location.pathname]);
+  return null;
 }
 
 function AppRoutes() {
@@ -92,6 +101,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen">
+        <PixelPageViews />
         <Header />
         <AppRoutes />
       </div>

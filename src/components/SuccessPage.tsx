@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { track } from '../lib/track';
 
 export function SuccessPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [countdown, setCountdown] = useState(10);
   const [verifying, setVerifying] = useState(true);
+  const firedRef = useRef(false);
 
   useEffect(() => {
     const verifySubscription = async () => {
@@ -22,6 +24,37 @@ export function SuccessPage() {
 
     verifySubscription();
   }, [searchParams]);
+
+  // Fire the conversion once, after Stripe sends the customer back.
+  useEffect(() => {
+    if (verifying || firedRef.current) return;
+    firedRef.current = true;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: org } = await supabase
+        .from('organizations')
+        .select('subscription_tier')
+        .limit(1)
+        .maybeSingle();
+      // 14-day trial, so the money lands later — report the plan's monthly value.
+      const tier = org?.subscription_tier ?? 'starter';
+      const value = tier === 'agency_scale' ? 297 : tier === 'pro' ? 99 : 39;
+      track('StartTrial', {
+        value,
+        currency: 'USD',
+        email: user?.email ?? undefined,
+        userId: user?.id,
+        custom: { content_name: `PROMOTER OS ${tier}`, predicted_ltv: value * 12 },
+      });
+      track('Subscribe', {
+        value,
+        currency: 'USD',
+        email: user?.email ?? undefined,
+        userId: user?.id,
+        custom: { content_name: `PROMOTER OS ${tier}` },
+      });
+    })();
+  }, [verifying]);
 
   useEffect(() => {
     if (verifying) return;

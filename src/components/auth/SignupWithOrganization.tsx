@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { checkSignupEmail } from '../../lib/emailValidation';
+import { track } from '../../lib/track';
 import { MailCheck } from 'lucide-react';
 
 interface SignupFormData {
@@ -73,6 +74,12 @@ export function SignupWithOrganization() {
       if (Array.isArray(authData.user.identities) && authData.user.identities.length === 0) {
         throw new Error('An account with this email already exists. Try signing in instead.');
       }
+
+      track('CompleteRegistration', {
+        email: formData.email.trim().toLowerCase(),
+        userId: authData.user.id,
+        custom: { content_name: 'PROMOTER OS signup', status: 'registered' },
+      });
 
       // The organization, owner membership and company settings are created by a database
       // trigger the moment the user is created — nothing to insert from the browser.

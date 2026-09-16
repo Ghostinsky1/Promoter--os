@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { PricingCard } from '../components/PricingCard';
 import { STRIPE_PRODUCTS } from '../stripe-config';
 import { supabase } from '../lib/supabase';
+import { track } from '../lib/track';
 
 export function Pricing() {
+  useEffect(() => { track('ViewContent', { custom: { content_name: 'Pricing' } }); }, []);
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 

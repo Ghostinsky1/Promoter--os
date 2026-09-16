@@ -6,6 +6,7 @@ import { ArrowLeft, Check, ShieldCheck } from 'lucide-react';
 import { STRIPE_PRODUCTS } from '../stripe-config';
 import { createEmbeddedCheckout, STRIPE_PUBLISHABLE_KEY } from '../lib/stripe';
 import { supabase } from '../lib/supabase';
+import { track } from '../lib/track';
 
 const stripePromise = STRIPE_PUBLISHABLE_KEY.startsWith('pk_') ? loadStripe(STRIPE_PUBLISHABLE_KEY) : null;
 
@@ -25,6 +26,14 @@ export function CheckoutPage() {
       if (!session) navigate('/login');
     });
   }, [navigate]);
+
+  useEffect(() => {
+    track('InitiateCheckout', {
+      value: product.price,
+      currency: 'USD',
+      custom: { content_name: product.name, content_ids: [product.priceId], content_type: 'product' },
+    });
+  }, [product.priceId, product.price, product.name]);
 
   const fetchClientSecret = useCallback(async () => {
     try {

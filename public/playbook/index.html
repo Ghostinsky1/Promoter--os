@@ -359,7 +359,7 @@ td{padding:13px 16px;border-top:1px solid rgba(255,255,255,.07);background:var(-
         <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>Ready</b><span class="tag">PDF · 12 pages</span></div>
         <div class="win-body">
           <h3 style="font-size:clamp(24px,4.6vw,38px)">You're in.</h3>
-          <p style="color:var(--ink);margin:10px 0 20px">Here's the playbook. We sent a copy to your inbox too.</p>
+          <p style="color:var(--ink);margin:10px 0 20px">Here's the playbook. A copy is on its way to your inbox too — check spam if it's not there in a minute.</p>
           <a class="btn" id="dl" href="promoter-booking-playbook.pdf" download>Download the playbook ↓</a>
         </div>
       </div>
@@ -462,18 +462,19 @@ document.getElementById('leadForm').addEventListener('submit',function(ev){
   var email=f.email.value.trim();
   if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)){err.textContent='That email looks off — check it and try again.';err.style.display='block';return;}
   err.style.display='none'; btn.disabled=true; btn.textContent='Sending…';
-  fetch(SB+'/rest/v1/rpc/capture_lead',{
+  fetch(SB+'/functions/v1/playbook-email',{
     method:'POST',
     headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+KEY},
     body:JSON.stringify({
-      p_email:email,
-      p_first_name:f.first_name.value.trim()||null,
-      p_promoter_type:f.promoter_type.value||null,
-      p_language:'en',
-      p_source:'playbook_crt',
-      p_utm_source:q.get('utm_source'),p_utm_medium:q.get('utm_medium'),
-      p_utm_campaign:q.get('utm_campaign'),p_utm_content:q.get('utm_content'),
-      p_referrer:document.referrer||null
+      mode:'welcome',
+      email:email,
+      first_name:f.first_name.value.trim()||null,
+      promoter_type:f.promoter_type.value||null,
+      language:'en',
+      source:'playbook_crt',
+      utm_source:q.get('utm_source'),utm_medium:q.get('utm_medium'),
+      utm_campaign:q.get('utm_campaign'),utm_content:q.get('utm_content'),
+      referrer:document.referrer||null
     })
   }).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json().catch(function(){return {}}); })
   .then(function(){

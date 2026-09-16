@@ -34,6 +34,7 @@ import FAQPage from './pages/FAQPage';
 import { useAuth } from './hooks/useAuth';
 import OAuthConsentPage from './pages/OAuthConsentPage';
 import { safeNext } from './lib/safeNext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { initFacebookPixel, trackPageView } from './lib/facebookPixel';
 
 function AfterLogin() {
@@ -117,14 +118,25 @@ function AppRoutes() {
   );
 }
 
+/** Routes inside an error boundary that resets whenever the path changes, so one
+ *  broken screen never leaves the whole app blank. */
+function RoutesWithBoundary() {
+  const location = useLocation();
+  return (
+    <ErrorBoundary key={location.pathname}>
+      <AppRoutes />
+    </ErrorBoundary>
+  );
+}
+
 function App() {
   return (
     <Router>
       <div className="min-h-screen">
         <PixelPageViews />
-      <CrtMode />
+        <CrtMode />
         <Header />
-        <AppRoutes />
+        <RoutesWithBoundary />
       </div>
     </Router>
   );

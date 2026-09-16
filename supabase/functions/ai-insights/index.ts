@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
         type: 'expense_variance',
         title: `${pretty(worst.key)} runs over on most shows`,
         description: `Across ${worst.shows} settled shows you budgeted ${money(worst.projected)} for ${pretty(worst.key).toLowerCase()} and settled at ${money(worst.actual)} — ${money(worst.over)} more, or ${Math.round(worst.pct * 100)}% over.`,
-        recommendation: `Budget about ${money(worst.actual / worst.shows)} per show for this line instead of ${money(worst.projected / worst.shows)}, and your break-even will stop moving on you after the offer goes out.`,
+        recommendation: `Next offer, put ${money(worst.actual / worst.shows)} in this line instead of ${money(worst.projected / worst.shows)}. Your break-even will be right the first time.`,
         impact: worst.over > 1000 ? 'HIGH' : 'MEDIUM',
         icon: 'trending-up',
         data: { line: worst.key, projected: worst.projected, actual: worst.actual, shows: worst.shows },
@@ -156,9 +156,9 @@ Deno.serve(async (req) => {
     if (best && best.over < 0 && Math.abs(best.pct) >= 0.15 && best.key !== worst?.key) {
       insights.push({
         type: 'expense_headroom',
-        title: `You keep overbudgeting ${pretty(best.key).toLowerCase()}`,
-        description: `Budgeted ${money(best.projected)} across ${best.shows} shows, settled at ${money(best.actual)} — ${money(Math.abs(best.over))} under.`,
-        recommendation: `That headroom is real money you could be putting into the guarantee or marketing. Trim the line and your offers get more competitive without costing you anything.`,
+        title: `You set aside too much for ${pretty(best.key).toLowerCase()}`,
+        description: `You budgeted ${money(best.projected)} across ${best.shows} shows and only spent ${money(best.actual)}. That is ${money(Math.abs(best.over))} you set aside and never used.`,
+        recommendation: `Drop this line to about ${money(best.actual / best.shows)} per show. That frees up roughly ${money(Math.abs(best.over) / best.shows)} a show you can put toward the artist fee.`,
         impact: 'LOW',
         icon: 'trending-down',
         data: { line: best.key, projected: best.projected, actual: best.actual },
@@ -184,7 +184,7 @@ Deno.serve(async (req) => {
         type: 'deal_type',
         title: `${pretty(top.deal)} deals pay you the most`,
         description: `${pretty(top.deal)} averages ${money(top.avg)} profit across ${top.shows} show${top.shows === 1 ? '' : 's'}. ${pretty(bottom.deal)} averages ${money(bottom.avg)}.`,
-        recommendation: `Worth running all your deal types side by side before you send the next offer, rather than defaulting to what you used last time.`,
+        recommendation: `On your next offer, run the numbers for all three deal types before you pick one. On these shows, ${pretty(top.deal).toLowerCase()} kept you ${money(top.avg - bottom.avg)} more per night than ${pretty(bottom.deal).toLowerCase()}.`,
         impact: top.avg - bottom.avg > 1500 ? 'HIGH' : 'MEDIUM',
         icon: 'dollar-sign',
         data: { ranked },
@@ -202,8 +202,8 @@ Deno.serve(async (req) => {
         title: avg >= 0 ? 'Your projections are conservative' : 'Your projections run optimistic',
         description: `Across ${withProjection.length} settled shows you came in ${avg >= 0 ? 'above' : 'below'} projection by ${money(avg)} on average. ${beat} of ${withProjection.length} beat the number.`,
         recommendation: avg >= 0
-          ? `You have room to be slightly bolder on guarantees than your estimates suggest.`
-          : `Add the gap to your cost estimates before you send an offer, so break-even reflects what actually happens.`,
+          ? `Your shows tend to earn ${money(avg)} more than you expect. You can offer a bit more on a guarantee than your estimate says and still be safe.`
+          : `Your shows tend to earn ${money(avg)} less than you expect. Add that much to your costs before you send an offer, so the break-even number is honest.`,
         impact: Math.abs(avg) > 1000 ? 'HIGH' : 'MEDIUM',
         icon: 'target',
         data: { average_variance: avg, beat, total: withProjection.length },
@@ -217,11 +217,11 @@ Deno.serve(async (req) => {
       const margin = (profit / revenue) * 100;
       insights.push({
         type: 'margin',
-        title: `You keep ${margin.toFixed(0)}¢ of every dollar`,
+        title: `You keep ${margin.toFixed(0)} cents of every dollar`,
         description: `${money(profit)} profit on ${money(revenue)} of settled revenue across ${rows.length} shows.`,
         recommendation: margin < 15
-          ? `Under 15% leaves nothing for a slow night. The expense lines above are where to look first.`
-          : `That's a healthy margin for live events — worth protecting when someone asks you to stretch on a guarantee.`,
+          ? `Under 15% means one slow night wipes out a good one. Start with the expense lines above.`
+          : `That is a solid margin for live events. Remember it the next time an agent asks you to stretch on a guarantee.`,
         impact: margin < 15 ? 'HIGH' : 'LOW',
         icon: 'bar-chart',
         data: { revenue, profit, margin },

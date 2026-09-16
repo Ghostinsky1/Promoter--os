@@ -98,30 +98,48 @@ export function generateArtistOfferSheet(
   const artistBoxH = 45;
   drawRoundedRect(doc, margin, y, contentWidth, artistBoxH, 8);
 
+  // Artist name. Measure it in the SAME font it is drawn in — measuring after a
+  // setFont/setFontSize call returns the width in the *new* font and the role
+  // label lands on top of the name.
+  const artistName = artist.artist_name || 'TBA';
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   doc.setTextColor(...black);
-  doc.text(artist.artist_name || 'TBA', margin + 14, y + 18);
+  doc.text(artistName, margin + 14, y + 18);
+  const nameW = doc.getTextWidth(artistName);
 
-  const roleLbl = ROLE_LABELS[artist.role] || artist.role;
+  // Guarantee sits hard right; measure it so the role label can never run into it.
+  const guarText = formatMoney(costs.guarantee);
+  const guarW = doc.getTextWidth(guarText);
+
+  const roleLbl = (ROLE_LABELS[artist.role] || artist.role || '').toUpperCase();
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.setTextColor(...darkGray);
-  doc.text(roleLbl.toUpperCase(), margin + 14 + doc.getTextWidth(artist.artist_name || 'TBA') + 10, y + 18);
+  const roleW = roleLbl ? doc.getTextWidth(roleLbl) : 0;
+  const roleX = margin + 14 + nameW + 10;
+  const roleFitsInline = !!roleLbl && roleX + roleW <= pageWidth - margin - 14 - guarW - 14;
+  if (roleFitsInline) {
+    doc.setTextColor(...darkGray);
+    doc.text(roleLbl, roleX, y + 18);
+  }
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   doc.setTextColor(...green);
-  doc.text(formatMoney(costs.guarantee), pageWidth - margin - 14, y + 18, { align: 'right' });
+  doc.text(guarText, pageWidth - margin - 14, y + 18, { align: 'right' });
 
-  if (artist.set_length) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...darkGray);
-    doc.text(`Set: ${artist.set_length} min`, margin + 14, y + 34);
-  }
+  // Second line: set length, with the role folded in when it didn't fit beside the name.
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...darkGray);
+  const line2 = [
+    roleLbl && !roleFitsInline ? roleLbl : '',
+    artist.set_length ? `Set: ${artist.set_length} min` : '',
+  ].filter(Boolean).join('  \u00b7  ');
+  if (line2) doc.text(line2, margin + 14, y + 34);
   if (artist.performance_time) {
-    doc.text(`Performance: ${formatTime12(artist.performance_time)}`, margin + 120, y + 34);
+    const perfX = Math.max(margin + 120, margin + 14 + (line2 ? doc.getTextWidth(line2) : 0) + 18);
+    doc.text(`Performance: ${formatTime12(artist.performance_time)}`, perfX, y + 34);
   }
   y += artistBoxH + 16;
 

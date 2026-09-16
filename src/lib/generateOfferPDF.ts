@@ -956,20 +956,45 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
 
     const terms = companySettings.legal_terms.split('\n').map(l => l.replace(/^[\s•·\-–]+/, '').trim()).filter(line => line.length > 1);
     const termLineSpacing = mode === 'artist_offer' ? 10 : 7;
-    terms.forEach(term => {
-      if (y > pageHeight - margin - 80) {
-        doc.addPage();
-        y = margin + 20;
-      }
-      const isHeading = /^\d+\.\s/.test(term);
-      doc.setFont('Saira', isHeading ? 'bold' : 'normal');
-      doc.setTextColor(...(isHeading ? PDF.ink : PDF.text));
-      const lines = doc.splitTextToSize(isHeading ? term : `• ${term}`, contentWidth - 20);
-      lines.forEach((line: string) => {
-        doc.text(line, margin + 20, y);
-        y += termLineSpacing;
-      });
-      y += mode === 'artist_offer' ? 2 : 1;
+    const termGap = mode === 'artist_offer' ? 2 : 1;
+    // The page footer rule sits at pageHeight - 38; stop well clear of it.
+    const termsBottom = pageHeight - 58;
+    const newTermsPage = () => { doc.addPage(); y = margin + 20; };
+
+    // Group each numbered clause with the bullets beneath it, so a heading is never
+    // stranded at the foot of one page with its terms on the next.
+    const groups: { heading: string | null; items: string[] }[] = [];
+    terms.forEach(t => {
+      if (/^\d+\.\s/.test(t)) groups.push({ heading: t, items: [] });
+      else if (groups.length) groups[groups.length - 1].items.push(t);
+      else groups.push({ heading: null, items: [t] });
+    });
+
+    const measure = (text: string, bold: boolean) => {
+      doc.setFont('Saira', bold ? 'bold' : 'normal');
+      return doc.splitTextToSize(text, contentWidth - 20).length * termLineSpacing;
+    };
+
+    groups.forEach(group => {
+      // A clause can legitimately run longer than one page, so only require the
+      // heading plus its first bullet to fit before committing to start it here.
+      let keepTogether = group.heading ? measure(group.heading, true) : 0;
+      if (group.items.length) keepTogether += measure(`• ${group.items[0]}`, false);
+      if (y + keepTogether > termsBottom) newTermsPage();
+
+      const drawWrapped = (text: string, bold: boolean) => {
+        doc.setFont('Saira', bold ? 'bold' : 'normal');
+        doc.setTextColor(...(bold ? PDF.ink : PDF.text));
+        doc.splitTextToSize(text, contentWidth - 20).forEach((line: string) => {
+          if (y > termsBottom) newTermsPage();
+          doc.text(line, margin + 20, y);
+          y += termLineSpacing;
+        });
+      };
+
+      if (group.heading) drawWrapped(group.heading, true);
+      group.items.forEach(item => drawWrapped(`• ${item}`, false));
+      y += termGap;
     });
 
     y += mode === 'artist_offer' ? 12 : 8;

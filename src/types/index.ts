@@ -297,6 +297,7 @@ export type ArtistOfferStatus =
   | 'sent'
   | 'negotiating'
   | 'accepted'
+  | 'confirmed'
   | 'declined'
   | 'contracted'
   | 'deposit_paid'

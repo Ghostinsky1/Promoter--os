@@ -98,6 +98,27 @@ function requireAccess(ctx: Ctx) {
   }
 }
 
+// The app renders artists off a fixed vocabulary. Anything outside it used to blank
+// the screen, so normalise here rather than writing a value the UI can't draw.
+const ARTIST_ROLES = ["headliner", "direct_support", "support", "local_opener"];
+const ARTIST_STATUSES = ["draft", "sent", "negotiating", "accepted", "confirmed", "declined", "contracted", "deposit_paid", "fully_paid"];
+
+function normalizeRole(v: Any): string {
+  const r = String(v ?? "").trim().toLowerCase().replace(/[\s-]+/g, "_");
+  if (ARTIST_ROLES.includes(r)) return r;
+  if (r === "opener" || r === "local" || r === "open") return "local_opener";
+  if (r === "special_guest" || r === "guest" || r === "direct" || r === "co_headliner") return "direct_support";
+  return "support";
+}
+
+function normalizeArtistStatus(v: Any): string {
+  const t = String(v ?? "").trim().toLowerCase().replace(/[\s-]+/g, "_");
+  if (ARTIST_STATUSES.includes(t)) return t;
+  if (t === "booked" || t === "locked" || t === "signed") return "confirmed";
+  if (t === "offer_sent" || t === "pending") return "sent";
+  return "draft";
+}
+
 const must = <T>(r: { data: T; error: Any }, what: string): T => {
   if (r.error) throw new UserError(`${what}: ${r.error.message}`);
   return r.data;
@@ -589,7 +610,7 @@ const tools: Tool[] = [
       properties: {
         offer_id: { type: "string" },
         artist_name: { type: "string" },
-        role: { type: "string", description: "e.g. headliner, support, local_opener, special_guest" },
+        role: { type: "string", enum: ["headliner", "direct_support", "support", "local_opener"], description: "Use these exact values \u2014 the app only understands these four." },
         guarantee: { type: "number" },
         deposit_type: { type: "string", enum: ["percentage", "fixed"] },
         deposit_percentage: { type: "number" },
@@ -613,6 +634,8 @@ const tools: Tool[] = [
       const { offer_id: _o, ...fields } = a;
       const existing = must(await ctx.db.from("event_artists").select("sort_order").eq("offer_id", offer.id), "Loading lineup") as Any[];
       const row: Any = { ...fields, offer_id: offer.id, organization_id: ctx.org.id, sort_order: existing.length };
+      row.role = normalizeRole(fields.role);
+      if (fields.status !== undefined) row.status = normalizeArtistStatus(fields.status);
       const c = artistCost(row);
       row.balance_due = c.balance;
       row.total_artist_cost = c.total;
@@ -623,12 +646,14 @@ const tools: Tool[] = [
   {
     name: "update_lineup_artist",
     title: "Update lineup artist",
-    description: "Edits an artist already on an offer's lineup (use get_offer to find the artist id). Status values used by the app include draft, offer_sent, confirmed, deposit_paid, fully_paid.",
+    description: "Edits an artist already on an offer's lineup (use get_offer to find the artist id). Role and status must be one of the listed values \u2014 anything else is normalised to the nearest match.",
     inputSchema: {
       type: "object",
       properties: {
         artist_id: { type: "string" },
-        artist_name: { type: "string" }, role: { type: "string" }, status: { type: "string" },
+        artist_name: { type: "string" },
+        role: { type: "string", enum: ["headliner", "direct_support", "support", "local_opener"] },
+        status: { type: "string", enum: ["draft", "sent", "negotiating", "accepted", "confirmed", "declined", "contracted", "deposit_paid", "fully_paid"] },
         guarantee: { type: "number" }, deposit_type: { type: "string", enum: ["percentage", "fixed"] },
         deposit_percentage: { type: "number" }, deposit_amount: { type: "number" },
         set_length: { type: "integer" }, performance_time: { type: "string" }, soundcheck_time: { type: "string" },
@@ -646,6 +671,8 @@ const tools: Tool[] = [
       const cur = must(await ctx.db.from("event_artists").select("*").eq("id", a.artist_id).maybeSingle(), "Loading artist") as Any;
       if (!cur) throw new UserError(`No lineup artist with id "${a.artist_id}".`);
       const { artist_id: _id, ...patch } = a;
+      if (patch.role !== undefined) patch.role = normalizeRole(patch.role);
+      if (patch.status !== undefined) patch.status = normalizeArtistStatus(patch.status);
       const c = artistCost({ ...cur, ...patch });
       const data = must(await ctx.db.from("event_artists").update({
         ...patch, balance_due: c.balance, total_artist_cost: c.total, updated_at: new Date().toISOString(),

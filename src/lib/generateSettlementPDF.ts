@@ -157,50 +157,67 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
 
   yPos = (doc as any).lastAutoTable.finalY + 15;
 
-  if (settlement.notes && settlement.notes.trim()) {
-    if (yPos > 250) {
+  // Everything below flows from a single yPos. Each block advances it by the height it
+  // actually drew, so no section can land on top of the one before it.
+  const TOP = 20;
+  const TEXT_W = 170;
+  // The footer rule sits at height - 38u (see drawFooters); stop well clear of it.
+  const BOTTOM = doc.internal.pageSize.getHeight() - 24;
+
+  /** Start a new page when the next block needs more room than is left. */
+  const ensureRoom = (needed: number) => {
+    if (yPos + needed > BOTTOM) {
       doc.addPage();
-      yPos = 20;
+      yPos = TOP;
+      return true;
     }
+    return false;
+  };
 
-    brandLabel(doc, '[ 04 ]  Settlement notes', 20, yPos, { color: PDF.blue });
+  /** Draw wrapped text one line at a time, breaking pages and advancing yPos. */
+  const flowText = (text: string, lineHeight: number) => {
+    const lines: string[] = doc.splitTextToSize(text, TEXT_W);
+    lines.forEach((line: string) => {
+      ensureRoom(lineHeight);
+      doc.text(line, 20, yPos);
+      yPos += lineHeight;
+    });
+  };
 
+  /** A heading never prints alone at the foot of a page. */
+  const sectionHeading = (text: string, firstLineHeight: number) => {
+    ensureRoom(8 + firstLineHeight);
+    brandLabel(doc, text, 20, yPos, { color: PDF.blue });
     yPos += 8;
+  };
+
+  if (settlement.notes && settlement.notes.trim()) {
+    const LH = 4.5;
+    sectionHeading('[ 04 ]  Settlement notes', LH);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
+    doc.setTextColor(40);
 
-    const notesLines = doc.splitTextToSize(settlement.notes, 170);
-    doc.text(notesLines, 20, yPos);
+    // Blank lines in the notes are paragraph breaks, not text to draw.
+    settlement.notes.split(/\n/).forEach((para) => {
+      if (para.trim()) flowText(para, LH);
+      else yPos += LH * 0.6;
+    });
+
+    doc.setTextColor(0);
+    yPos += 10;
   }
 
   if (companySettings?.legal_terms) {
-    yPos = (doc as any).lastAutoTable.finalY + 15;
-
-    if (yPos > 240) {
-      doc.addPage();
-      yPos = 20;
-    } else {
-      yPos += 15;
-    }
-
-    brandLabel(doc, '[ 05 ]  Terms & conditions', 20, yPos, { color: PDF.blue });
-
-    yPos += 8;
+    const LH = 4;
+    sectionHeading('[ 05 ]  Terms & conditions', LH);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(60);
 
-    const terms = companySettings.legal_terms.split('\n').filter(line => line.trim());
-    terms.forEach(term => {
-      if (yPos > 280) {
-        doc.addPage();
-        yPos = 20;
-      }
-      const lines = doc.splitTextToSize(term, 170);
-      lines.forEach((line: string) => {
-        doc.text(line, 20, yPos);
-        yPos += 4;
-      });
+    companySettings.legal_terms.split(/\n/).forEach((term) => {
+      if (term.trim()) flowText(term, LH);
+      else yPos += LH * 0.6;
     });
 
     doc.setTextColor(0);

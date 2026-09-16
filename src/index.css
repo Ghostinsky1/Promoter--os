@@ -177,3 +177,41 @@ img, svg, video, canvas { max-width: 100%; }
                    linear-gradient(90deg,rgba(255,255,255,.075) 1px,transparent 1px);
   background-size:74px 74px;
 }
+
+/* ---------- CRT screen, app-wide ----------
+   Quiet everywhere by default so numbers stay readable.
+   body.crt-loud turns it up on marketing and auth screens.
+   Add ?crt=off to any URL to switch it off on this device. */
+#crt{position:fixed;inset:0;z-index:9999;pointer-events:none}
+#crt::before{
+  content:'';position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(to bottom, rgba(0,0,0,.07) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(to right, rgba(0,0,0,.045) 0 4px, transparent 4px 5px);
+  mix-blend-mode:multiply;
+}
+#crt::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(125% 115% at 50% 50%, transparent 62%, rgba(0,0,0,.30) 100%);
+}
+#crt-band{display:none}
+
+body.crt-loud #crt::before{
+  background:
+    repeating-linear-gradient(to bottom, rgba(0,0,0,.17) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(to right, rgba(0,0,0,.11) 0 4px, transparent 4px 5px);
+}
+body.crt-loud #crt::after{
+  background:radial-gradient(130% 100% at 28% 16%, rgba(255,255,255,.055) 0%, transparent 46%),
+             radial-gradient(120% 118% at 50% 50%, transparent 54%, rgba(0,0,0,.48) 100%);
+}
+body.crt-loud #crt-band{
+  display:block;position:absolute;left:0;right:0;height:220px;
+  background:linear-gradient(to bottom,transparent,rgba(255,255,255,.05),transparent);
+  animation:crtRoll 7.5s linear infinite;
+}
+@keyframes crtRoll{from{top:-240px}to{top:100%}}
+
+body.crt-off #crt{display:none}
+@media print{#crt{display:none}}
+@media (prefers-reduced-motion:reduce){#crt-band{animation:none;display:none}}

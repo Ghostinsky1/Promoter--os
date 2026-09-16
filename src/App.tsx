@@ -49,6 +49,26 @@ function PixelPageViews() {
   return null;
 }
 
+/** CRT screen look. Loud on marketing and auth screens, quiet inside the app.
+ *  ?crt=off turns it off on this device, ?crt=on turns it back on. */
+const CRT_LOUD = ['/', '/login', '/signup', '/oauth/consent', '/pricing', '/privacy', '/terms', '/security', '/faq'];
+
+function CrtMode() {
+  const location = useLocation();
+  useEffect(() => {
+    try {
+      const p = new URLSearchParams(window.location.search).get('crt');
+      if (p === 'off') localStorage.setItem('crt', 'off');
+      if (p === 'on') localStorage.removeItem('crt');
+      document.body.classList.toggle('crt-off', localStorage.getItem('crt') === 'off');
+    } catch { /* private mode — leave it on */ }
+  }, [location.search]);
+  useEffect(() => {
+    document.body.classList.toggle('crt-loud', CRT_LOUD.includes(location.pathname));
+  }, [location.pathname]);
+  return null;
+}
+
 function AppRoutes() {
   const { user, loading } = useAuth();
 
@@ -102,6 +122,7 @@ function App() {
     <Router>
       <div className="min-h-screen">
         <PixelPageViews />
+      <CrtMode />
         <Header />
         <AppRoutes />
       </div>

@@ -162,3 +162,18 @@ img, svg, video, canvas { max-width: 100%; }
   .text-5xl, .text-4xl { font-size: clamp(1.75rem, 8vw, 2.5rem) !important; line-height: 1.05 !important; }
   .text-3xl { font-size: clamp(1.4rem, 6.5vw, 1.875rem) !important; line-height: 1.1 !important; }
 }
+
+/* ---------- CRT band (marketing sections only) ---------- */
+.crt-band::after{
+  content:'';position:absolute;inset:0;z-index:5;pointer-events:none;
+  background:
+    repeating-linear-gradient(to bottom, rgba(0,0,0,.16) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(to right, rgba(0,0,0,.10) 0 4px, transparent 4px 5px);
+  mix-blend-mode:multiply;
+}
+.crt-grid{
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.075) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.075) 1px,transparent 1px);
+  background-size:74px 74px;
+}

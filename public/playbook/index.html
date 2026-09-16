@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stop Paying Artists Your Profit — Free Promoter Playbook | Promoter OS</title>
+<meta name="description" content="The Promoter's Booking Playbook. Seven steps from break-even to settlement, free for independent promoters. Know your break-even before you make the offer.">
+<meta property="og:title" content="Stop paying artists your profit.">
+<meta property="og:description" content="The Promoter's Booking Playbook — free, 12 pages, from break-even to settlement.">
+<meta property="og:image" content="https://promoteros.com/promoter-os-lockup.png">
+<meta property="og:url" content="https://promoteros.com/playbook/">
+<meta name="theme-color" content="#1140F0">
+<link rel="icon" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,700;125,800;125,900&family=Saira+Condensed:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --dark:#14171E; --card:#22262F; --blue:#1140F0; --deep:#0B2FB8;
+  --mid:#5A8CFF; --sky:#8FD3FF; --navy:#0E1F5C;
+  --red:#F0605A; --amber:#F2B640; --white:#fff;
+  --ink:rgba(255,255,255,.72);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;max-width:100%;overflow-x:clip}
+body{
+  background:var(--dark); color:#fff;
+  font-family:'Saira Condensed',system-ui,sans-serif;
+  font-size:19px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.disp{
+  font-family:'Archivo',system-ui,sans-serif;
+  font-variation-settings:'wdth' 125;
+  font-weight:900; text-transform:uppercase;
+  letter-spacing:-.005em; line-height:.95; margin:0;
+}
+.lab{font-family:'Space Grotesk',monospace;font-weight:700;text-transform:uppercase;letter-spacing:.22em;font-size:11px}
+.sky{color:var(--sky)}
+a{color:inherit}
+
+/* ---------- CRT screen furniture ---------- */
+#crt{position:fixed;inset:0;z-index:60;pointer-events:none}
+#crt::before{
+  content:'';position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(to bottom, rgba(0,0,0,.20) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(to right, rgba(0,0,0,.14) 0 4px, transparent 4px 5px);
+  mix-blend-mode:multiply;opacity:.8;
+}
+#crt::after{
+  content:'';position:absolute;inset:-2px;
+  background:radial-gradient(130% 100% at 28% 16%, rgba(255,255,255,.07) 0%, transparent 48%),
+             radial-gradient(120% 120% at 50% 50%, transparent 52%, rgba(0,0,0,.55) 100%);
+}
+#band{position:fixed;left:0;right:0;height:220px;z-index:61;pointer-events:none;
+  background:linear-gradient(to bottom,transparent,rgba(255,255,255,.055),transparent);
+  animation:roll 7.5s linear infinite}
+@keyframes roll{from{top:-240px}to{top:100%}}
+#noise{position:fixed;inset:0;z-index:62;pointer-events:none;opacity:.045;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='.6'/></svg>");
+  animation:jit .35s steps(3) infinite}
+@keyframes jit{0%{transform:translate(0,0)}33%{transform:translate(-3px,2px)}66%{transform:translate(2px,-3px)}}
+#poweron{position:fixed;inset:0;z-index:90;background:#000;pointer-events:none}
+#poweron i{position:absolute;left:0;right:0;top:50%;height:3px;background:#fff;
+  box-shadow:0 0 40px 10px rgba(255,255,255,.8);transform:translateY(-50%) scaleX(.02)}
+body.on #poweron{animation:po .75s cubic-bezier(.2,.9,.2,1) forwards}
+body.on #poweron i{animation:pol .75s cubic-bezier(.2,.9,.2,1) forwards}
+@keyframes pol{0%{transform:translateY(-50%) scaleX(.02)}22%{transform:translateY(-50%) scaleX(1)}55%{height:100vh}100%{height:100vh;opacity:0}}
+@keyframes po{0%{opacity:1}75%{opacity:1}100%{opacity:0;visibility:hidden}}
+@media (prefers-reduced-motion:reduce){
+  #band,#noise,#poweron{display:none}
+  .rv{opacity:1!important;transform:none!important;filter:none!important}
+}
+
+/* ---------- sections ---------- */
+section{position:relative;padding:clamp(56px,9vw,116px) 20px;overflow:hidden}
+.wrap{max-width:1080px;margin:0 auto;position:relative;z-index:2}
+.s-blue{background:var(--blue)}
+.s-dark{background:var(--dark)}
+.grid-bg::before{content:'';position:absolute;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,.075) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.075) 1px,transparent 1px);
+  background-size:74px 74px}
+.s-dark.grid-bg::before{background-image:linear-gradient(rgba(143,211,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(143,211,255,.05) 1px,transparent 1px)}
+.s-blue .lab{color:#cfe4ff}
+.s-dark .lab{color:var(--sky)}
+.rule{width:96px;height:6px;background:var(--sky);margin:16px 0 26px}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);filter:blur(10px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1),filter .7s}
+.rv.in{opacity:1;transform:none;filter:none}
+.rv.in.glitch{animation:gl .34s steps(2) 1}
+@keyframes gl{
+  0%{transform:translateX(-7px);text-shadow:5px 0 var(--red),-5px 0 var(--sky)}
+  50%{transform:translateX(6px);text-shadow:-4px 0 var(--red),4px 0 var(--sky)}
+  100%{transform:none;text-shadow:none}
+}
+
+/* ---------- pieces ---------- */
+.pill{display:inline-flex;align-items:center;gap:10px;background:var(--dark);color:#fff;
+  border-radius:999px;padding:11px 20px;margin-bottom:22px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--sky)}
+.win{background:var(--dark);border-radius:20px;padding:0;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+.s-dark .win{background:#0B0D12;border:1px solid #2A3040}
+.win-bar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.win-bar b{font-family:'Space Grotesk';font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-left:6px;color:#fff}
+.win-bar .tag{margin-left:auto;background:var(--card);border-radius:999px;padding:6px 13px;font-family:'Space Grotesk';font-size:10px;letter-spacing:.14em;font-weight:700;color:#cfe0ff}
+.d1{width:9px;height:9px;border-radius:50%;background:var(--red)}
+.d2{width:9px;height:9px;border-radius:50%;background:var(--amber)}
+.d3{width:9px;height:9px;border-radius:50%;background:var(--sky)}
+.win-body{padding:20px}
+.stat{background:var(--card);border-radius:14px;padding:16px 18px}
+.stat small{display:block;color:#9FB0C9;font-size:15px;margin-bottom:2px}
+.stat b{font-family:'Archivo';font-variation-settings:'wdth' 125;font-weight:900;font-size:clamp(21px,4.2vw,30px);line-height:1;white-space:nowrap}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.herogrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:26px;align-items:end;margin-top:clamp(34px,5vw,54px)}
+.win-bar b{min-width:0}
+.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  background:var(--sky);color:#04214D;border:0;border-radius:14px;
+  font-family:'Archivo';font-variation-settings:'wdth' 125;font-weight:900;text-transform:uppercase;
+  font-size:19px;letter-spacing:.01em;padding:19px 30px;cursor:pointer;
+  box-shadow:0 0 0 0 rgba(143,211,255,.6);transition:transform .15s,box-shadow .4s,background .2s;width:100%}
+.btn:hover{background:#B4E2FF;transform:translateY(-2px);box-shadow:0 0 34px rgba(143,211,255,.45)}
+.btn.ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.35)}
+.btn.ghost:hover{background:rgba(255,255,255,.1);box-shadow:none}
+table{width:100%;border-collapse:separate;border-spacing:0 0;font-size:17px}
+th{font-family:'Space Grotesk';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--sky);text-align:left;padding:13px 16px;background:#0B0D12}
+td{padding:13px 16px;border-top:1px solid rgba(255,255,255,.07);background:var(--dark)}
+.s-blue td{background:var(--dark)}
+.tbl{border-radius:14px;overflow:hidden}
+.note{border-left:5px solid var(--sky);background:var(--dark);padding:20px 22px;border-radius:0 14px 14px 0}
+.s-dark .note{background:#0B0D12}
+</style>
+</head>
+<body>
+<div id="poweron"><i></i></div>
+<div id="band"></div>
+<div id="noise"></div>
+<div id="crt"></div>
+
+<!-- ================= HERO ================= -->
+<section class="s-blue grid-bg" style="padding-top:clamp(28px,6vw,52px)">
+  <div class="wrap">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:clamp(38px,7vw,70px)" class="rv">
+      <img src="https://promoteros.com/promoter-os-mark.png" alt="" style="width:44px;height:44px;object-fit:contain">
+      <img src="https://promoteros.com/promoter-os-wordmark.png" alt="Promoter OS" style="height:26px;object-fit:contain">
+    </div>
+
+    <div class="pill rv"><span class="dot"></span><span class="lab">Free promoter playbook</span></div>
+
+    <h1 class="rv glitch" style="font-size:clamp(44px,10.4vw,104px);max-width:14ch">
+      Stop paying artists <span class="sky">your profit.</span>
+    </h1>
+
+    <p class="rv" style="max-width:52ch;font-size:clamp(19px,2.3vw,23px);margin:26px 0 0;color:#dbe7ff">
+      The Promoter's Booking Playbook. Twelve pages, seven steps, one real show followed
+      from first offer to final settlement. Know your break-even before you make the offer.
+    </p>
+
+    <div class="rv herogrid">
+      <div class="win">
+        <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>Inside: one show, run the right way</b><span class="tag">Flat deal</span></div>
+        <div class="win-body">
+          <div class="row3">
+            <div class="stat"><small>Break-even</small><b>400 tix</b></div>
+            <div class="stat"><small>Artist fee</small><b>$5,000</b></div>
+            <div class="stat"><small>You keep at 550</small><b class="sky">$4,500</b></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <a class="btn" href="#get">Get it free ↓</a>
+        <p style="color:#cfe0ff;font-size:16px;margin:12px 0 0;text-align:center">No cost. Instant download.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TWIST ================= -->
+<section class="s-dark grid-bg">
+  <div class="wrap" style="text-align:center">
+    <p class="lab rv">Sold out. Still lost money?</p>
+    <h2 class="rv glitch" style="font-size:clamp(30px,6.4vw,64px);max-width:20ch;margin:14px auto 0">
+      Most shows don't lose money at the door. They lose it in the <span class="sky">offer.</span>
+    </h2>
+    <p class="rv" style="max-width:60ch;margin:24px auto 0;color:var(--ink)">
+      You can pack a room and still walk out with nothing. It happens when the deal was wrong,
+      the costs were guessed, the ticket prices didn't cover the math, or settlement night turned
+      into an argument with no paperwork.
+    </p>
+  </div>
+</section>
+
+<!-- ================= WHAT'S INSIDE ================= -->
+<section class="s-blue grid-bg">
+  <div class="wrap">
+    <p class="lab rv">What's inside</p>
+    <h2 class="rv" style="font-size:clamp(28px,5.6vw,54px);max-width:18ch">Seven steps, in the order you do them</h2>
+    <div class="rule rv"></div>
+
+    <div class="win rv" style="margin-bottom:26px">
+      <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>The system · 7 steps</b></div>
+      <div class="win-body" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:22px" id="steps"></div>
+    </div>
+
+    <div class="tbl rv" id="stepList"></div>
+
+    <div class="note rv" style="margin-top:26px">
+      <b>The example we follow all the way through:</b> a headliner asking $5,000, a 700-capacity room,
+      $7,000 in other show costs, and an average ticket that nets you $30 after fees.
+    </div>
+  </div>
+</section>
+
+<!-- ================= BREAK-EVEN TEASE ================= -->
+<section class="s-dark grid-bg">
+  <div class="wrap" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,52px);align-items:center">
+    <div>
+      <p class="lab rv">Step 1</p>
+      <h2 class="rv" style="font-size:clamp(28px,5.2vw,50px)">One number decides every show.</h2>
+      <div class="rule rv"></div>
+      <p class="rv" style="color:var(--ink)">
+        Break-even is the number of tickets you need to sell to cover every dollar you'll spend.
+        If you don't know it, you're not making an offer — you're placing a bet.
+      </p>
+      <div class="note rv" style="margin-top:20px">
+        <span class="lab sky">The formula</span><br>
+        <b style="font-size:20px">(Artist fee + All other costs) ÷ Your net per ticket</b><br>
+        <span style="color:var(--ink)">($5,000 + $7,000) ÷ $30 = <b class="sky">400 tickets</b></span>
+      </div>
+    </div>
+    <div class="win rv">
+      <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>Break-even</b><span class="tag">700 cap</span></div>
+      <div class="win-body">
+        <svg viewBox="0 0 320 170" style="width:100%;height:auto;display:block">
+          <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#8FD3FF" stop-opacity=".45"/><stop offset="1" stop-color="#8FD3FF" stop-opacity="0"/>
+          </linearGradient></defs>
+          <rect x="30" y="75" width="135" height="55" fill="rgba(240,96,90,.16)"/>
+          <rect x="165" y="20" width="135" height="55" fill="rgba(143,211,255,.10)"/>
+          <text x="46" y="122" fill="#F0605A" font-size="9" font-family="Space Grotesk" letter-spacing="1">LOSS</text>
+          <text x="250" y="34" fill="#8FD3FF" font-size="9" font-family="Space Grotesk" letter-spacing="1">PROFIT</text>
+          <line x1="30" y1="75" x2="300" y2="75" stroke="#fff" stroke-opacity=".5" stroke-width="1.5"/>
+          <path d="M30 130 L300 32 L300 130 Z" fill="url(#g1)"/>
+          <path d="M30 130 L300 32" stroke="#8FD3FF" stroke-width="3" fill="none" stroke-dasharray="290" stroke-dashoffset="290" id="bline"/>
+          <line x1="165" y1="20" x2="165" y2="140" stroke="#fff" stroke-opacity=".55" stroke-dasharray="5 5"/>
+          <circle cx="165" cy="75" r="6" fill="#fff"/>
+          <text x="30" y="152" fill="#8FA3BF" font-size="10" font-family="Space Grotesk">0</text>
+          <text x="152" y="152" fill="#fff" font-size="10" font-family="Space Grotesk">400</text>
+          <text x="272" y="152" fill="#8FA3BF" font-size="10" font-family="Space Grotesk">700</text>
+        </svg>
+        <div class="row3" style="margin-top:16px">
+          <div class="stat"><small>Break-even</small><b>400 tix</b></div>
+          <div class="stat"><small>% of capacity</small><b>57%</b></div>
+          <div class="stat"><small>Profit at sellout</small><b class="sky">$9,000</b></div>
+        </div>
+        <p style="color:#8FA3BF;font-size:16px;margin:14px 0 0">Your show has a different number. <b class="sky">Know yours?</b></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DEALS ================= -->
+<section class="s-blue grid-bg">
+  <div class="wrap">
+    <p class="lab rv">Step 2</p>
+    <h2 class="rv" style="font-size:clamp(28px,5.6vw,54px)">Same artist. Same night. Very different outcomes.</h2>
+    <div class="rule rv"></div>
+    <p class="rv" style="max-width:58ch;color:#dbe7ff">
+      The deal decides who carries the risk. Here's what you keep on the same show under three common deals.
+    </p>
+    <div class="tbl rv" style="margin-top:24px">
+      <table>
+        <thead><tr><th>Tickets sold</th><th>Flat $5,000</th><th>$5,000 vs 70% of net</th><th>80/20 door deal</th></tr></thead>
+        <tbody>
+          <tr><td>400 (break-even)</td><td>$0</td><td>$0</td><td>$1,000</td></tr>
+          <tr><td>550</td><td class="sky"><b>$4,500</b></td><td>$2,850</td><td>$1,900</td></tr>
+          <tr><td>700 (sold out)</td><td class="sky"><b>$9,000</b></td><td>$4,200</td><td>$2,800</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note rv" style="margin-top:24px">
+      <b>The takeaway:</b> a flat guarantee makes you the most money on a big night and the most pain on a slow one.
+      A door deal protects you but caps your upside. Run all three before you pick. Don't pick from habit.
+    </div>
+  </div>
+</section>
+
+<!-- ================= MISTAKES ================= -->
+<section class="s-dark grid-bg">
+  <div class="wrap">
+    <p class="lab rv">Bonus chapter</p>
+    <h2 class="rv glitch" style="font-size:clamp(28px,5.6vw,54px)">The 10 mistakes that eat promoter profit</h2>
+    <div class="rule rv"></div>
+    <div class="win rv" style="margin:8px 0 26px">
+      <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>Where the money leaks</b><span class="tag">One night</span></div>
+      <div class="win-body" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+        <span class="leak">Cleaning $150</span><span class="leak">Card fees $480</span><span class="leak">Rider run $220</span>
+        <span class="leak">Overtime $600</span><span class="leak">Extra security $400</span>
+        <div style="margin-left:auto;background:var(--red);border-radius:14px;padding:12px 22px;text-align:center">
+          <div class="lab" style="color:#3a0d0b">Gone</div>
+          <b class="disp" style="font-size:28px">-$1,850</b>
+        </div>
+      </div>
+    </div>
+    <div id="mistakes" class="rv"></div>
+    <p class="rv" style="color:var(--ink);margin-top:18px">…and seven more, with the fix for each, inside the playbook.</p>
+  </div>
+</section>
+
+<!-- ================= PROOF ================= -->
+<section class="s-blue grid-bg">
+  <div class="wrap" style="text-align:center">
+    <p class="lab rv">Real show · real settlement</p>
+    <h2 class="rv" style="font-size:clamp(28px,5.6vw,54px);max-width:20ch;margin:12px auto 0">This is what a clean settlement looks like.</h2>
+    <p class="rv" style="max-width:56ch;margin:20px auto 0;color:#dbe7ff">
+      The playbook ends with a real settlement report from a 1,000-capacity show — projected versus actual,
+      every ticket tier, every expense, and the net profit at the bottom.
+    </p>
+    <div class="rv row3" style="max-width:720px;margin:30px auto 0">
+      <div class="stat" style="background:var(--dark)"><small>Projected net</small><b>$3,175</b></div>
+      <div class="stat" style="background:var(--dark)"><small>Actual net</small><b class="sky">$3,319</b></div>
+      <div class="stat" style="background:var(--dark)"><small>Variance</small><b>+$143</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CAPTURE ================= -->
+<section class="s-dark grid-bg" id="get">
+  <div class="wrap" style="max-width:620px">
+    <div style="text-align:center">
+      <div class="pill rv" style="background:var(--card)"><span class="dot"></span><span class="lab">Free download</span></div>
+      <h2 class="rv" style="font-size:clamp(30px,6vw,56px)">Send me the <span class="sky">playbook</span></h2>
+      <p class="rv" style="color:var(--ink);margin-top:14px">12 pages. No cost. You'll have it in about three seconds.</p>
+    </div>
+
+    <form id="leadForm" class="rv" style="margin-top:28px;display:grid;gap:12px">
+      <input name="first_name" placeholder="First name" autocomplete="given-name" class="fld">
+      <input name="email" type="email" required placeholder="you@yourcompany.com" autocomplete="email" class="fld">
+      <select name="promoter_type" class="fld">
+        <option value="">What do you book? (optional)</option>
+        <option value="club_nights">Club nights</option>
+        <option value="concerts">Concerts</option>
+        <option value="festivals">Festivals</option>
+        <option value="tours">Tours</option>
+        <option value="venue">I run a venue</option>
+        <option value="other">Something else</option>
+      </select>
+      <button class="btn" type="submit" id="sub">Get the playbook →</button>
+      <p id="err" style="display:none;color:var(--red);font-size:16px;margin:0;text-align:center"></p>
+      <p style="color:#6C7A90;font-size:15px;text-align:center;margin:4px 0 0">
+        We'll email you the link and a few booking tips. Unsubscribe anytime.
+      </p>
+    </form>
+
+    <div id="done" style="display:none;text-align:center">
+      <div class="win" style="margin-top:8px">
+        <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>Ready</b><span class="tag">PDF · 12 pages</span></div>
+        <div class="win-body">
+          <h3 style="font-size:clamp(24px,4.6vw,38px)">You're in.</h3>
+          <p style="color:var(--ink);margin:10px 0 20px">Here's the playbook. We sent a copy to your inbox too.</p>
+          <a class="btn" id="dl" href="promoter-booking-playbook.pdf" download>Download the playbook ↓</a>
+        </div>
+      </div>
+      <div style="margin-top:22px">
+        <p class="lab sky">Now do it in minutes</p>
+        <p style="color:var(--ink);margin:10px 0 16px">
+          Everything in this playbook is built into Promoter OS — break-even, deal types, offer PDFs,
+          deposits, run of show and settlement sheets, in one place.
+        </p>
+        <a class="btn ghost" id="trial" href="https://promoteros.com/signup">Start your 14-day free trial →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer style="background:#0B0D12;padding:40px 20px;text-align:center;position:relative;z-index:2">
+  <img src="https://promoteros.com/promoter-os-wordmark.png" alt="Promoter OS" style="height:20px;opacity:.9">
+  <p style="color:#6C7A90;font-size:16px;margin:12px 0 0">For independent promoters booking club nights, concerts and tours.</p>
+  <p style="margin:6px 0 0"><a href="https://promoteros.com" class="lab sky" style="text-decoration:none">PROMOTEROS.COM</a></p>
+</footer>
+
+<style>
+.fld{width:100%;background:#0B0D12;border:1px solid #2A3040;border-radius:14px;color:#fff;
+  font-family:'Saira Condensed';font-size:19px;padding:17px 18px;outline:none}
+.fld:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(143,211,255,.18)}
+.fld::placeholder{color:#6C7A90}
+.leak{background:var(--card);border-radius:999px;padding:9px 15px;font-family:'Space Grotesk';font-size:11px;letter-spacing:.12em;font-weight:700;text-transform:uppercase}
+.mrow{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:15px 4px;border-top:1px solid rgba(255,255,255,.08)}
+.mrow b{font-family:'Archivo';font-variation-settings:'wdth' 125;font-weight:900;color:var(--sky);font-size:20px}
+.stepchip{flex:0 0 auto;width:112px;background:var(--card);border-radius:14px;padding:14px 12px;text-align:center}
+.stepchip .n{width:34px;height:34px;border-radius:50%;background:#0B0D12;display:flex;align-items:center;justify-content:center;
+  margin:0 auto 9px;font-family:'Archivo';font-variation-settings:'wdth' 125;font-weight:900}
+.stepchip.last{background:var(--sky);color:#04214D}
+.stepchip.last .n{background:#04214D;color:var(--sky)}
+.steplabel{font-family:'Space Grotesk';font-size:10px;letter-spacing:.1em;font-weight:700;text-transform:uppercase;line-height:1.25}
+.srow{display:grid;grid-template-columns:52px 1fr;align-items:center;background:var(--dark);border-top:1px solid rgba(255,255,255,.07)}
+.srow:first-child{border-top:0}
+.srow span{font-family:'Archivo';font-variation-settings:'wdth' 125;font-weight:900;color:var(--sky);text-align:center;font-size:19px}
+.srow p{margin:0;padding:14px 16px 14px 0}
+@media (max-width:820px){
+  .row3{grid-template-columns:1fr}
+  .herogrid{grid-template-columns:1fr;align-items:stretch}
+  .win-bar b{font-size:10px;letter-spacing:.12em}
+  .win-bar .tag{margin-left:0}
+  section .wrap[style*="grid-template-columns"]{grid-template-columns:1fr!important}
+  table{font-size:16px} th,td{padding:11px 12px}
+  .tbl{overflow-x:auto}
+}
+</style>
+
+<script>
+/* ---------- Meta pixel ---------- */
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
+s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','1059089886967514');fbq('track','PageView');
+
+/* ---------- content ---------- */
+var STEPS=[
+ ['Break-even','Know your break-even before you make an offer'],
+ ['Deal type','Pick the right deal type'],
+ ['Build offer','Build an offer the agent takes seriously'],
+ ['Scale tickets','Scale your tickets'],
+ ['Lock deposits','Lock deposits and the paper trail'],
+ ['Run of show','Run the night with a run of show'],
+ ['Settle clean','Settle clean']
+];
+document.getElementById('steps').innerHTML=STEPS.map(function(s,i){
+  return '<div class="stepchip'+(i===6?' last':'')+'"><div class="n">'+(i+1)+'</div><div class="steplabel">'+s[0]+'</div></div>';
+}).join('');
+document.getElementById('stepList').innerHTML=STEPS.map(function(s,i){
+  return '<div class="srow"><span>'+(i+1)+'</span><p>'+s[1]+'</p></div>';
+}).join('')+'<div class="srow"><span>+</span><p>The 10 mistakes that eat promoter profit</p></div>';
+
+var MIST=[
+ ['01','Making an offer without a break-even.',"You're guessing. Run the number first, every time."],
+ ['02','Forgetting small costs.','Cleaning fees, card fees, rider runs. Twenty small costs add up to one bad night.'],
+ ['03','No cap on deductible expenses.','Agents will push back on open-ended expenses. Put a number on it.']
+];
+document.getElementById('mistakes').innerHTML=MIST.map(function(m){
+  return '<div class="mrow"><b>'+m[0]+'</b><div><b style="color:#fff;font-size:19px;font-family:Saira Condensed">'+m[1]+
+  '</b><div style="color:var(--ink)">'+m[2]+'</div></div></div>';
+}).join('');
+
+/* ---------- reveal ---------- */
+var io=new IntersectionObserver(function(es){es.forEach(function(e){
+  if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}
+})},{threshold:.15,rootMargin:'0px 0px -6% 0px'});
+document.querySelectorAll('.rv').forEach(function(el,i){el.style.transitionDelay=(i%4)*60+'ms';io.observe(el);});
+requestAnimationFrame(function(){document.body.classList.add('on');});
+setTimeout(function(){var l=document.getElementById('bline');if(l)l.style.transition='stroke-dashoffset 1.4s cubic-bezier(.16,1,.3,1)',l.style.strokeDashoffset='0';},900);
+
+/* ---------- lead capture ---------- */
+var SB='https://azenzsggqexyonafxlsf.supabase.co';
+var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6ZW56c2dncWV4eW9uYWZ4bHNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0MTQzMzUsImV4cCI6MjEwNDk5MDMzNX0.TZk9XtaBlGBB8XjJhIbG5athn1Ki5IHjY0x2HfSvWB8';
+var q=new URLSearchParams(location.search);
+document.getElementById('leadForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var f=ev.target, btn=document.getElementById('sub'), err=document.getElementById('err');
+  var email=f.email.value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)){err.textContent='That email looks off — check it and try again.';err.style.display='block';return;}
+  err.style.display='none'; btn.disabled=true; btn.textContent='Sending…';
+  fetch(SB+'/rest/v1/rpc/capture_lead',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+KEY},
+    body:JSON.stringify({
+      p_email:email,
+      p_first_name:f.first_name.value.trim()||null,
+      p_promoter_type:f.promoter_type.value||null,
+      p_language:'en',
+      p_source:'playbook_crt',
+      p_utm_source:q.get('utm_source'),p_utm_medium:q.get('utm_medium'),
+      p_utm_campaign:q.get('utm_campaign'),p_utm_content:q.get('utm_content'),
+      p_referrer:document.referrer||null
+    })
+  }).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json().catch(function(){return {}}); })
+  .then(function(){
+    try{fbq('track','Lead',{content_name:"Promoter's Booking Playbook"});}catch(e){}
+    document.getElementById('leadForm').style.display='none';
+    var d=document.getElementById('done'); d.style.display='block';
+    document.getElementById('trial').href='https://promoteros.com/signup?email='+encodeURIComponent(email)+
+      '&utm_source=playbook&utm_medium=lead_magnet&utm_campaign=booking_playbook';
+    setTimeout(function(){document.getElementById('dl').click();},600);
+  }).catch(function(){
+    err.textContent="That didn't go through. Try again, or email hi@promoteros.com and we'll send it.";
+    err.style.display='block'; btn.disabled=false; btn.textContent='Get the playbook →';
+  });
+});
+</script>
+</body>
+</html>

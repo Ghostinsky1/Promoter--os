@@ -764,6 +764,55 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* Free playbook — CRT band */}
+      <section id="playbook" className="crt-band py-20 px-4 sm:px-6 bg-[#1140F0] relative overflow-hidden">
+        <div className="crt-grid" />
+        <div className="max-w-5xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <div>
+              <p className="font-label text-[11px] tracking-[0.22em] text-[#cfe4ff] uppercase mb-3">[ Free promoter playbook ]</p>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-[1.05]">
+                Stop paying artists <span className="text-[#8FD3FF]">your profit.</span>
+              </h2>
+              <p className="text-[#dbe7ff] mt-4 max-w-md">
+                Twelve pages, seven steps, one real show followed from first offer to final settlement.
+                Know your break-even before you make the offer.
+              </p>
+              <a
+                href="/playbook/"
+                className="inline-flex items-center justify-center gap-2 mt-7 bg-[#8FD3FF] hover:bg-[#B4E2FF] text-[#04214D] px-7 py-4 rounded-xl font-bold transition-colors"
+              >
+                Get it free &darr;
+              </a>
+              <p className="text-[#cfe0ff] text-sm mt-3">No cost. Instant download.</p>
+            </div>
+
+            <div className="bg-[#14171E] rounded-2xl overflow-hidden shadow-2xl">
+              <div className="flex items-center gap-2 px-5 py-4 border-b border-white/10">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#F0605A]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#F2B640]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#8FD3FF]" />
+                <span className="font-label text-[10px] tracking-[0.18em] uppercase text-white ml-2">Inside: one show, run the right way</span>
+              </div>
+              <div className="p-5 grid grid-cols-3 gap-3">
+                <div className="bg-[#22262F] rounded-xl p-4">
+                  <p className="text-gray-400 text-xs mb-1">Break-even</p>
+                  <p className="text-white text-xl sm:text-2xl font-bold whitespace-nowrap">400 tix</p>
+                </div>
+                <div className="bg-[#22262F] rounded-xl p-4">
+                  <p className="text-gray-400 text-xs mb-1">Artist fee</p>
+                  <p className="text-white text-xl sm:text-2xl font-bold whitespace-nowrap">$5,000</p>
+                </div>
+                <div className="bg-[#22262F] rounded-xl p-4">
+                  <p className="text-gray-400 text-xs mb-1">You keep at 550</p>
+                  <p className="text-[#8FD3FF] text-xl sm:text-2xl font-bold whitespace-nowrap">$4,500</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="pricing" className="py-20 px-6 bg-[#14171E]">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">

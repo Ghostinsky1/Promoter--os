@@ -14,7 +14,7 @@
  */
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 
-const PIXEL_ID = Deno.env.get('FB_PIXEL_ID') ?? '';
+const PIXEL_ID = Deno.env.get('FB_PIXEL_ID') ?? '1059089886967514';
 const ACCESS_TOKEN = Deno.env.get('FB_CAPI_ACCESS_TOKEN') ?? '';
 const TEST_EVENT_CODE = Deno.env.get('FB_TEST_EVENT_CODE') ?? '';
 const GRAPH_VERSION = 'v21.0';

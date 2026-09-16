@@ -12,7 +12,7 @@
  */
 
 // Paste the pixel ID here. Empty = tracking is off and every call below no-ops.
-export const FB_PIXEL_ID = '';
+export const FB_PIXEL_ID = '1059089886967514';
 
 type FbqFn = ((...args: unknown[]) => void) & { queue?: unknown[]; loaded?: boolean; version?: string; push?: unknown };
 declare global { interface Window { fbq?: FbqFn; _fbq?: FbqFn } }

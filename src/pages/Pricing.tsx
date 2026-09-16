@@ -45,7 +45,7 @@ export function Pricing() {
             All plans include professional features to streamline your workflow.
           </p>
           <p className="text-lg text-[#8FD3FF] font-semibold">
-            14-day free trial included with all plans
+            7-day free trial included with all plans
           </p>
         </div>
 

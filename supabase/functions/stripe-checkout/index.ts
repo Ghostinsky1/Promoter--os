@@ -228,7 +228,7 @@ Deno.serve(async (req) => {
       metadata: sessionMetadata,
       subscription_data: mode === 'subscription'
         ? {
-            trial_period_days: metadata?.trial_period_days !== undefined ? Number(metadata.trial_period_days) : 14,
+            trial_period_days: metadata?.trial_period_days !== undefined ? Number(metadata.trial_period_days) : 7,
             metadata: sessionMetadata
           }
         : undefined,

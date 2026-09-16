@@ -152,11 +152,11 @@ const STEPS: Record<number, Step> = {
   <li style="margin-bottom:7px;">Ticket tiers, deposits, tasks and run of show</li>
   <li style="margin-bottom:7px;">Settlement sheets you can print and get signed</li>
 </ul>
-<p style="margin:0 0 14px;">Fourteen days free. Put your next show in and see the numbers today.</p>`,
-      cta: { text: 'Start your 14-day free trial', href: trialLink(e, 3) },
+<p style="margin:0 0 14px;">Seven days free. Put your next show in and see the numbers today.</p>`,
+      cta: { text: 'Start your 7-day free trial', href: trialLink(e, 3) },
       ps: `If you'd rather just ask me a question about a deal you're working on, hit reply — it comes straight to me.`,
     }),
-    text: (n) => `${n ? `Hey ${n},` : 'Hey,'}\n\nPromoter OS runs every step in the playbook in one place — break-even, deal types, offer PDFs, deposits, run of show and settlements.\n\n14 days free: ${SITE}/signup\n\n— Jose, Promoter OS`,
+    text: (n) => `${n ? `Hey ${n},` : 'Hey,'}\n\nPromoter OS runs every step in the playbook in one place — break-even, deal types, offer PDFs, deposits, run of show and settlements.\n\n7 days free: ${SITE}/signup\n\n— Jose, Promoter OS`,
   },
 };
 

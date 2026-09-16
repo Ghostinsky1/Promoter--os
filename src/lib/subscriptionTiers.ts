@@ -9,6 +9,7 @@ export interface SubscriptionFeatures {
   tours: boolean;
   aiInsights: boolean;
   dealAnalyzer: boolean;
+  aiConnector: boolean;
   advancedAI?: boolean;
   teamCollaboration?: boolean;
   customBranding?: boolean;
@@ -48,6 +49,7 @@ export const SUBSCRIPTION_TIERS: Record<string, SubscriptionTier> = {
       tours: false,
       aiInsights: false,
       dealAnalyzer: false,
+      aiConnector: false,
       analytics: 'basic',
       support: 'email'
     }
@@ -71,6 +73,7 @@ export const SUBSCRIPTION_TIERS: Record<string, SubscriptionTier> = {
       tours: true,
       aiInsights: true,
       dealAnalyzer: true,
+      aiConnector: true,
       analytics: 'enhanced',
       support: 'priority'
     }
@@ -94,6 +97,7 @@ export const SUBSCRIPTION_TIERS: Record<string, SubscriptionTier> = {
       tours: true,
       aiInsights: true,
       dealAnalyzer: true,
+      aiConnector: true,
       advancedAI: true,
       teamCollaboration: true,
       customBranding: true,
@@ -143,10 +147,18 @@ export function getTierFeatureList(tierId: string): string[] {
   if (tier.features.tours) features.push('Tour Management');
   if (tier.features.aiInsights) features.push('AI Insights & Deal Analyzer');
   if (tier.features.dealAnalyzer) features.push('Deals scored 0-100');
+  if (tier.features.aiConnector) features.push('AI connector (run your events from Claude)');
   if (tier.features.advancedAI) features.push('Advanced AI tools');
   if (tier.features.teamCollaboration) features.push('Team collaboration');
   if (tier.features.customBranding) features.push('Custom branding & white-label PDFs');
   if (tier.features.apiAccess) features.push('API access');
 
   return features;
+}
+
+/** Plans that can connect Promoter OS to an AI assistant (the MCP connector). */
+export const AI_CONNECTOR_TIERS = ['pro', 'agency_scale'];
+
+export function canUseAiConnector(tierId: string): boolean {
+  return AI_CONNECTOR_TIERS.includes(tierId);
 }

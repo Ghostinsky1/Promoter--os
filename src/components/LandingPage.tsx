@@ -756,7 +756,7 @@ export function LandingPage() {
                 >
                   Start free trial
                 </button>
-                <p className="text-gray-500 text-xs mt-3">Included on every plan. No extra setup fee.</p>
+                <p className="text-gray-500 text-xs mt-3">On Pro and Agency Scale. No extra setup fee.</p>
               </div>
             </div>
 
@@ -849,6 +849,10 @@ export function LandingPage() {
                   <X className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-gray-600">No tours</span>
                 </div>
+                <div className="flex items-start gap-3">
+                  <X className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-gray-600">No AI connector</span>
+                </div>
               </div>
             </div>
 
@@ -888,6 +892,10 @@ export function LandingPage() {
                   <span className="text-sm text-white font-semibold">AI Deal Analyzer</span>
                 </div>
                 <div className="flex items-start gap-3">
+                  <MessageSquare className="h-5 w-5 text-[#8FD3FF] mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-white font-semibold">AI connector (run your shows from chat)</span>
+                </div>
+                <div className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-white font-semibold">2 seats</span>
                 </div>
@@ -918,6 +926,10 @@ export function LandingPage() {
                 <div className="flex items-start gap-3">
                   <Sparkles className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-gray-400">Advanced AI</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <MessageSquare className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-gray-400">AI connector</span>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
@@ -995,6 +1007,12 @@ export function LandingPage() {
                 </tr>
                 <tr className="border-b border-gray-800">
                   <td className="px-6 py-4 text-[#A8B2C1]">Tour Management</td>
+                  <td className="px-6 py-4 text-center"><X className="h-5 w-5 text-gray-600 mx-auto" /></td>
+                  <td className="px-6 py-4 text-center bg-[#8FD3FF]/5"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
+                  <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-800">
+                  <td className="px-6 py-4 text-[#A8B2C1]">AI connector (Claude & other assistants)</td>
                   <td className="px-6 py-4 text-center"><X className="h-5 w-5 text-gray-600 mx-auto" /></td>
                   <td className="px-6 py-4 text-center bg-[#8FD3FF]/5"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                   <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>

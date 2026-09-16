@@ -80,10 +80,21 @@ function hasAccess(org: Any): boolean {
   return false;
 }
 
+// The AI connector is a Pro and Agency Scale feature. Keep this list in sync with
+// src/lib/subscriptionTiers.ts (AI_CONNECTOR_TIERS).
+const AI_CONNECTOR_TIERS = new Set(["pro", "agency_scale"]);
+
+function canUseConnector(org: Any): boolean {
+  return AI_CONNECTOR_TIERS.has(String(org?.subscription_tier ?? "").toLowerCase());
+}
+
 function requireAccess(ctx: Ctx) {
   if (!ctx.org) throw new UserError(`This account isn't part of a PromoterOS organization yet. Finish signup at ${APP_URL}.`);
   if (!hasAccess(ctx.org)) {
     throw new UserError(`The PromoterOS subscription for "${ctx.org.name}" is not active (status: ${ctx.org.subscription_status}). Subscribe at ${APP_URL}/pricing to keep using PromoterOS in Claude.`);
+  }
+  if (!canUseConnector(ctx.org)) {
+    throw new UserError(`The AI connector is part of the Pro and Agency Scale plans. "${ctx.org.name}" is on the Starter plan, so this connection can read and change nothing. Upgrade at ${APP_URL}/pricing and reconnect.`);
   }
 }
 
@@ -291,6 +302,10 @@ const tools: Tool[] = [
         subscription_status: o?.subscription_status ?? null,
         trial_ends_at: o?.trial_ends_at ?? null,
         has_access: hasAccess(o),
+        can_use_ai_connector: canUseConnector(o),
+        ai_connector_note: canUseConnector(o)
+          ? null
+          : "The AI connector is part of the Pro and Agency Scale plans. On Starter, this connection can't read or change anything.",
         active_offers: count,
         max_offers: o?.max_offers === -1 ? "unlimited" : o?.max_offers,
       };

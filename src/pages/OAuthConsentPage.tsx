@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { ShieldCheck, Check } from 'lucide-react';
+import { ShieldCheck, Check, AlertCircle } from 'lucide-react';
+import { canUseAiConnector } from '../lib/subscriptionTiers';
 
 // Shown when an AI app (e.g. Claude) asks to connect to a promoter's PromoterOS account.
 // Supabase Auth sends the browser here with ?authorization_id=...
@@ -30,6 +31,25 @@ export default function OAuthConsentPage() {
   const [details, setDetails] = useState<Details | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // The connector is a Pro / Agency Scale feature — say so here rather than letting
+  // someone connect and then find every tool refused.
+  const [plan, setPlan] = useState<{ tier: string; name: string } | null>(null);
+  const planOk = !plan || canUseAiConnector(plan.tier);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data: mem } = await supabase
+        .from('organization_members')
+        .select('organizations(name, subscription_tier)')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .limit(1)
+        .maybeSingle();
+      const org = (mem as any)?.organizations;
+      if (org) setPlan({ tier: org.subscription_tier, name: org.name });
+    })();
+  }, [user]);
 
   useEffect(() => {
     if (!user || !authorizationId) return;
@@ -110,6 +130,19 @@ export default function OAuthConsentPage() {
             {details.client.uri && <span className="block mt-1 text-gray-500">App website: {details.client.uri}</span>}
           </div>
 
+          {!planOk && (
+            <div className="rounded-2xl border border-[#FFB86B]/40 bg-[#FFB86B]/10 p-4 mb-6 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-[#FFB86B] flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="text-[#FFB86B] font-semibold">The AI connector is on Pro and Agency Scale</p>
+                <p className="text-gray-400 mt-1">
+                  {plan?.name} is on the Starter plan, so this connection won't be able to read or change anything.{' '}
+                  <a href="/pricing" className="text-[#8FD3FF] underline">See plans</a>
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => decide(false)}
@@ -120,8 +153,9 @@ export default function OAuthConsentPage() {
             </button>
             <button
               onClick={() => decide(true)}
-              disabled={busy}
-              className="h-12 rounded-xl bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] font-bold disabled:opacity-50 transition-colors"
+              disabled={busy || !planOk}
+              title={planOk ? undefined : 'Upgrade to Pro or Agency Scale to use the AI connector'}
+              className="h-12 rounded-xl bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {busy ? 'Working…' : 'Allow'}
             </button>

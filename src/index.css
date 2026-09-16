@@ -181,36 +181,49 @@ img, svg, video, canvas { max-width: 100%; }
 /* ---------- CRT screen, app-wide ----------
    Quiet everywhere by default so numbers stay readable.
    body.crt-loud turns it up on marketing and auth screens.
-   Add ?crt=off to any URL to switch it off on this device. */
-#crt{position:fixed;inset:0;z-index:9999;pointer-events:none}
+   Add ?crt=off to any URL to switch it off on this device.
+
+   Performance note: this sits over every page, so it must be cheap. No
+   mix-blend-mode (it forces the browser to re-composite the whole screen on
+   every scroll) and the light band moves with transform, not top. The layer
+   is isolated so scrolling a long list never repaints it. */
+#crt{
+  position:fixed;inset:0;z-index:9999;pointer-events:none;
+  contain:strict;
+  transform:translateZ(0);
+  backface-visibility:hidden;
+}
 #crt::before{
   content:'';position:absolute;inset:0;
   background:
-    repeating-linear-gradient(to bottom, rgba(0,0,0,.07) 0 1px, transparent 1px 3px),
-    repeating-linear-gradient(to right, rgba(0,0,0,.045) 0 4px, transparent 4px 5px);
-  mix-blend-mode:multiply;
+    repeating-linear-gradient(to bottom, rgba(0,0,0,.055) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(to right, rgba(0,0,0,.035) 0 4px, transparent 4px 5px);
 }
 #crt::after{
   content:'';position:absolute;inset:0;
-  background:radial-gradient(125% 115% at 50% 50%, transparent 62%, rgba(0,0,0,.30) 100%);
+  background:radial-gradient(125% 115% at 50% 50%, transparent 62%, rgba(0,0,0,.28) 100%);
 }
 #crt-band{display:none}
 
 body.crt-loud #crt::before{
   background:
-    repeating-linear-gradient(to bottom, rgba(0,0,0,.17) 0 1px, transparent 1px 3px),
-    repeating-linear-gradient(to right, rgba(0,0,0,.11) 0 4px, transparent 4px 5px);
+    repeating-linear-gradient(to bottom, rgba(0,0,0,.15) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(to right, rgba(0,0,0,.09) 0 4px, transparent 4px 5px);
 }
 body.crt-loud #crt::after{
-  background:radial-gradient(130% 100% at 28% 16%, rgba(255,255,255,.055) 0%, transparent 46%),
-             radial-gradient(120% 118% at 50% 50%, transparent 54%, rgba(0,0,0,.48) 100%);
+  background:radial-gradient(130% 100% at 28% 16%, rgba(255,255,255,.05) 0%, transparent 46%),
+             radial-gradient(120% 118% at 50% 50%, transparent 54%, rgba(0,0,0,.45) 100%);
 }
 body.crt-loud #crt-band{
-  display:block;position:absolute;left:0;right:0;height:220px;
+  display:block;position:absolute;left:0;right:0;top:0;height:220px;
   background:linear-gradient(to bottom,transparent,rgba(255,255,255,.05),transparent);
+  will-change:transform;
   animation:crtRoll 7.5s linear infinite;
 }
-@keyframes crtRoll{from{top:-240px}to{top:100%}}
+@keyframes crtRoll{
+  from{transform:translateY(-240px)}
+  to{transform:translateY(100vh)}
+}
 
 body.crt-off #crt{display:none}
 @media print{#crt{display:none}}

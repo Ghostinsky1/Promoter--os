@@ -26,6 +26,9 @@ export function AIInsights() {
   const [ready, setReady] = useState(false);
   const [settledCount, setSettledCount] = useState(0);
   const [message, setMessage] = useState('');
+  // When the insights service can't be reached we say so, rather than showing
+  // "learning mode / 0 settled", which is a lie to anyone who has settled shows.
+  const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
     loadInsights();
@@ -33,6 +36,7 @@ export function AIInsights() {
 
   async function loadInsights() {
     setLoading(true);
+    setUnavailable(false);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -65,6 +69,7 @@ export function AIInsights() {
       }
     } catch (error) {
       console.error('Error loading insights:', error);
+      setUnavailable(true);
     } finally {
       setLoading(false);
     }
@@ -91,6 +96,24 @@ export function AIInsights() {
           <Loader2 className="h-6 w-6 animate-spin text-purple-600 mx-auto mb-2" />
           <p className="text-slate-600">Analyzing your data...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (unavailable) {
+    return (
+      <div className="bg-[#14171E] border border-[#2A3040] rounded-2xl p-8 text-center">
+        <Sparkles className="h-10 w-10 text-gray-600 mx-auto mb-3" />
+        <h3 className="text-lg font-bold text-white mb-1">Insights aren't available right now</h3>
+        <p className="text-gray-400 text-sm mb-4">
+          Your shows and settlements are all fine — this panel just couldn't reach the insights service.
+        </p>
+        <button
+          onClick={loadInsights}
+          className="inline-flex items-center gap-2 bg-[#22262F] hover:bg-[#2A3040] border border-[#2A3040] text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+        >
+          <RefreshCw className="h-4 w-4 text-[#8FD3FF]" /> Try again
+        </button>
       </div>
     );
   }

@@ -29,7 +29,7 @@ export function Pricing() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-3 mb-6">
             <img
-              src="/untitled_project_-_standard_1_(13).png"
+              src="/promoter-os-mark.png"
               alt="PROMOTER OS Logo"
               className="w-16 h-16 object-contain"
             />

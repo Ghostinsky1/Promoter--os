@@ -61,7 +61,7 @@ export function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img
-              src="/untitled_project_-_standard_1_(13).png"
+              src="/promoter-os-mark.png"
               alt="PROMOTER OS Logo"
               className="w-10 h-10 object-contain"
             />
@@ -1114,7 +1114,7 @@ export function LandingPage() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <img
-                  src="/untitled_project_-_standard_1_(13).png"
+                  src="/promoter-os-mark.png"
                   alt="PROMOTER OS Logo"
                   className="w-8 h-8 object-contain"
                 />

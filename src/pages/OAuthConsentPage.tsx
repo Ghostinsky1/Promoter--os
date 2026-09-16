@@ -138,7 +138,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3">
-            <img src="/untitled_project_-_standard_1_(13).png" alt="PROMOTER OS Logo" className="w-10 h-10 object-contain" />
+            <img src="/promoter-os-mark.png" alt="PROMOTER OS Logo" className="w-10 h-10 object-contain" />
             <span className="text-2xl text-white font-display">PROMOTER OS</span>
           </div>
         </div>

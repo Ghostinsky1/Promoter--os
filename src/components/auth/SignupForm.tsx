@@ -86,7 +86,7 @@ export function SignupFormLegacy() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
             <img
-              src="/untitled_project_-_standard_1_(13).png"
+              src="/promoter-os-mark.png"
               alt="PROMOTER OS Logo"
               className="w-12 h-12 object-contain"
             />

@@ -41,6 +41,7 @@ function brandedHtml(opts: { title: string; message: string; senderName: string;
     <tr><td align="center">
       <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;background:#FFFFFF;border-radius:12px;overflow:hidden;border:1px solid #D2DAE6;">
         <tr><td style="background:#08090D;padding:22px 28px;">
+          <img src="https://promoteros.com/promoter-os-mark.png" width="34" alt="" style="display:block;width:34px;height:auto;margin-bottom:10px;border:0;">
           <div style="font-size:11px;letter-spacing:2px;color:#8FD3FF;text-transform:uppercase;">${company}</div>
           <div style="font-size:22px;font-weight:900;color:#FFFFFF;letter-spacing:0.5px;margin-top:4px;text-transform:uppercase;">${escapeHtml(opts.title)}</div>
         </td></tr>

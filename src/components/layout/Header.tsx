@@ -82,7 +82,7 @@ export function Header() {
               className={`${user ? 'hidden md:flex' : 'flex'} items-center gap-2 group flex-shrink-0`}
             >
               <img
-                src="/untitled_project_-_standard_1_(13).png"
+                src="/promoter-os-mark.png"
                 alt="PROMOTER OS Logo"
                 className="w-10 h-10 object-contain transform group-hover:scale-110 transition-transform"
               />

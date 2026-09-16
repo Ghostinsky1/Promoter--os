@@ -86,9 +86,7 @@ export function Header() {
                 alt="PROMOTER OS Logo"
                 className="w-10 h-10 object-contain transform group-hover:scale-110 transition-transform"
               />
-              <span className="text-2xl font-bold text-white">
-                PROMOTER OS
-              </span>
+              <img src="/promoter-os-wordmark.png" alt="PROMOTER OS" className="h-6 w-auto object-contain" />
             </Link>
 
             {user && (

@@ -90,7 +90,7 @@ export function SignupFormLegacy() {
               alt="PROMOTER OS Logo"
               className="w-12 h-12 object-contain"
             />
-            <span className="text-3xl font-bold text-white">PROMOTER OS</span>
+            <img src="/promoter-os-wordmark.png" alt="PROMOTER OS" className="h-7 w-auto object-contain" />
           </div>
           <p className="text-[#A8B2C1]">Create your free account - no credit card required</p>
         </div>

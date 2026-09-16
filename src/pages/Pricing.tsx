@@ -33,7 +33,7 @@ export function Pricing() {
               alt="PROMOTER OS Logo"
               className="w-16 h-16 object-contain"
             />
-            <span className="text-4xl font-bold text-white">PROMOTER OS</span>
+            <img src="/promoter-os-wordmark.png" alt="PROMOTER OS" className="h-9 w-auto object-contain" />
           </div>
           <h1 className="text-5xl font-bold text-white mb-6">
             Choose Your Plan

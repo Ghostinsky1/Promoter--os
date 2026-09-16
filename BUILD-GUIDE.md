@@ -50,7 +50,8 @@ Supabase  (project "Promoter--os", ref azenzsggqexyonafxlsf, us-east-2)
 │   │   ├── generateOfferPDF.ts / generateArtistOfferSheet.ts / generateSettlementPDF.ts / generateRunOfShowPDF.ts
 │   │   └── subscriptionTiers.ts / stripe.ts / email.ts (send-email client)
 │   └── types/index.ts
-├── public/                     # promoter-os-mark.png (screen logo), promoter-os-mark-blue.png (for white/paper), favicon.png
+├── public/                     # brand assets: promoter-os-mark.png (star, dark bg), -mark-blue.png (star, white bg),
+│                               #   promoter-os-wordmark.png (custom lettering, white), -wordmark-dark.png, promoter-os-lockup.png, favicon.png
 ├── supabase/
 │   ├── schema.sql              # the whole database in one file (already applied to Promoter--os)
 │   └── functions/              # stripe-checkout, stripe-webhook, send-email, ai-insights, analyze-deal

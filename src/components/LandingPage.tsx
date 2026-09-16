@@ -65,7 +65,7 @@ export function LandingPage() {
               alt="PROMOTER OS Logo"
               className="w-10 h-10 object-contain"
             />
-            <span className="text-2xl font-bold text-white">PROMOTER OS</span>
+            <img src="/promoter-os-wordmark.png" alt="PROMOTER OS" className="h-6 w-auto object-contain" />
           </div>
 
           <div className="hidden md:flex items-center gap-8">
@@ -1118,7 +1118,7 @@ export function LandingPage() {
                   alt="PROMOTER OS Logo"
                   className="w-8 h-8 object-contain"
                 />
-                <span className="text-xl font-bold text-white">PROMOTER OS</span>
+                <img src="/promoter-os-wordmark.png" alt="PROMOTER OS" className="h-5 w-auto object-contain" />
               </div>
               <p className="text-sm text-[#A8B2C1]">
                 Concert promotion software built by promoters, for promoters.

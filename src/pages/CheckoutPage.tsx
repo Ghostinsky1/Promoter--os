@@ -50,7 +50,7 @@ export function CheckoutPage() {
           <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-8">
             <div className="inline-flex items-center gap-3 mb-6">
               <img src="/promoter-os-mark.png" alt="PROMOTER OS" className="w-10 h-10 object-contain" />
-              <span className="text-2xl font-bold text-white">PROMOTER OS</span>
+              <img src="/promoter-os-wordmark.png" alt="PROMOTER OS" className="h-6 w-auto object-contain" />
             </div>
             <p className="text-sm uppercase tracking-wider text-gray-500 mb-2">You're subscribing to</p>
             <h1 className="text-3xl font-bold text-white mb-1">{product.name}</h1>

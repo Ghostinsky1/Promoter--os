@@ -23,6 +23,33 @@ export interface Expenses {
   production: Record<string, number>;
 }
 
+export type ExtraRevenueKind =
+  | 'bar'
+  | 'coat_check'
+  | 'vip'
+  | 'sponsorship'
+  | 'merch'
+  | 'parking'
+  | 'other';
+
+/** Money the promoter takes that isn't ticket sales. Never enters the artist's
+ *  backend split — see calculateOffer. */
+export interface ExtraRevenueLine {
+  id: string;
+  label: string;
+  kind: ExtraRevenueKind;
+  /** per_head multiplies by paid attendance, per_car divides attendance by
+   *  occupancy first, flat is a single total for the night. */
+  basis: 'per_head' | 'per_car' | 'flat';
+  /** Dollars per head (per_head), per car (per_car), or the flat total. */
+  amount: number;
+  /** People per car. Only used when basis is per_car. Defaults to 2.5. */
+  occupancy?: number;
+  /** The promoter's share of this line, 0-100. A venue keeping 70% of the bar is 30 here. */
+  promoter_pct: number;
+  note?: string;
+}
+
 export interface Calculations {
   grossPotential: number;
   salesTax: number;
@@ -31,6 +58,10 @@ export interface Calculations {
   fixedExpensesTotal?: number;
   variableExpensesTotal?: number;
   netProfit: number;
+  /** The promoter's share of bar and other non-ticket revenue. */
+  extraRevenueTotal?: number;
+  /** Per-head portion only, expressed as dollars per paid ticket. Used by break-even. */
+  extraRevenuePerHead?: number;
   artistTotalPayout: number;
   profitPool?: number;
   promoterProfit?: number;

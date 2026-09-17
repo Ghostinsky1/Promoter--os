@@ -1,5 +1,13 @@
 import { OfferWithShow } from '../types';
-import { getExpenseBreakdown } from './calculations';
+import { getExpenseBreakdown, splitExtraRevenue } from './calculations';
+
+/** The promoter's bar / extras on an offer, split into a flat total and a per-head rate. */
+function extrasOn(offer: OfferWithShow) {
+  return splitExtraRevenue(
+    (offer as any).extra_revenue,
+    (offer as any).include_extra_revenue !== false,
+  );
+}
 
 export interface BreakEvenResult {
   tickets: number;
@@ -23,14 +31,20 @@ export function calculateBreakEven(offer: OfferWithShow): BreakEvenResult {
     sum + (tier.price * (tier.allotment - tier.comps)), 0
   ) / totalSellable;
 
-  // Calculate gross revenue needed to cover costs after sales tax is deducted
-  const breakEvenGrossRevenue = totalCosts / (1 - (offer.sales_tax_pct / 100));
-  const breakEvenTickets = Math.ceil(breakEvenGrossRevenue / avgTicketPrice);
-  const breakEvenNetRevenue = breakEvenGrossRevenue * (1 - (offer.sales_tax_pct / 100));
+  // Bar and extras change break-even two different ways, so they're applied
+  // separately: a flat sponsorship is money you don't have to sell tickets for,
+  // while a per-head bar cut raises what every ticket is worth to you.
+  const { flat, perHead } = extrasOn(offer);
+
+  const netPerTicket = avgTicketPrice * (1 - (offer.sales_tax_pct / 100)) + perHead;
+  const costsToCover = Math.max(0, totalCosts - flat);
+
+  const breakEvenTickets = netPerTicket > 0 ? Math.ceil(costsToCover / netPerTicket) : 0;
+  const breakEvenNetRevenue = breakEvenTickets * avgTicketPrice * (1 - (offer.sales_tax_pct / 100));
 
   return {
     tickets: breakEvenTickets,
-    percentage: (breakEvenTickets / totalSellable) * 100,
+    percentage: totalSellable > 0 ? (breakEvenTickets / totalSellable) * 100 : 0,
     revenue: breakEvenNetRevenue,
     buffer: totalSellable - breakEvenTickets
   };
@@ -42,13 +56,15 @@ export function calculateScenarios(offer: OfferWithShow): ScenarioResult[] {
     sum + (tier.price * (tier.allotment - tier.comps)), 0
   ) / totalSellable;
   const totalCosts = getExpenseBreakdown(offer.calculations, offer.guarantee).totalExpenses;
+  const { flat, perHead } = extrasOn(offer);
 
   return [50, 70, 85, 100].map(pct => {
     const tickets = Math.floor(totalSellable * (pct / 100));
     const grossRevenue = tickets * avgTicketPrice;
     const salesTax = grossRevenue * (offer.sales_tax_pct / 100);
     const netRevenue = grossRevenue - salesTax;
-    const profit = netRevenue - totalCosts;
+    const extras = flat + perHead * tickets;
+    const profit = netRevenue + extras - totalCosts;
 
     return {
       percentage: pct,

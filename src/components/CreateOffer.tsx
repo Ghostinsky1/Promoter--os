@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { TicketTier, Expenses, OfferStatus, SupportAct, Template } from '../types';
+import { ExtraRevenuePanel } from './ExtraRevenuePanel';
+import type { ExtraRevenueLine } from '../types';
 import { calculateOffer } from '../lib/calculations';
 import { EventDetailsTab } from './tabs/EventDetailsTab';
 import { ArtistDealTab } from './tabs/ArtistDealTab';
@@ -75,6 +77,8 @@ export function CreateOffer() {
     { type: 'GA', allotment: 0, comps: 0, price: 0 }
   ]);
   const [salesTaxPct, setSalesTaxPct] = useState<number>(13.18);
+  const [includeExtraRevenue, setIncludeExtraRevenue] = useState(false);
+  const [extraRevenue, setExtraRevenue] = useState<ExtraRevenueLine[]>([]);
   const [compsArtist, setCompsArtist] = useState<number>(0);
   const [compsVenue, setCompsVenue] = useState<number>(0);
   const [compsPromoter, setCompsPromoter] = useState<number>(0);
@@ -243,7 +247,8 @@ export function CreateOffer() {
       sesacRate,
       insurancePerAttendee,
       ccFeeRate
-    }
+    },
+    { include: includeExtraRevenue, lines: extraRevenue }
   );
 
   const steps = [
@@ -353,6 +358,8 @@ export function CreateOffer() {
         venue_deposit_status: venueDepositStatus,
         ticket_tiers: ticketTiers,
         sales_tax_pct: salesTaxPct,
+        include_extra_revenue: includeExtraRevenue,
+        extra_revenue: extraRevenue,
         expenses: expenses,
         calculations: calculations,
         support_acts: supportActs,
@@ -844,7 +851,8 @@ export function CreateOffer() {
           )}
 
           {currentStep === 4 && (
-            <TicketScalingTab
+            <div className="space-y-6">
+              <TicketScalingTab
               ticketTiers={ticketTiers}
               setTicketTiers={setTicketTiers}
               salesTaxPct={salesTaxPct}
@@ -857,6 +865,15 @@ export function CreateOffer() {
               compsPromoter={compsPromoter}
               setCompsPromoter={setCompsPromoter}
             />
+
+              <ExtraRevenuePanel
+                enabled={includeExtraRevenue}
+                onToggle={setIncludeExtraRevenue}
+                lines={extraRevenue}
+                onChange={setExtraRevenue}
+                expectedAttendance={ticketTiers.reduce((sum, t) => sum + Math.max(0, (t.allotment || 0) - (t.comps || 0)), 0)}
+              />
+            </div>
           )}
 
           {currentStep === 5 && (() => {

@@ -1,4 +1,50 @@
-import type { TicketTier, Expenses, Calculations, ProjectionResult, SupportAct } from '../types';
+import type { TicketTier, Expenses, Calculations, ProjectionResult, SupportAct, ExtraRevenueLine } from '../types';
+
+/** People per car when nothing else is set. Club nights carpool. */
+export const DEFAULT_CAR_OCCUPANCY = 2.5;
+
+/** Cars for a given crowd, at a given people-per-car. */
+export function carsFor(paidAttendance: number, occupancy = DEFAULT_CAR_OCCUPANCY): number {
+  const per = Number(occupancy) > 0 ? Number(occupancy) : DEFAULT_CAR_OCCUPANCY;
+  return Math.max(0, Math.round((paidAttendance || 0) / per));
+}
+
+/**
+ * Bar, coat check, VIP tables, sponsorship, parking — the promoter's share only.
+ *
+ * Split into two numbers on purpose:
+ *  - flat: a total for the night, whatever the crowd is
+ *  - perHead: dollars per paid ticket, so a slow night doesn't leave a made-up
+ *    number sitting in the profit line
+ *
+ * Parking is entered per CAR and converted here, because 400 people is not 400
+ * cars — at 2.5 to a car it's about 160.
+ *
+ * This money is deliberately kept OUT of the artist's backend pot. On a
+ * guarantee-vs-percentage deal the artist splits net box office, not the bar.
+ */
+export function splitExtraRevenue(lines: ExtraRevenueLine[] = [], enabled = true) {
+  if (!enabled || !Array.isArray(lines)) return { flat: 0, perHead: 0 };
+  let flat = 0;
+  let perHead = 0;
+  for (const l of lines) {
+    if (!l) continue;
+    const amount = Number(l.amount) || 0;
+    const share = (Number(l.promoter_pct) ?? 100) / 100;
+    if (!isFinite(amount) || amount === 0) continue;
+    const mine = amount * (isFinite(share) ? Math.max(0, Math.min(1, share)) : 1);
+    if (l.basis === 'per_head') perHead += mine;
+    else if (l.basis === 'per_car') perHead += mine / (Number(l.occupancy) > 0 ? Number(l.occupancy) : DEFAULT_CAR_OCCUPANCY);
+    else flat += mine;
+  }
+  return { flat, perHead };
+}
+
+/** Total promoter share of extra revenue at a given paid attendance. */
+export function extraRevenueAt(lines: ExtraRevenueLine[] = [], paidAttendance: number, enabled = true) {
+  const { flat, perHead } = splitExtraRevenue(lines, enabled);
+  return flat + perHead * Math.max(0, paidAttendance || 0);
+}
 
 export function calculateOffer(
   ticketTiers: TicketTier[],
@@ -28,7 +74,8 @@ export function calculateOffer(
     sesacRate?: number;
     insurancePerAttendee?: number;
     ccFeeRate?: number;
-  }
+  },
+  extraRevenue?: { include?: boolean; lines?: ExtraRevenueLine[] }
 ): Calculations {
   const supportActsCost = supportActs.reduce((sum, act) => sum + act.guarantee, 0);
 
@@ -59,6 +106,17 @@ export function calculateOffer(
 
   const salesTax = grossPotential * (salesTaxPct / 100);
   const netGross = grossPotential - salesTax;
+
+  // Paid heads drive anything charged per person.
+  const paidAttendance = ticketTiers.reduce((sum, tier) => {
+    const tickets = mode === 'settlement' && tier.actualSold !== undefined
+      ? tier.actualSold
+      : (tier.allotment - tier.comps);
+    return sum + tickets;
+  }, 0);
+
+  const extra = splitExtraRevenue(extraRevenue?.lines, extraRevenue?.include !== false);
+  const extraRevenueTotal = extra.flat + extra.perHead * paidAttendance;
 
   // Calculate variable expenses
   let variableExpenses = 0;
@@ -102,7 +160,10 @@ export function calculateOffer(
     backend = profitPool;
   }
 
-  const netProfit = netGross - totalExpenses - artistTotalPayout / (1 - taxWithholdingPct / 100);
+  // Extra revenue lands in the promoter's pocket after the artist is paid. It is
+  // intentionally absent from profitPool above, so the artist's percentage is
+  // calculated on box office alone.
+  const netProfit = netGross - totalExpenses - artistTotalPayout / (1 - taxWithholdingPct / 100) + extraRevenueTotal;
 
   const baseExpenses = calculateTotalExpenses(expenses) + supportActsCost + accommodationTotal;
 
@@ -120,6 +181,8 @@ export function calculateOffer(
     fixedExpensesTotal,
     variableExpensesTotal: variableExpenses,
     netProfit,
+    extraRevenueTotal,
+    extraRevenuePerHead: extra.perHead,
     artistTotalPayout,
     profitPool: dealType === 'promoter_profit' ? profitPool : undefined,
     promoterProfit: dealType === 'promoter_profit' ? promoterProfit : undefined,

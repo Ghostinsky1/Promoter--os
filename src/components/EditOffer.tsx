@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { TicketTier, Expenses, OfferStatus, SupportAct } from '../types';
+import { ExtraRevenuePanel } from './ExtraRevenuePanel';
+import type { ExtraRevenueLine } from '../types';
 import { calculateOffer } from '../lib/calculations';
 import { toLocalDateString } from '../lib/dateHelpers';
 import { EventDetailsTab } from './tabs/EventDetailsTab';
@@ -71,6 +73,8 @@ export function EditOffer() {
     { type: 'GA', allotment: 0, comps: 0, price: 0 }
   ]);
   const [salesTaxPct, setSalesTaxPct] = useState<number>(13.18);
+  const [includeExtraRevenue, setIncludeExtraRevenue] = useState(false);
+  const [extraRevenue, setExtraRevenue] = useState<ExtraRevenueLine[]>([]);
   const [compsArtist, setCompsArtist] = useState<number>(0);
   const [compsVenue, setCompsVenue] = useState<number>(0);
   const [compsPromoter, setCompsPromoter] = useState<number>(0);
@@ -193,6 +197,8 @@ export function EditOffer() {
       setArtistDeductions(offerData.artist_deductions || []);
       setTicketTiers(offerData.ticket_tiers || [{ type: 'GA', allotment: 0, comps: 0, price: 0 }]);
       setSalesTaxPct(offerData.sales_tax_pct ?? 13.18);
+      setIncludeExtraRevenue(offerData.include_extra_revenue ?? false);
+      setExtraRevenue(Array.isArray(offerData.extra_revenue) ? offerData.extra_revenue : []);
       setCompsArtist(offerData.comps_artist ?? 0);
       setCompsVenue(offerData.comps_venue ?? 0);
       setCompsPromoter(offerData.comps_promoter ?? 0);
@@ -271,7 +277,8 @@ export function EditOffer() {
       sesacRate,
       insurancePerAttendee,
       ccFeeRate
-    }
+    },
+    { include: includeExtraRevenue, lines: extraRevenue }
   );
 
   const steps = [
@@ -361,6 +368,8 @@ export function EditOffer() {
           venue_deposit_status: venueDepositStatus,
           ticket_tiers: ticketTiers,
           sales_tax_pct: salesTaxPct,
+          include_extra_revenue: includeExtraRevenue,
+          extra_revenue: extraRevenue,
           expenses: expenses,
           calculations: calculations,
           support_acts: supportActs,
@@ -625,7 +634,8 @@ export function EditOffer() {
           )}
 
           {currentStep === 4 && (
-            <TicketScalingTab
+            <div className="space-y-6">
+              <TicketScalingTab
               key="ticket-scaling"
               ticketTiers={ticketTiers}
               setTicketTiers={setTicketTiers}
@@ -639,6 +649,15 @@ export function EditOffer() {
               compsPromoter={compsPromoter}
               setCompsPromoter={setCompsPromoter}
             />
+
+              <ExtraRevenuePanel
+                enabled={includeExtraRevenue}
+                onToggle={setIncludeExtraRevenue}
+                lines={extraRevenue}
+                onChange={setExtraRevenue}
+                expectedAttendance={ticketTiers.reduce((sum, t) => sum + Math.max(0, (t.allotment || 0) - (t.comps || 0)), 0)}
+              />
+            </div>
           )}
 
           {currentStep === 5 && (() => {

@@ -6,6 +6,7 @@ import { formatCurrency } from '../lib/calculations';
 import { Search, Calendar, MapPin, Plus, DollarSign, FileText, CheckCircle, Send, Activity, CircleDollarSign, XCircle, LayoutGrid, Copy, Music, TrendingUp } from 'lucide-react';
 import { OffersCalendar } from './OffersCalendar';
 import { survivalRead } from '../lib/downside';
+import { readCancellation } from '../lib/cancellation';
 import { parseLocalDate } from '../lib/dateHelpers';
 
 const STATUS_CONFIG: Record<OfferStatus, { label: string; icon: any; color: string; bgColor: string; borderColor: string }> = {
@@ -155,15 +156,23 @@ export function OffersList() {
 
   const updateOfferStatus = async (offerId: string, newStatus: OfferStatus) => {
     try {
+      // Stamp the cancellation date the first time a show dies, so the loss
+      // lands in the right month even if the sheet is filled in later.
+      const existing = offers.find(o => o.id === offerId) as any;
+      const patch: Record<string, any> =
+        newStatus === 'cancelled' && !existing?.cancelled_at
+          ? { status: newStatus, cancelled_at: new Date().toISOString() }
+          : { status: newStatus };
+
       const { error } = await supabase
         .from('offers')
-        .update({ status: newStatus })
+        .update(patch)
         .eq('id', offerId);
 
       if (error) throw error;
 
       setOffers(offers.map(offer =>
-        offer.id === offerId ? { ...offer, status: newStatus } : offer
+        offer.id === offerId ? { ...offer, ...patch } as typeof offer : offer
       ));
     } catch (error) {
       console.error('Error updating offer status:', error);
@@ -508,7 +517,9 @@ export function OffersList() {
                       </div>
 
                       <div className="space-y-4">
-                        <SurvivalBadge survival={survival} />
+                        {isCancelled
+                          ? <CancelledBadge offer={offer as any} />
+                          : <SurvivalBadge survival={survival} />}
 
                         <div className="bg-[#22262F] rounded-xl p-4 border border-gray-800">
                           <div className="grid grid-cols-3 gap-4">
@@ -634,6 +645,40 @@ function SurvivalBadge({ survival }: { survival: ReturnType<typeof survivalRead>
         {cell('Sellout', survival.atFull.profit, survival.atFull.tickets)}
         {cell('70% sold', survival.at70.profit, survival.at70.tickets)}
         {cell('Half house', survival.at50.profit, survival.at50.tickets)}
+      </div>
+    </div>
+  );
+}
+
+
+/**
+ * A cancelled show reports what it cost, not the profit it will never make.
+ * An empty sheet is called out, because an unrecorded loss is a loss the
+ * month never sees.
+ */
+function CancelledBadge({ offer }: { offer: any }) {
+  const c = readCancellation(offer);
+  const loss = Number(offer.cancellation_loss) || 0;
+
+  if (!c.completed && loss === 0) {
+    return (
+      <div className="rounded-xl p-4 border bg-[#22262F] border-gray-700">
+        <p className="text-[10px] font-bold tracking-wide text-gray-400 mb-1">CANCELLED</p>
+        <p className="text-xs text-gray-500">
+          Open it and put in what you spent, or this show costs your month nothing on paper.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl p-4 border bg-red-900/20 border-red-800/40">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-[10px] font-bold tracking-wide text-red-400 mb-1">CANCELLED — COST YOU</p>
+          <p className="text-xl font-bold text-red-400">-{formatCurrency(loss)}</p>
+        </div>
+        {c.notes && <p className="text-[10px] text-gray-500 max-w-[45%] text-right">{c.notes}</p>}
       </div>
     </div>
   );

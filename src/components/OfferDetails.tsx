@@ -10,6 +10,8 @@ import { PDFPreview } from './PDFPreview';
 import { EmailOfferModal } from './EmailOfferModal';
 import { EditableNum } from './EditableNum';
 import { survivalRead, downsideMixOf, type DownsideMix } from '../lib/downside';
+import { CancellationSheet } from './CancellationSheet';
+import { cancellationPayload, type Cancellation } from '../lib/cancellation';
 import { parseLocalDate } from '../lib/dateHelpers';
 import { useEstimateState, buildUpdatePayload } from '../hooks/useEstimateState';
 import { useOfferExtras } from '../hooks/useOfferExtras';
@@ -140,6 +142,15 @@ export function OfferDetails() {
     } finally {
       setSaving(false);
     }
+  };
+
+  /** What the dead show actually cost. Replaces the profit it will never make. */
+  const saveCancellation = async (c: Cancellation) => {
+    if (!offer) return;
+    const payload = cancellationPayload(c, (offer as any).cancelled_at);
+    const { error } = await supabase.from('offers').update(payload).eq('id', offer.id);
+    if (error) { console.error('Error saving cancellation:', error); alert('Could not save. Try again.'); return; }
+    setOffer(prev => (prev ? ({ ...prev, ...payload } as OfferWithShow) : prev));
   };
 
   /** How a soft night is assumed to fill the room, saved on its own. */
@@ -644,6 +655,10 @@ export function OfferDetails() {
               })()}
             </div>
           </div>
+
+          {offer.status === 'cancelled' && (
+            <CancellationSheet offer={offer} onSave={saveCancellation} />
+          )}
 
           {/* Variable Expenses */}
           <div className="bg-[#14171E] border border-gray-800 rounded-2xl px-4 pt-4 pb-2">

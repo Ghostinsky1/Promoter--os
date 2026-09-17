@@ -14,6 +14,7 @@ import {
   getRiskAngle
 } from '../lib/breakEvenCalculations';
 import { Target, AlertCircle, ArrowLeft, TrendingUp, DollarSign, Calendar, Users, Wallet, PieChart, BarChart3, AlertTriangle } from 'lucide-react';
+import { readCancellation } from '../lib/cancellation';
 
 export function Analytics() {
   const { id } = useParams();
@@ -107,6 +108,21 @@ export function Analytics() {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Back to Offer
         </button>
+
+        {/* Every projection below is for a show that is not happening. Say so
+            before the promoter reads any of it as real money. */}
+        {offer.status === 'cancelled' && (
+          <div className="mb-6 bg-red-900/20 border border-red-800/40 rounded-2xl p-4">
+            <p className="text-red-400 font-bold text-sm mb-1">This show was cancelled</p>
+            <p className="text-xs text-gray-400">
+              {(Number((offer as any).cancellation_loss) || 0) > 0
+                ? `It cost you ${formatCurrency(Number((offer as any).cancellation_loss))}. Every projection below is what would have happened, not what did.`
+                : readCancellation(offer).completed
+                  ? 'Every projection below is what would have happened, not what did.'
+                  : 'Nothing has been recorded for what it cost you. Open the offer and fill that in, or your month never sees the loss.'}
+            </p>
+          </div>
+        )}
 
         <div className="mb-8">
           <div className="inline-block px-4 py-1.5 bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 rounded-full mb-3">

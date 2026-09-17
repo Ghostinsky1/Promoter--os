@@ -13,6 +13,7 @@ import { useOrganization } from '../hooks/useOrganization';
 import { AIInsights } from './AIInsights';
 import { SubscriptionRequired } from './SubscriptionRequired';
 import { TrialBanner } from './TrialBanner';
+import { cancellationLoss, readCancellation } from '../lib/cancellation';
 
 interface DashboardStats {
   totalProfit: number;
@@ -26,6 +27,10 @@ interface DashboardStats {
   upcomingShows: number;
   completedShows: number;
   monthProfit: number;
+  /** What cancelled shows have actually cost, this month and this year. */
+  monthCancelledLoss: number;
+  yearCancelledLoss: number;
+  cancelledShows: number;
 }
 
 interface UpcomingEvent {
@@ -82,13 +87,37 @@ export function Home() {
 
         const thisMonth = today.getMonth();
         const thisYear = today.getFullYear();
+
+        // A cancelled show used to just vanish here: its projected profit
+        // stopped counting and nothing replaced it, so a month with two dead
+        // shows read the same as a quiet month. Cancelling costs real money --
+        // deposits paid, ads already run, refund fees -- and that money is
+        // subtracted now. The loss lands in the month the show was cancelled,
+        // not the month it was going to happen, because that is when it left.
+        const cancelledOffers = offers.filter(o => o.status === 'cancelled');
+        const lossOf = (o: any) =>
+          Number(o.cancellation_loss) || cancellationLoss(readCancellation(o));
+        const cancelDate = (o: any) =>
+          o.cancelled_at ? new Date(o.cancelled_at) : new Date(o.show.event_date);
+
+        const monthCancelledLoss = cancelledOffers
+          .filter(o => {
+            const d = cancelDate(o);
+            return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+          })
+          .reduce((sum, o) => sum + lossOf(o), 0);
+
+        const yearCancelledLoss = cancelledOffers
+          .filter(o => cancelDate(o).getFullYear() === thisYear)
+          .reduce((sum, o) => sum + lossOf(o), 0);
+
         const monthProfit = activeOffers
           .filter(o => {
             const eventDate = new Date(o.show.event_date);
             return eventDate.getMonth() === thisMonth &&
                    eventDate.getFullYear() === thisYear;
           })
-          .reduce((sum, o) => sum + (o.calculations?.netProfit || 0), 0);
+          .reduce((sum, o) => sum + (o.calculations?.netProfit || 0), 0) - monthCancelledLoss;
 
         const upcomingOffers = activeOffers
           .filter(o => new Date(o.show.event_date) >= today)
@@ -119,7 +148,10 @@ export function Home() {
         setUpcomingEvents(events);
 
         setStats({
-          totalProfit,
+          totalProfit: totalProfit - yearCancelledLoss,
+          monthCancelledLoss,
+          yearCancelledLoss,
+          cancelledShows: cancelledOffers.length,
           revenue: totalRevenue,
           costs: totalCosts,
           margin: totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100) : 0,
@@ -227,6 +259,34 @@ export function Home() {
             </div>
           ))}
         </div>
+
+        {/* What cancellations have cost. Only shown when there is something to
+            show -- a promoter with no dead shows does not need the reminder. */}
+        {(stats?.yearCancelledLoss || 0) > 0 && (
+          <div className="bg-[#14171E] border border-red-800/40 rounded-[22px] p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-label text-[11px] tracking-[0.22em] uppercase text-red-400 mb-2">
+                  Cancellations this year
+                </p>
+                <p className="font-display text-4xl text-red-400 mb-1" style={{ textShadow: '0 0 18px rgba(248,113,113,0.35)' }}>
+                  -${((stats?.yearCancelledLoss || 0) / 1000).toFixed(1)}K
+                </p>
+                <p className="text-xs text-gray-500">
+                  {stats?.cancelledShows} {stats?.cancelledShows === 1 ? 'show' : 'shows'} called off
+                  {(stats?.monthCancelledLoss || 0) > 0 &&
+                    ` — $${Math.round(stats?.monthCancelledLoss || 0).toLocaleString()} of it this month`}
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/offers?status=cancelled')}
+                className="text-[11px] text-gray-500 hover:text-[#8FD3FF] transition-colors whitespace-nowrap"
+              >
+                See them
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Next event */}
         {nextEvent && (

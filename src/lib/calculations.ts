@@ -181,6 +181,10 @@ export function calculateOffer(
     fixedExpensesTotal,
     variableExpensesTotal: variableExpenses,
     netProfit,
+    // Artist money is a cost of the night like any other. totalExpenses leaves it
+    // out because the profit formula subtracts it separately; every screen that
+    // says "expenses" should use this instead.
+    totalShowCost: totalExpenses + artistTotalPayout / (1 - taxWithholdingPct / 100),
     extraRevenueTotal,
     extraRevenuePerHead: extra.perHead,
     artistTotalPayout,

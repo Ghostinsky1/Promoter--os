@@ -241,7 +241,7 @@ export function OfferDetails() {
           artist_name: offer.show.artist_name, venue_name: offer.show.venue_name,
           capacity: offer.show.capacity, guarantee: offer.guarantee,
           gross_potential: offer.calculations.grossPotential, net_profit: offer.calculations.netProfit,
-          total_costs: offer.calculations.totalExpenses, ticket_tiers: offer.ticket_tiers,
+          total_costs: offer.calculations.totalShowCost ?? (offer.calculations.totalExpenses + offer.guarantee), ticket_tiers: offer.ticket_tiers,
         })
       });
       if (!res.ok || !isMountedRef.current) return;

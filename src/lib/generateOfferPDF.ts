@@ -1,3 +1,4 @@
+import { extraRevenueAt } from './calculations';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { OfferWithShow, CompanySettings } from '../types';
@@ -60,12 +61,27 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
   const sesacFee = netGrossPotential * (offer.sesac_rate ?? 0.000214);
   const insuranceFee = totalSellable * (offer.insurance_per_attendee ?? 0.62);
   const ccFee = netGrossPotential * (offer.cc_fee_rate ?? 0.012);
-  const totalVariableExpenses = ascapFee + bmiFee + sesacFee + insuranceFee + ccFee;
+  const variableFromRates = ascapFee + bmiFee + sesacFee + insuranceFee + ccFee;
 
-  const totalFixedExpenses = offer.calculations.totalExpenses;
+  // calculations.totalExpenses ALREADY includes variable expenses. Adding the
+  // recomputed ones on top double-charged every fee on every PDF, which made
+  // shows look far more expensive on paper than in the app.
+  const totalVariableExpenses = offer.calculations.variableExpensesTotal ?? variableFromRates;
+  const totalFixedExpenses = offer.calculations.fixedExpensesTotal
+    ?? Math.max(0, offer.calculations.totalExpenses - totalVariableExpenses);
+
   const artistWalkout = offer.calculations.artistTotalPayout;
+  // What the artist receives is net of withholding; what the SHOW costs is the
+  // full guarantee, because the withheld part is still money you hand over.
+  const withholding = 1 - ((offer.tax_withholding_pct ?? 0) / 100);
+  const artistCost = withholding > 0 ? artistWalkout / withholding : artistWalkout;
   const artistDeductionsTotal = (offer.artist_deductions || []).reduce((sum, d) => sum + (d.amount || 0), 0);
-  const yourProfit = netGrossPotential - totalFixedExpenses - totalVariableExpenses - artistWalkout;
+
+  // Bar, parking, sponsorship — promoter money, internal view only.
+  const extraRevenueLines = (offer as any).include_extra_revenue ? ((offer as any).extra_revenue || []) : [];
+  const extraRevenueTotal = extraRevenueAt(extraRevenueLines, totalSellable, true);
+
+  const yourProfit = netGrossPotential - totalFixedExpenses - totalVariableExpenses - artistCost + extraRevenueTotal;
 
   const addressLines = (offer.venue_full_address || '').split('\n').map((l: string) => l.trim()).filter(Boolean);
   let y = drawHeader(doc, {
@@ -161,7 +177,7 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
     const sellable = tier.allotment - tier.comps;
     const tierRevenue = tier.allotment * tier.price;
     const netAfterFees = tier.price - facilityFee;
-    const breakEvenTickets = netAfterFees > 0 ? Math.ceil((totalFixedExpenses + totalVariableExpenses + artistWalkout) / netAfterFees) : 0;
+    const breakEvenTickets = netAfterFees > 0 ? Math.ceil((totalFixedExpenses + totalVariableExpenses + artistCost) / netAfterFees) : 0;
     const grossShort = tierRevenue >= 1000 ? `$${(tierRevenue / 1000).toFixed(1)}K` : formatMoney(tierRevenue);
 
     const row = [
@@ -316,7 +332,7 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
     doc.setTextColor(...darkGray);
     doc.text('Artist Payment', expenseX + 15, summaryY + 81);
     doc.setTextColor(...orange);
-    doc.text(formatMoney(artistWalkout), expenseX + summaryColWidth - 15, summaryY + 81, { align: 'right' });
+    doc.text(formatMoney(artistCost), expenseX + summaryColWidth - 15, summaryY + 81, { align: 'right' });
 
     // Divider line
     doc.setDrawColor(...green);
@@ -835,9 +851,33 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
   doc.text(formatMoney(totalVariableExpenses), pageWidth - margin - 20, y, { align: 'right' });
   y += 9;
   doc.setFontSize(9);
-  doc.text('TOTAL EXPENSES:', margin + 30, y);
+  doc.text('Show Expenses (excl. artist):', margin + 30, y);
   doc.text(formatMoney(totalFixedExpenses + totalVariableExpenses), pageWidth - margin - 20, y, { align: 'right' });
+  y += 9;
+
+  // The artist fee is a cost of the night. Leaving it out of the total made every
+  // show look cheaper on paper than it actually is.
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.text('Artist payment:', margin + 30, y);
+  doc.text(formatMoney(artistCost), pageWidth - margin - 20, y, { align: 'right' });
+  y += 9;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...black);
+  doc.text('TOTAL COST OF SHOW:', margin + 30, y);
+  doc.text(formatMoney(totalFixedExpenses + totalVariableExpenses + artistCost), pageWidth - margin - 20, y, { align: 'right' });
   y += 10;
+
+  if (extraRevenueTotal > 0) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...gray);
+    doc.text('Bar & other revenue (yours, not the artist\u2019s):', margin + 30, y);
+    doc.text(`+ ${formatMoney(extraRevenueTotal)}`, pageWidth - margin - 20, y, { align: 'right' });
+    y += 10;
+  }
   } // End of showExpenseBreakdown
 
   // Check if we need a new page before starting terms section

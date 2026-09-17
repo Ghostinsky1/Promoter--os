@@ -54,7 +54,11 @@ export interface Calculations {
   grossPotential: number;
   salesTax: number;
   netGross: number;
+  /** Show costs WITHOUT the artist guarantee. Kept for the profit formula. */
   totalExpenses: number;
+  /** Everything the night costs, artist fee included. Use this anywhere the
+   *  label says "expenses" or "what this show costs". */
+  totalShowCost?: number;
   fixedExpensesTotal?: number;
   variableExpensesTotal?: number;
   netProfit: number;

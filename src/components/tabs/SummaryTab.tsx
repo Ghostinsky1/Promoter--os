@@ -107,7 +107,7 @@ export function SummaryTab({
               <span className="font-semibold text-lg text-white">{formatCurrency(calculations.netGross)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-400">Total Expenses</span>
+              <span className="text-gray-400">Show Expenses (excl. artist)</span>
               <span className="font-semibold text-lg text-red-400">-{formatCurrency(calculations.totalExpenses)}</span>
             </div>
             <div className="flex justify-between items-center">

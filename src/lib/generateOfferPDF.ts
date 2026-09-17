@@ -50,7 +50,7 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
   const calc = ensureCalculations(offer);
   offer = { ...offer, calculations: calc } as typeof offer;
 
-  const facilityFee = offer.facility_fee_per_ticket ?? 2.00;
+  const facilityFee = Number.isFinite(Number(offer.facility_fee_per_ticket)) ? Number(offer.facility_fee_per_ticket) : 0;
   const totalAllotment = offer.ticket_tiers.reduce((sum, t) => sum + t.allotment, 0);
   const totalComps = offer.ticket_tiers.reduce((sum, t) => sum + t.comps, 0);
   const totalSellable = totalAllotment - totalComps;
@@ -61,19 +61,27 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
   const salesTaxAmount = adjustedGrossPotential * (offer.sales_tax_pct / 100);
   const netGrossPotential = adjustedGrossPotential - salesTaxAmount;
 
-  const ascapFee = netGrossPotential * (offer.ascap_rate ?? 0.0023);
-  const bmiFee = netGrossPotential * (offer.bmi_rate ?? 0.003);
-  const sesacFee = netGrossPotential * (offer.sesac_rate ?? 0.000214);
-  const insuranceFee = totalSellable * (offer.insurance_per_attendee ?? 0.62);
-  const ccFee = netGrossPotential * (offer.cc_fee_rate ?? 0.012);
+  // NEVER default these to a "standard" rate. If the promoter set a rate to 0
+  // (or never set one), the PDF must print 0 -- inventing an ASCAP fee the
+  // promoter does not actually pay makes the show look more expensive than it
+  // is and does not match what the edit screen shows.
+  const rate = (v: unknown) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+  const ascapFee = netGrossPotential * rate(offer.ascap_rate);
+  const bmiFee = netGrossPotential * rate(offer.bmi_rate);
+  const sesacFee = netGrossPotential * rate(offer.sesac_rate);
+  const insuranceFee = totalSellable * rate(offer.insurance_per_attendee);
+  const ccFee = netGrossPotential * rate(offer.cc_fee_rate);
   const variableFromRates = ascapFee + bmiFee + sesacFee + insuranceFee + ccFee;
 
   // calculations.totalExpenses ALREADY includes variable expenses. Adding the
   // recomputed ones on top double-charged every fee on every PDF, which made
   // shows look far more expensive on paper than in the app.
-  const totalVariableExpenses = offer.calculations.variableExpensesTotal ?? variableFromRates;
+  // Always recompute the variable fees from the offer's own rate columns. The
+  // stored calculations blob can be stale (saved before the rates were edited),
+  // which is how a rate the promoter zeroed out kept showing up on the PDF.
+  const totalVariableExpenses = variableFromRates;
   const totalFixedExpenses = offer.calculations.fixedExpensesTotal
-    ?? Math.max(0, offer.calculations.totalExpenses - totalVariableExpenses);
+    ?? Math.max(0, offer.calculations.totalExpenses - (offer.calculations.variableExpensesTotal ?? variableFromRates));
 
   const artistWalkout = offer.calculations.artistTotalPayout;
   // What the artist receives is net of withholding; what the SHOW costs is the

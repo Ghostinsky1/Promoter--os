@@ -45,6 +45,9 @@ export function OfferDetails() {
     resetToOriginal,
     updateTier,
     updateFixedExpense,
+    addFixedExpense,
+    renameFixedExpense,
+    removeFixedExpense,
     updateSupportAct,
     updateVariableRate,
     setArtistGuarantee,
@@ -493,23 +496,46 @@ export function OfferDetails() {
               ].map(({ label, category, color }) => {
                 const categoryExpenses = expenses[category as keyof typeof expenses];
                 const total = calculateCategoryTotal(categoryExpenses);
-                const hasItems = Object.keys(categoryExpenses).length > 0;
+                // Drive the rows off the live state so lines can be added,
+                // renamed and removed right here instead of only in the wizard.
+                const rows = state
+                  ? state.fixedExpenses.filter(e => e.category === category)
+                  : Object.entries(categoryExpenses).map(([name, amount]) => ({ id: `${category}__${name}`, category, name, amount }));
                 return (
                   <div key={category}>
                     <div className="flex justify-between items-center mb-1">
                       <span className={`font-semibold text-sm ${color}`}>{label}</span>
                       <span className="font-bold text-white text-sm">{formatCurrency(total)}</span>
                     </div>
-                    {hasItems && (
-                      <div className="pl-3 space-y-1.5 border-l-2 border-gray-800 ml-2">
-                        {Object.entries(categoryExpenses).map(([name, amount]) => (
-                          <div key={name} className="flex justify-between items-center text-xs">
-                            <span className="text-gray-400">{name}</span>
-                            <EditableNum value={amount} onChange={(v) => updateFixedExpense(`${category}__${name}`, v)} prefix="$" width="w-20" color="text-gray-300" />
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <div className="pl-3 space-y-1.5 border-l-2 border-gray-800 ml-2">
+                      {rows.map((row) => (
+                        <div key={row.id} className="flex justify-between items-center text-xs gap-2">
+                          <input
+                            defaultValue={row.name.replace(/_/g, ' ')}
+                            onBlur={(e) => renameFixedExpense(row.id, e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                            title="Click to rename"
+                            className="flex-1 min-w-0 bg-transparent text-gray-400 rounded px-1 py-0.5 -ml-1 hover:bg-[#22262F] focus:bg-[#22262F] focus:text-white focus:outline-none focus:ring-1 focus:ring-[#8FD3FF]"
+                          />
+                          <EditableNum value={row.amount} onChange={(v) => updateFixedExpense(row.id, v)} prefix="$" width="w-20" color="text-gray-300" />
+                          <button
+                            type="button"
+                            onClick={() => removeFixedExpense(row.id)}
+                            title="Remove this line"
+                            className="text-gray-600 hover:text-red-400 shrink-0"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => addFixedExpense(category)}
+                        className="w-full mt-1 py-1 border border-dashed border-gray-700 rounded-lg text-[11px] text-gray-500 hover:border-[#8FD3FF] hover:text-[#8FD3FF] transition-colors"
+                      >
+                        + Add {label.toLowerCase()} line
+                      </button>
+                    </div>
                   </div>
                 );
               })}

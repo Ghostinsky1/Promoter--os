@@ -13,6 +13,10 @@ import { ExpensesTab } from './tabs/ExpensesTab';
 import { SummaryTab } from './tabs/SummaryTab';
 import { ArrowLeft, ArrowRight, Check, FileText, X, ChevronLeft, ChevronRight, Save } from 'lucide-react';
 
+// A rate box the user cleared yields NaN; NaN serializes to null and silently
+// wipes the column. Never let that reach the database.
+const safeNum = (v: unknown) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+
 interface ArtistDeduction {
   name: string;
   amount: number;
@@ -378,11 +382,11 @@ export function CreateOffer() {
         merch_rate_soft: merchRateSoft,
         merch_rate_hard: merchRateHard,
         artist_deductions: artistDeductions,
-        ascap_rate: ascapRate,
-        bmi_rate: bmiRate,
-        sesac_rate: sesacRate,
-        insurance_per_attendee: insurancePerAttendee,
-        cc_fee_rate: ccFeeRate,
+        ascap_rate: safeNum(ascapRate),
+        bmi_rate: safeNum(bmiRate),
+        sesac_rate: safeNum(sesacRate),
+        insurance_per_attendee: safeNum(insurancePerAttendee),
+        cc_fee_rate: safeNum(ccFeeRate),
         include_hotel: includeHotel,
         hotel_budget: hotelBudget,
         hotel_nights: hotelNights,

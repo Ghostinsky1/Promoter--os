@@ -22,6 +22,54 @@ interface ExpensesTabProps {
   artistGuarantee?: number;
 }
 
+
+/**
+ * Rate fields used to be controlled inputs formatted with .toFixed() on every
+ * keystroke. That made them nearly impossible to set: clearing the box produced
+ * NaN, and typing fought the reformatting. This keeps a local string while the
+ * field is focused and only commits a real number on change.
+ */
+function RateInput({
+  label,
+  hint,
+  step,
+  decimals,
+  factor,
+  value,
+  onChange,
+}: {
+  label: string;
+  hint: string;
+  step: string;
+  decimals: number;
+  factor: number;
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  const display = (v: number) => (Number.isFinite(v) ? (v * factor).toFixed(decimals) : '0');
+  const [draft, setDraft] = useState<string | null>(null);
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-400 mb-2">{label}</label>
+      <input
+        type="number"
+        step={step}
+        value={draft ?? display(value)}
+        onFocus={() => setDraft(display(value))}
+        onChange={(e) => {
+          setDraft(e.target.value);
+          const parsed = parseFloat(e.target.value);
+          onChange(Number.isFinite(parsed) ? parsed / factor : 0);
+        }}
+        onBlur={() => setDraft(null)}
+        className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
+      />
+      <p className="text-xs text-gray-500 mt-2">{hint}</p>
+    </div>
+  );
+}
+
 export function ExpensesTab({
   expenses,
   setExpenses,
@@ -197,60 +245,12 @@ export function ExpensesTab({
       <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-6">
         <h3 className="text-xl font-bold text-white mb-6">Variable Expenses</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">ASCAP (%)</label>
-            <input
-              type="number"
-              step="0.01"
-              value={(ascapRate * 100).toFixed(3)}
-              onChange={(e) => setAscapRate(parseFloat(e.target.value) / 100)}
-              className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
-            />
-            <p className="text-xs text-gray-500 mt-2">Standard: 0.23%</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">BMI (%)</label>
-            <input
-              type="number"
-              step="0.01"
-              value={(bmiRate * 100).toFixed(3)}
-              onChange={(e) => setBmiRate(parseFloat(e.target.value) / 100)}
-              className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
-            />
-            <p className="text-xs text-gray-500 mt-2">Standard: 0.30%</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">SESAC (%)</label>
-            <input
-              type="number"
-              step="0.001"
-              value={(sesacRate * 100).toFixed(4)}
-              onChange={(e) => setSesacRate(parseFloat(e.target.value) / 100)}
-              className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
-            />
-            <p className="text-xs text-gray-500 mt-2">Standard: 0.0214%</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">CC Fee (%)</label>
-            <input
-              type="number"
-              step="0.1"
-              value={(ccFeeRate * 100).toFixed(2)}
-              onChange={(e) => setCcFeeRate(parseFloat(e.target.value) / 100)}
-              className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
-            />
-            <p className="text-xs text-gray-500 mt-2">Standard: 1.2%</p>
-          </div>
+          <RateInput label="ASCAP (%)" hint="Standard: 0.23% — set to 0 if you do not pay it" step="0.01" decimals={3} factor={100} value={ascapRate} onChange={setAscapRate} />
+          <RateInput label="BMI (%)" hint="Standard: 0.30% — set to 0 if you do not pay it" step="0.01" decimals={3} factor={100} value={bmiRate} onChange={setBmiRate} />
+          <RateInput label="SESAC (%)" hint="Standard: 0.0214% — set to 0 if you do not pay it" step="0.001" decimals={4} factor={100} value={sesacRate} onChange={setSesacRate} />
+          <RateInput label="CC Fee (%)" hint="Standard: 1.2% — set to 0 if you do not pay it" step="0.1" decimals={2} factor={100} value={ccFeeRate} onChange={setCcFeeRate} />
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-400 mb-2">Insurance Per Attendee ($)</label>
-            <input
-              type="number"
-              step="0.01"
-              value={insurancePerAttendee}
-              onChange={(e) => setInsurancePerAttendee(parseFloat(e.target.value))}
-              className="w-full px-4 py-3 bg-[#14171E] border border-gray-600 text-white rounded-xl focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
-            />
-            <p className="text-xs text-gray-500 mt-2">Standard: $0.50-$0.75</p>
+            <RateInput label="Insurance Per Attendee ($)" hint="Standard: $0.50-$0.75 — set to 0 if you do not pay it" step="0.01" decimals={2} factor={1} value={insurancePerAttendee} onChange={setInsurancePerAttendee} />
           </div>
         </div>
       </div>

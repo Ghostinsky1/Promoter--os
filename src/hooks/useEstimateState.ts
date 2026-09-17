@@ -291,6 +291,48 @@ export function useEstimateState(offer: OfferWithShow | null) {
     } : prev);
   }, []);
 
+  /** Add a blank line to a category. The id is unique and permanent so the row
+   *  survives being renamed; buildUpdatePayload keys the saved object off name. */
+  const addFixedExpense = useCallback((category: string, name = 'new_expense') => {
+    setState(prev => {
+      if (!prev) return prev;
+      const taken = new Set(prev.fixedExpenses.filter(e => e.category === category).map(e => e.name));
+      let candidate = name;
+      let n = 2;
+      while (taken.has(candidate)) candidate = `${name}_${n++}`;
+      return {
+        ...prev,
+        fixedExpenses: [
+          ...prev.fixedExpenses,
+          { id: `${category}__new_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, category, name: candidate, amount: 0 },
+        ],
+      };
+    });
+  }, []);
+
+  const renameFixedExpense = useCallback((id: string, typed: string) => {
+    const next = typed.toLowerCase().trim().replace(/\s+/g, '_');
+    if (!next) return;
+    setState(prev => {
+      if (!prev) return prev;
+      const target = prev.fixedExpenses.find(e => e.id === id);
+      if (!target || target.name === next) return prev;
+      const clash = prev.fixedExpenses.some(e => e.category === target.category && e.id !== id && e.name === next);
+      if (clash) return prev;
+      return {
+        ...prev,
+        fixedExpenses: prev.fixedExpenses.map(e => e.id === id ? { ...e, name: next } : e),
+      };
+    });
+  }, []);
+
+  const removeFixedExpense = useCallback((id: string) => {
+    setState(prev => prev ? {
+      ...prev,
+      fixedExpenses: prev.fixedExpenses.filter(e => e.id !== id),
+    } : prev);
+  }, []);
+
   const updateSupportAct = useCallback((id: string, guarantee: number) => {
     setState(prev => prev ? {
       ...prev,
@@ -331,6 +373,9 @@ export function useEstimateState(offer: OfferWithShow | null) {
     resetToOriginal,
     updateTier,
     updateFixedExpense,
+    addFixedExpense,
+    renameFixedExpense,
+    removeFixedExpense,
     updateSupportAct,
     updateVariableRate,
     setArtistGuarantee,

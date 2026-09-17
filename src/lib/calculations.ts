@@ -270,8 +270,15 @@ function calculateProjection(
 }
 
 export function calculateTotalExpenses(expenses: Expenses): number {
-  return Object.values(expenses).reduce((total, category) => {
-    return total + Object.values(category).reduce((sum, val) => sum + val, 0);
+  // Values can arrive as strings from form inputs. Without Number() the reduce
+  // concatenates them ("100" + "250" = "100250") instead of adding.
+  if (!expenses || typeof expenses !== 'object') return 0;
+  return Object.values(expenses).reduce((total: number, category: any) => {
+    if (!category || typeof category !== 'object') return total;
+    return total + Object.values(category).reduce((sum: number, val: any) => {
+      const num = Number(val);
+      return sum + (isFinite(num) ? num : 0);
+    }, 0);
   }, 0);
 }
 
@@ -301,4 +308,48 @@ export function getExpenseBreakdown(calculations: Calculations, guarantee: numbe
     artistPayout,
     totalExpenses: fixed + variable + artistPayout,
   };
+}
+
+
+/**
+ * Offers can arrive with no calculations at all — created by the AI connector,
+ * an import, or an older build. Every screen used to read straight through
+ * `offer.calculations.totalExpenses`, which on those offers is undefined, and
+ * the page filled with NaN and "$NaN". Run the offer through this first.
+ */
+export function ensureCalculations(offer: any): Calculations {
+  const c = offer?.calculations;
+  if (c && typeof c === 'object' && typeof c.totalExpenses === 'number') return c as Calculations;
+
+  return calculateOffer(
+    offer?.ticket_tiers || [],
+    Number(offer?.sales_tax_pct) || 0,
+    offer?.expenses || { talent: {}, general: {}, marketing: {}, production: {} },
+    Number(offer?.guarantee) || 0,
+    Number(offer?.tax_withholding_pct) || 0,
+    offer?.deal_type === 'promoter_profit' ? 'promoter_profit' : 'flat_guarantee',
+    'estimate',
+    Number(offer?.artist_backend_pct) || 85,
+    Number(offer?.promoter_backend_pct) || 15,
+    offer?.support_acts || [],
+    {
+      includeHotel: offer?.include_hotel,
+      hotelBudget: Number(offer?.hotel_budget) || 0,
+      hotelNights: Number(offer?.hotel_nights) || 1,
+      includeTransport: offer?.include_transport,
+      transportBudget: Number(offer?.transport_budget) || 0,
+      includeFlights: offer?.include_flights,
+      flightBudget: Number(offer?.flight_budget) || 0,
+      includeRider: offer?.include_rider,
+      riderCap: Number(offer?.rider_cap) || 0,
+    },
+    {
+      ascapRate: Number(offer?.ascap_rate) || 0,
+      bmiRate: Number(offer?.bmi_rate) || 0,
+      sesacRate: Number(offer?.sesac_rate) || 0,
+      insurancePerAttendee: Number(offer?.insurance_per_attendee) || 0,
+      ccFeeRate: Number(offer?.cc_fee_rate) || 0,
+    },
+    { include: offer?.include_extra_revenue, lines: offer?.extra_revenue || [] },
+  );
 }

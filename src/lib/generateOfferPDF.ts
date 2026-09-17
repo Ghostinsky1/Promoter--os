@@ -1,4 +1,4 @@
-import { extraRevenueAt } from './calculations';
+import { extraRevenueAt, ensureCalculations } from './calculations';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { OfferWithShow, CompanySettings } from '../types';
@@ -44,6 +44,11 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
   const green = PDF.good;
   const lightGreen = PDF.iceTint;
   const orange = PDF.warn;
+
+  // Some offers (AI connector, imports, older builds) carry no calculations at
+  // all. Without this the whole PDF prints NaN.
+  const calc = ensureCalculations(offer);
+  offer = { ...offer, calculations: calc } as typeof offer;
 
   const facilityFee = offer.facility_fee_per_ticket ?? 2.00;
   const totalAllotment = offer.ticket_tiers.reduce((sum, t) => sum + t.allotment, 0);

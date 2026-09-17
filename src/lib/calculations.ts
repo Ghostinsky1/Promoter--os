@@ -35,6 +35,9 @@ export function splitExtraRevenue(lines: ExtraRevenueLine[] = [], enabled = true
     const mine = amount * (isFinite(share) ? Math.max(0, Math.min(1, share)) : 1);
     if (l.basis === 'per_head') perHead += mine;
     else if (l.basis === 'per_car') perHead += mine / (Number(l.occupancy) > 0 ? Number(l.occupancy) : DEFAULT_CAR_OCCUPANCY);
+    // per_unit is a count you set rather than one that follows the crowd —
+    // truck spots, vendor booths, tables — so it behaves like a flat total.
+    else if (l.basis === 'per_unit') flat += mine * (Number(l.units) || 0);
     else flat += mine;
   }
   return { flat, perHead };

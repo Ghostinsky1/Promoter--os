@@ -24,6 +24,7 @@ export interface Expenses {
 }
 
 export type ExtraRevenueKind =
+  | 'truck_spot'
   | 'bar'
   | 'coat_check'
   | 'vip'
@@ -39,12 +40,15 @@ export interface ExtraRevenueLine {
   label: string;
   kind: ExtraRevenueKind;
   /** per_head multiplies by paid attendance, per_car divides attendance by
-   *  occupancy first, flat is a single total for the night. */
-  basis: 'per_head' | 'per_car' | 'flat';
-  /** Dollars per head (per_head), per car (per_car), or the flat total. */
+   *  occupancy first, per_unit multiplies by a count you set (truck spots,
+   *  vendor booths, VIP tables), flat is a single total for the night. */
+  basis: 'per_head' | 'per_car' | 'per_unit' | 'flat';
+  /** Dollars per head, per car, per unit, or the flat total. */
   amount: number;
   /** People per car. Only used when basis is per_car. Defaults to 2.5. */
   occupancy?: number;
+  /** How many units you expect to sell. Only used when basis is per_unit. */
+  units?: number;
   /** The promoter's share of this line, 0-100. A venue keeping 70% of the bar is 30 here. */
   promoter_pct: number;
   note?: string;

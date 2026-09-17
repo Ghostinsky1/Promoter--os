@@ -1,4 +1,4 @@
-import { Plus, Trash2, Beer, Car, Shirt, Crown, Megaphone, ShoppingBag, CircleDollarSign } from 'lucide-react';
+import { Plus, Trash2, Beer, Car, Shirt, Crown, Megaphone, ShoppingBag, CircleDollarSign, Truck } from 'lucide-react';
 import type { ExtraRevenueLine, ExtraRevenueKind } from '../types';
 import { splitExtraRevenue, carsFor, DEFAULT_CAR_OCCUPANCY, formatCurrency } from '../lib/calculations';
 
@@ -9,6 +9,7 @@ import { splitExtraRevenue, carsFor, DEFAULT_CAR_OCCUPANCY, formatCurrency } fro
 
 const KINDS: { value: ExtraRevenueKind; label: string; icon: typeof Beer; basis: ExtraRevenueLine['basis']; amount: number; pct: number }[] = [
   { value: 'bar',         label: 'Bar',         icon: Beer,              basis: 'per_head', amount: 12, pct: 20 },
+  { value: 'truck_spot',  label: 'Truck spots', icon: Truck,             basis: 'per_unit', amount: 35, pct: 100 },
   { value: 'parking',     label: 'Parking',     icon: Car,               basis: 'per_car',  amount: 10, pct: 100 },
   { value: 'coat_check',  label: 'Coat check',  icon: Shirt,             basis: 'per_head', amount: 3,  pct: 100 },
   { value: 'vip',         label: 'VIP tables',  icon: Crown,             basis: 'flat',     amount: 0,  pct: 100 },
@@ -47,6 +48,7 @@ export function ExtraRevenuePanel({
       amount: m.amount,
       promoter_pct: m.pct,
       ...(m.basis === 'per_car' ? { occupancy: DEFAULT_CAR_OCCUPANCY } : {}),
+      ...(m.basis === 'per_unit' ? { units: 0 } : {}),
     }]);
   };
 
@@ -63,6 +65,7 @@ export function ExtraRevenuePanel({
     const share = Math.max(0, Math.min(100, Number(l.promoter_pct) ?? 100)) / 100;
     const amt = Number(l.amount) || 0;
     if (l.basis === 'flat') return amt * share;
+    if (l.basis === 'per_unit') return (Number(l.units) || 0) * amt * share;
     if (l.basis === 'per_car') return carsFor(expectedAttendance, l.occupancy) * amt * share;
     return expectedAttendance * amt * share;
   };
@@ -124,19 +127,24 @@ export function ExtraRevenuePanel({
                       value={l.basis}
                       onChange={e => {
                         const basis = e.target.value as ExtraRevenueLine['basis'];
-                        patch(l.id, { basis, ...(basis === 'per_car' && !l.occupancy ? { occupancy: DEFAULT_CAR_OCCUPANCY } : {}) });
+                        patch(l.id, {
+                          basis,
+                          ...(basis === 'per_car' && !l.occupancy ? { occupancy: DEFAULT_CAR_OCCUPANCY } : {}),
+                          ...(basis === 'per_unit' && l.units === undefined ? { units: 0 } : {}),
+                        });
                       }}
                       className="w-full bg-[#14171E] border border-[#2A3040] rounded-lg text-white text-sm px-3 py-2 outline-none focus:border-[#8FD3FF]"
                     >
                       <option value="per_head">Per person</option>
                       <option value="per_car">Per car</option>
+                      <option value="per_unit">Per spot / booth / table</option>
                       <option value="flat">Flat total</option>
                     </select>
                   </label>
 
                   <label className="block">
                     <span className="block text-[10px] uppercase tracking-wider text-gray-500 mb-1">
-                      {l.basis === 'flat' ? 'Total' : l.basis === 'per_car' ? 'Per car' : 'Per person'}
+                      {l.basis === 'flat' ? 'Total' : l.basis === 'per_car' ? 'Per car' : l.basis === 'per_unit' ? 'Price each' : 'Per person'}
                     </span>
                     <input
                       type="number" min={0} step="0.01" value={l.amount}
@@ -145,7 +153,16 @@ export function ExtraRevenuePanel({
                     />
                   </label>
 
-                  {l.basis === 'per_car' ? (
+                  {l.basis === 'per_unit' ? (
+                    <label className="block">
+                      <span className="block text-[10px] uppercase tracking-wider text-gray-500 mb-1">How many</span>
+                      <input
+                        type="number" min={0} step="1" value={l.units ?? 0}
+                        onChange={e => patch(l.id, { units: parseInt(e.target.value) || 0 })}
+                        className="w-full bg-[#14171E] border border-[#2A3040] rounded-lg text-white text-sm px-3 py-2 outline-none focus:border-[#8FD3FF]"
+                      />
+                    </label>
+                  ) : l.basis === 'per_car' ? (
                     <label className="block">
                       <span className="block text-[10px] uppercase tracking-wider text-gray-500 mb-1">People per car</span>
                       <input
@@ -170,6 +187,11 @@ export function ExtraRevenuePanel({
                   <p className="text-gray-500 text-xs mt-3">
                     {expectedAttendance.toLocaleString()} people at {l.occupancy ?? DEFAULT_CAR_OCCUPANCY} to a car is about{' '}
                     <span className="text-gray-300">{carsFor(expectedAttendance, l.occupancy).toLocaleString()} cars</span>.
+                  </p>
+                )}
+                {l.basis === 'per_unit' && (
+                  <p className="text-gray-500 text-xs mt-3">
+                    {(l.units ?? 0).toLocaleString()} &times; {formatCurrency(l.amount)}. This does not move with the crowd — set the count yourself.
                   </p>
                 )}
                 {l.basis === 'per_head' && (

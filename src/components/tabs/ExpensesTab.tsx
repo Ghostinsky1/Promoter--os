@@ -77,6 +77,25 @@ export function ExpensesTab({
     setSelectedCategory(null);
   };
 
+  /** Rename a line without losing its amount or its place in the list.
+   *  Object key order is the display order, so the category is rebuilt in
+   *  sequence rather than deleting and re-adding at the end. */
+  const renameExpenseItem = (category: keyof Expenses, oldField: string, typed: string) => {
+    const next = typed.toLowerCase().trim().replace(/\s+/g, '_');
+    if (!next || next === oldField) return;
+
+    setExpenses((prevExpenses) => {
+      const current = prevExpenses[category] as Record<string, number>;
+      if (current[next] !== undefined) return prevExpenses; // name already used
+      const rebuilt: Record<string, number> = {};
+      for (const [k, v] of Object.entries(current)) {
+        if (k === oldField) rebuilt[next] = v;
+        else rebuilt[k] = v;
+      }
+      return { ...prevExpenses, [category]: rebuilt };
+    });
+  };
+
   const removeExpenseItem = (category: keyof Expenses, field: string) => {
     setExpenses((prevExpenses) => {
       const updated = { ...prevExpenses[category] };
@@ -114,9 +133,15 @@ export function ExpensesTab({
           {Object.entries(expenses[category]).map(([field, value]) => (
             <div key={field} className="flex items-start gap-3">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-400 mb-2 capitalize">
-                  {field.replace(/_/g, ' ')}
-                </label>
+                <input
+                  type="text"
+                  defaultValue={field.replace(/_/g, ' ')}
+                  onBlur={(e) => renameExpenseItem(category, field, e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); } }}
+                  placeholder="What is this cost?"
+                  title="Click to rename this line"
+                  className="block w-full text-sm font-medium text-gray-300 mb-2 capitalize bg-transparent border-b border-transparent hover:border-gray-700 focus:border-[#8FD3FF] focus:text-white outline-none transition-colors"
+                />
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                   <input

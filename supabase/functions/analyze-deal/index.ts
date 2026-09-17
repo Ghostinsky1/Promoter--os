@@ -81,7 +81,11 @@ Deno.serve(async (req) => {
 
   // 2. Break-even as a share of the room, out of 30.
   const breakEvenTickets = avgPrice > 0 ? Math.ceil(totalCosts / avgPrice) : Infinity;
-  const breakEvenPct = capacity > 0 && isFinite(breakEvenTickets) ? (breakEvenTickets / capacity) * 100 : 999;
+  // Measured against tickets actually ON SALE, not venue capacity. An 1,800-cap
+  // room with 600 tickets released cannot sell 1,800, and scoring against the
+  // bigger number makes every deal look safer than it is.
+  const onSale = sellable > 0 ? sellable : capacity;
+  const breakEvenPct = onSale > 0 && isFinite(breakEvenTickets) ? (breakEvenTickets / onSale) * 100 : 999;
   let beScore = 0;
   let beStatus = 'DANGEROUS';
   if (breakEvenPct <= 50) { beScore = 30; beStatus = 'LOW RISK'; }
@@ -94,14 +98,14 @@ Deno.serve(async (req) => {
     max: 30,
     status: beStatus,
     detail: isFinite(breakEvenTickets) && breakEvenPct <= 100
-      ? `You need ${breakEvenTickets.toLocaleString('en-US')} of ${capacity.toLocaleString('en-US')} tickets sold to cover everything — ${pct(breakEvenPct)} of the room.`
-      : `Costs of ${money(totalCosts)} are more than the room can sell at ${money(avgPrice)} a ticket. There is no break-even at this capacity.`,
+      ? `You need ${breakEvenTickets.toLocaleString('en-US')} of the ${onSale.toLocaleString('en-US')} tickets on sale to cover everything — ${pct(breakEvenPct)} of what you are selling.`
+      : `Costs of ${money(totalCosts)} are more than ${onSale.toLocaleString('en-US')} tickets can cover at ${money(avgPrice)} each. There is no break-even at this scaling.`,
   });
   if (beScore < 23 && isFinite(breakEvenTickets)) {
-    const target = Math.round(capacity * 0.6);
+    const target = Math.round(onSale * 0.6);
     const costRoom = totalCosts - target * avgPrice;
     if (costRoom > 0) {
-      tips.push(`Cut ${money(costRoom)} of cost (or raise the average ticket by ${money(costRoom / Math.max(1, target))}) to break even at 60% of the room instead of ${pct(breakEvenPct)}.`);
+      tips.push(`Cut ${money(costRoom)} of cost (or raise the average ticket by ${money(costRoom / Math.max(1, target))}) to break even at 60% of the tickets on sale instead of ${pct(breakEvenPct)}.`);
     }
   }
 
@@ -170,16 +174,16 @@ Deno.serve(async (req) => {
   let recommendation_type: string;
   if (overall >= 80) {
     recommendation_type = 'STRONG BUY';
-    recommendation = `The numbers hold up. ${money(netProfit)} at a sellout, break-even at ${pct(breakEvenPct)} of the room.`;
+    recommendation = `The numbers hold up. ${money(netProfit)} at a sellout, break-even at ${pct(breakEvenPct)} of the tickets on sale.`;
   } else if (overall >= 60) {
     recommendation_type = 'PROCEED';
-    recommendation = `Workable deal. It makes ${money(netProfit)} full, but you need ${pct(breakEvenPct)} of the room before you keep a dollar.`;
+    recommendation = `Workable deal. It makes ${money(netProfit)} full, but you need ${pct(breakEvenPct)} of the tickets on sale before you keep a dollar.`;
   } else if (overall >= 40) {
     recommendation_type = 'CAUTION';
-    recommendation = `Thin. Break-even sits at ${pct(breakEvenPct)} of the room and half a house is ${money(profitAtHalf)}. Review before you sign.`;
+    recommendation = `Thin. Break-even sits at ${pct(breakEvenPct)} of the tickets on sale and half a house is ${money(profitAtHalf)}. Review before you sign.`;
   } else {
     recommendation_type = 'PASS';
-    recommendation = `The math does not work as written. ${isFinite(breakEvenPct) && breakEvenPct <= 100 ? `You need ${pct(breakEvenPct)} of the room to break even` : 'There is no break-even at this capacity'}, and half a house is ${money(profitAtHalf)}. Review the guarantee and the expense lines.`;
+    recommendation = `The math does not work as written. ${isFinite(breakEvenPct) && breakEvenPct <= 100 ? `You need ${pct(breakEvenPct)} of the tickets on sale to break even` : 'There is no break-even at this scaling'}, and half a house is ${money(profitAtHalf)}. Review the guarantee and the expense lines.`;
   }
 
   return json({

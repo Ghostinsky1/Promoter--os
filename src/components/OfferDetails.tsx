@@ -9,6 +9,7 @@ import { CalculationsBreakdown } from './CalculationsBreakdown';
 import { PDFPreview } from './PDFPreview';
 import { EmailOfferModal } from './EmailOfferModal';
 import { EditableNum } from './EditableNum';
+import { survivalRead, downsideMixOf, type DownsideMix } from '../lib/downside';
 import { parseLocalDate } from '../lib/dateHelpers';
 import { useEstimateState, buildUpdatePayload } from '../hooks/useEstimateState';
 import { useOfferExtras } from '../hooks/useOfferExtras';
@@ -141,6 +142,14 @@ export function OfferDetails() {
     }
   };
 
+  /** How a soft night is assumed to fill the room, saved on its own. */
+  const setDownsideMix = async (mix: DownsideMix) => {
+    if (!offer) return;
+    setOffer(prev => (prev ? ({ ...prev, downside_tier_mix: mix } as OfferWithShow) : prev));
+    const { error } = await supabase.from('offers').update({ downside_tier_mix: mix }).eq('id', offer.id);
+    if (error) console.error('Error saving bad-night assumption:', error);
+  };
+
   const handleDownloadPDF = () => setShowPDFPreview(true);
   const handlePreviewPDF = () => setShowPDFPreview(true);
 
@@ -241,11 +250,15 @@ export function OfferDetails() {
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        // Send the whole offer. The score is computed from the real cost
+        // structure now -- which lines move with the ticket count and which
+        // don't -- so a stripped-down summary can't answer it.
         body: JSON.stringify({
-          artist_name: offer.show.artist_name, venue_name: offer.show.venue_name,
-          capacity: offer.show.capacity, guarantee: offer.guarantee,
-          gross_potential: offer.calculations.grossPotential, net_profit: offer.calculations.netProfit,
-          total_costs: offer.calculations.totalShowCost ?? (offer.calculations.totalExpenses + offer.guarantee), ticket_tiers: offer.ticket_tiers,
+          ...offer,
+          artist_name: offer.show.artist_name,
+          venue_name: offer.show.venue_name,
+          capacity: offer.show.capacity,
+          show: undefined,
         })
       });
       if (!isMountedRef.current) return;
@@ -395,7 +408,7 @@ export function OfferDetails() {
                 </span>
               </div>
             </div>
-            <DealScoreCard dealScore={dealScore} failed={dealScoreFailed} />
+            <DealScoreCard dealScore={dealScore} failed={dealScoreFailed} offer={offer} onMixChange={setDownsideMix} />
           </div>
         </div>
 
@@ -893,7 +906,18 @@ export function OfferDetails() {
   );
 }
 
-function DealScoreCard({ dealScore, failed }: { dealScore: number | null; failed?: boolean }) {
+function DealScoreCard({ dealScore, failed, offer, onMixChange }: { dealScore: number | null; failed?: boolean; offer: OfferWithShow; onMixChange: (m: DownsideMix) => void }) {
+  const survival = survivalRead(offer);
+  const verdictText = {
+    SAFE: 'Survives a bad night',
+    TIGHT: 'Needs a real crowd',
+    FRAGILE: 'Fragile',
+    UNDERWATER: 'Loses at a sellout',
+  }[survival.verdict];
+  const verdictColor = {
+    SAFE: 'text-green-400', TIGHT: 'text-yellow-400',
+    FRAGILE: 'text-orange-400', UNDERWATER: 'text-red-400',
+  }[survival.verdict];
   const bg = dealScore === null ? 'bg-[#22262F]' :
     dealScore >= 80 ? 'bg-green-900/20 border border-green-800/30' :
     dealScore >= 60 ? 'bg-[#8FD3FF]/10 border border-[#8FD3FF]/30' :
@@ -921,6 +945,36 @@ function DealScoreCard({ dealScore, failed }: { dealScore: number | null; failed
         <div className="w-full bg-[#22262F] rounded-full h-2 overflow-hidden">
           <div className={`h-full transition-all ${barColor}`} style={{ width: dealScore === null ? '0%' : `${dealScore}%` }} />
         </div>
+      </div>
+
+      {/* Scored at capacity, judged at 50%. The bad night is the decision. */}
+      <div className="mt-3 pt-3 border-t border-gray-700/50">
+        <div className={`text-[11px] font-bold mb-2 ${verdictColor}`}>{verdictText}</div>
+        <div className="grid grid-cols-3 gap-2">
+          {([['Sellout', survival.atFull], ['70%', survival.at70], ['Half', survival.at50]] as const).map(([label, r]) => (
+            <div key={label}>
+              <div className="text-[10px] text-gray-500">{label}</div>
+              <div className={`text-xs font-bold ${r.profit >= 0 ? 'text-white' : 'text-red-400'}`}>
+                {r.profit >= 0 ? formatCurrency(r.profit) : `-${formatCurrency(Math.abs(r.profit))}`}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="text-[10px] text-gray-500 mt-2">
+          {survival.breakEvenTickets >= 0
+            ? `Nothing is yours until ticket ${survival.breakEvenTickets.toLocaleString()} (${Math.round(survival.breakEvenPct)}%).`
+            : 'A full house does not cover the costs.'}
+        </div>
+        <select
+          value={downsideMixOf(offer)}
+          onChange={(e) => onMixChange(e.target.value as DownsideMix)}
+          onClick={(e) => e.stopPropagation()}
+          title="What sells on a slow night"
+          className="mt-2 w-full bg-[#22262F] border border-gray-700 text-gray-400 text-[10px] rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#8FD3FF]"
+        >
+          <option value="cheapest_first">Bad night sells: cheap tickets first</option>
+          <option value="blended">Bad night sells: same mix as a sellout</option>
+        </select>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { OfferWithShow, OfferStatus } from '../types';
 import { formatCurrency } from '../lib/calculations';
 import { Search, Calendar, MapPin, Plus, DollarSign, FileText, CheckCircle, Send, Activity, CircleDollarSign, XCircle, LayoutGrid, Copy, Music, TrendingUp } from 'lucide-react';
 import { OffersCalendar } from './OffersCalendar';
+import { survivalRead } from '../lib/downside';
 import { parseLocalDate } from '../lib/dateHelpers';
 
 const STATUS_CONFIG: Record<OfferStatus, { label: string; icon: any; color: string; bgColor: string; borderColor: string }> = {
@@ -458,6 +459,10 @@ export function OffersList() {
 
                   const isCancelled = currentStatus === 'cancelled';
 
+                  // The bad-night read. Computed here rather than fetched --
+                  // it's arithmetic on the offer we already have in hand.
+                  const survival = survivalRead(offer as any);
+
                   return (
                     <div
                       key={offer.id}
@@ -503,6 +508,8 @@ export function OffersList() {
                       </div>
 
                       <div className="space-y-4">
+                        <SurvivalBadge survival={survival} />
+
                         <div className="bg-[#22262F] rounded-xl p-4 border border-gray-800">
                           <div className="grid grid-cols-3 gap-4">
                             <div>
@@ -585,6 +592,48 @@ export function OffersList() {
             )}
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+
+/**
+ * The bad-night flag. A promoter should be able to see a fragile show from the
+ * list without opening it -- that's the whole point of stress-testing at 50%.
+ */
+function SurvivalBadge({ survival }: { survival: ReturnType<typeof survivalRead> }) {
+  const style = {
+    SAFE: { label: 'SURVIVES A BAD NIGHT', box: 'bg-green-900/20 border-green-800/40', text: 'text-green-400' },
+    TIGHT: { label: 'NEEDS A REAL CROWD', box: 'bg-yellow-900/20 border-yellow-800/40', text: 'text-yellow-400' },
+    FRAGILE: { label: 'FRAGILE', box: 'bg-orange-900/20 border-orange-800/40', text: 'text-orange-400' },
+    UNDERWATER: { label: 'LOSES AT A SELLOUT', box: 'bg-red-900/20 border-red-800/40', text: 'text-red-400' },
+  }[survival.verdict];
+
+  const cell = (label: string, profit: number, tickets: number) => (
+    <div>
+      <p className="text-[10px] text-gray-500 mb-0.5">{label}</p>
+      <p className={`text-sm font-bold ${profit >= 0 ? 'text-white' : 'text-red-400'}`}>
+        {profit >= 0 ? formatCurrency(profit) : `-${formatCurrency(Math.abs(profit))}`}
+      </p>
+      <p className="text-[10px] text-gray-600">{tickets.toLocaleString()} tix</p>
+    </div>
+  );
+
+  return (
+    <div className={`rounded-xl p-4 border ${style.box}`}>
+      <div className="flex items-center justify-between mb-3">
+        <span className={`text-[10px] font-bold tracking-wide ${style.text}`}>{style.label}</span>
+        <span className="text-[10px] text-gray-500">
+          {survival.breakEvenTickets >= 0
+            ? `break-even ${Math.round(survival.breakEvenPct)}%`
+            : 'no break-even'}
+        </span>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {cell('Sellout', survival.atFull.profit, survival.atFull.tickets)}
+        {cell('70% sold', survival.at70.profit, survival.at70.tickets)}
+        {cell('Half house', survival.at50.profit, survival.at50.tickets)}
       </div>
     </div>
   );

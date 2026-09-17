@@ -3,16 +3,10 @@ import { Sparkles, TrendingUp, AlertTriangle, CheckCircle2, RefreshCw, Loader2 }
 import { supabase, SUPABASE_URL } from '../lib/supabase';
 
 interface DealAnalyzerProps {
-  offerData: {
-    artist_name: string;
-    venue_name: string;
-    capacity: number;
-    guarantee: number;
-    gross_potential: number;
-    net_profit: number;
-    total_costs: number;
-    ticket_tiers: any[];
-  };
+  /** The whole offer. The score is computed from the real cost structure --
+   *  which lines move with the ticket count and which don't -- so a summary
+   *  of a few totals cannot answer it. */
+  offerData: Record<string, any>;
   onAnalysisComplete?: (score: number) => void;
 }
 
@@ -40,7 +34,7 @@ export function DealAnalyzer({ offerData, onAnalysisComplete }: DealAnalyzerProp
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (offerData && offerData.capacity > 0) {
+    if (offerData && Array.isArray(offerData.ticket_tiers) && offerData.ticket_tiers.length > 0) {
       analyzeDeal();
     } else {
     }

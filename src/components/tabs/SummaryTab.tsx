@@ -5,6 +5,9 @@ import { DealAnalyzer } from '../DealAnalyzer';
 import { TrendingUp, DollarSign, Users, Target } from 'lucide-react';
 
 interface SummaryTabProps {
+  /** Everything the deal score needs to model a bad night: expenses, rates,
+   *  extras, support acts, accommodation. Passed straight through. */
+  scoreInput?: Record<string, any>;
   calculations: Calculations;
   dealType: 'flat_guarantee' | 'promoter_profit';
   guarantee: number;
@@ -19,6 +22,7 @@ interface SummaryTabProps {
 }
 
 export function SummaryTab({
+  scoreInput = {},
   calculations,
   dealType,
   guarantee,
@@ -41,18 +45,7 @@ export function SummaryTab({
         <p className="text-gray-400 mb-8">Review all calculations and projections</p>
       </div>
 
-      <DealAnalyzer
-        offerData={{
-          artist_name: artistName,
-          venue_name: venueName,
-          capacity: capacity,
-          guarantee: guarantee,
-          gross_potential: calculations.netGross,
-          net_profit: calculations.netProfit,
-          total_costs: calculations.totalExpenses + guarantee,
-          ticket_tiers: ticketTiers,
-        }}
-      />
+      <DealAnalyzer offerData={{ ...scoreInput, artist_name: artistName, venue_name: venueName, capacity }} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-blue-500/30 rounded-2xl p-6">

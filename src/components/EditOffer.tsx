@@ -706,6 +706,25 @@ export function EditOffer() {
 
           {currentStep === 6 && (
             <SummaryTab
+              scoreInput={{
+                guarantee,
+                ticket_tiers: ticketTiers,
+                sales_tax_pct: salesTaxPct,
+                facility_fee_per_ticket: facilityFeePerTicket,
+                expenses,
+                support_acts: supportActs,
+                ascap_rate: ascapRate,
+                bmi_rate: bmiRate,
+                sesac_rate: sesacRate,
+                insurance_per_attendee: insurancePerAttendee,
+                cc_fee_rate: ccFeeRate,
+                include_hotel: includeHotel, hotel_budget: hotelBudget, hotel_nights: hotelNights,
+                include_transport: includeTransport, transport_budget: transportBudget,
+                include_flights: includeFlights, flight_budget: flightBudget,
+                include_rider: includeRider, rider_cap: riderCap,
+                include_extra_revenue: includeExtraRevenue,
+                extra_revenue: extraRevenue,
+              }}
               key="summary"
               calculations={calculations}
               dealType={dealType}

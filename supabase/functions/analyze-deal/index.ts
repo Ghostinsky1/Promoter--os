@@ -3,10 +3,16 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 /**
  * PROMOTER OS — deal score.
  *
- * Scores one offer out of 100 on five things a promoter actually cares about:
- * what's left at the end, how full the room has to be to break even, how much
- * of the gross the artist is taking, whether the ticket scaling gives any room
- * to move, and what a half-full night costs.
+ * Scored on whether the night SURVIVES, not on how good a sellout looks.
+ *
+ * Jose's rule: "we calculate at cap but we estimate at 50% to see if the event
+ * can survive a bad night." A full house is the ceiling and every promoter can
+ * make that number look fine. The question that decides whether to sign is what
+ * a soft night costs. So 60 of the 100 points here are about the downside.
+ *
+ * The 50% and 70% figures are computed properly, not scaled down from the
+ * sellout: rights fees, card fees and insurance follow the ticket count, while
+ * venue, production, security and the artist guarantee do not move a dollar.
  *
  * NOT a language model. Every point comes from the offer's own numbers, so it
  * answers instantly, costs nothing, and cannot invent a figure. Wording follows
@@ -25,13 +31,53 @@ type Any = any;
 const n = (v: Any, d = 0) => (typeof v === 'number' && isFinite(v) ? v : d);
 const money = (v: number) => `$${Math.round(Math.abs(v)).toLocaleString('en-US')}`;
 const pct = (v: number) => `${Math.round(v)}%`;
+const CATEGORIES = ['talent', 'general', 'marketing', 'production'] as const;
 
-interface Factor {
-  factor: string;
-  score: number;
-  max: number;
-  status: string;
-  detail: string;
+interface Factor { factor: string; score: number; max: number; status: string; detail: string }
+interface Tier { price: number; seats: number }
+
+function sumExpenses(block: Any): number {
+  if (!block || typeof block !== 'object') return 0;
+  let t = 0;
+  for (const c of CATEGORIES) {
+    const lines = block[c];
+    if (lines && typeof lines === 'object') for (const v of Object.values(lines)) t += n(v);
+  }
+  return t;
+}
+
+/** Bar / parking / sponsorship split into what's flat and what's per head. */
+function splitExtras(offer: Any): { flat: number; perHead: number } {
+  if (offer?.include_extra_revenue === false) return { flat: 0, perHead: 0 };
+  const lines: Any[] = Array.isArray(offer?.extra_revenue) ? offer.extra_revenue : [];
+  let flat = 0;
+  let perHead = 0;
+  for (const l of lines) {
+    const mine = n(l?.amount) * (n(l?.promoter_pct, 100) / 100);
+    if (l?.basis === 'per_head') perHead += mine;
+    else if (l?.basis === 'per_car') perHead += mine / n(l?.occupancy, 2.5);
+    else if (l?.basis === 'per_unit') flat += mine * n(l?.units);
+    else flat += mine;
+  }
+  return { flat, perHead };
+}
+
+function revenueFor(tiers: Tier[], tickets: number, mix: string): number {
+  if (tiers.length === 0 || tickets <= 0) return 0;
+  const sellable = tiers.reduce((s, t) => s + t.seats, 0);
+  if (mix === 'blended') {
+    const full = tiers.reduce((s, t) => s + t.seats * t.price, 0);
+    return sellable > 0 ? (full / sellable) * tickets : 0;
+  }
+  let left = tickets;
+  let revenue = 0;
+  for (const t of [...tiers].sort((a, b) => a.price - b.price)) {
+    const take = Math.min(left, t.seats);
+    revenue += take * t.price;
+    left -= take;
+    if (left <= 0) break;
+  }
+  return revenue;
 }
 
 Deno.serve(async (req) => {
@@ -39,151 +85,151 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
 
   let body: Any;
-  try {
-    body = await req.json();
-  } catch {
-    return json({ error: 'Body must be JSON' }, 400);
-  }
+  try { body = await req.json(); } catch { return json({ error: 'Body must be JSON' }, 400); }
 
-  const capacity = n(body.capacity);
+  const rawTiers: Any[] = Array.isArray(body.ticket_tiers) ? body.ticket_tiers : [];
+  const tiers: Tier[] = rawTiers
+    .map((t) => ({ price: n(t.price), seats: Math.max(0, n(t.allotment) - n(t.comps)) }))
+    .filter((t) => t.seats > 0 && t.price > 0);
+  const onSale = tiers.reduce((s, t) => s + t.seats, 0);
   const guarantee = n(body.guarantee);
-  const grossPotential = n(body.gross_potential);
-  const netProfit = n(body.net_profit);
-  const totalCosts = n(body.total_costs);
-  const tiers: Any[] = Array.isArray(body.ticket_tiers) ? body.ticket_tiers : [];
+  const mix = body.downside_tier_mix === 'blended' ? 'blended' : 'cheapest_first';
 
-  if (capacity <= 0 || grossPotential <= 0) {
-    return json({ error: 'Need a capacity and a gross potential to score this deal' }, 400);
+  if (onSale <= 0) return json({ error: 'Need priced ticket tiers to score this deal' }, 400);
+
+  // Fixed costs: these do not move with the ticket count.
+  let fixed = sumExpenses(body.expenses);
+  for (const a of (Array.isArray(body.support_acts) ? body.support_acts : [])) fixed += n(a?.guarantee);
+  if (body.include_hotel) fixed += n(body.hotel_budget) * n(body.hotel_nights, 1);
+  if (body.include_transport) fixed += n(body.transport_budget);
+  if (body.include_flights) fixed += n(body.flight_budget);
+  if (body.include_rider) fixed += n(body.rider_cap);
+
+  const extras = splitExtras(body);
+
+  /** The whole night, computed at a given attendance. */
+  const at = (attendancePct: number) => {
+    const tickets = Math.floor(onSale * (attendancePct / 100));
+    const gross = revenueFor(tiers, tickets, mix);
+    const afterFacility = Math.max(0, gross - n(body.facility_fee_per_ticket) * tickets);
+    const netGross = afterFacility * (1 - n(body.sales_tax_pct) / 100);
+    const variable =
+      netGross * (n(body.ascap_rate) + n(body.bmi_rate) + n(body.sesac_rate) + n(body.cc_fee_rate)) +
+      tickets * n(body.insurance_per_attendee);
+    const extraRevenue = extras.flat + extras.perHead * tickets;
+    return { tickets, gross, netGross, variable, profit: netGross - variable - fixed - guarantee + extraRevenue };
+  };
+
+  const full = at(100);
+  const soft = at(70);
+  const bad = at(50);
+
+  // Lowest attendance that still clears, walked a ticket at a time — with
+  // cheapest-first scaling each extra ticket is not worth the same, so dividing
+  // gives the wrong answer.
+  let breakEvenTickets = -1;
+  if (full.profit >= 0) {
+    let lo = 0, hi = onSale;
+    while (lo < hi) {
+      const mid = Math.floor((lo + hi) / 2);
+      if (at((mid / onSale) * 100).profit >= 0) hi = mid; else lo = mid + 1;
+    }
+    breakEvenTickets = lo;
   }
+  const breakEvenPct = breakEvenTickets >= 0 ? (breakEvenTickets / onSale) * 100 : 999;
 
-  const sellable = tiers.reduce((s, t) => s + Math.max(0, n(t.allotment) - n(t.comps)), 0) || capacity;
-  const avgPrice = sellable > 0 ? grossPotential / sellable : 0;
   const factors: Factor[] = [];
   const tips: string[] = [];
 
-  // 1. Margin — what's actually left at a full house, out of 30.
-  const margin = grossPotential > 0 ? (netProfit / grossPotential) * 100 : 0;
-  let marginScore = 0;
-  let marginStatus = 'DANGEROUS';
-  if (margin >= 30) { marginScore = 30; marginStatus = 'EXCELLENT'; }
-  else if (margin >= 20) { marginScore = 24; marginStatus = 'GOOD'; }
-  else if (margin >= 10) { marginScore = 16; marginStatus = 'DECENT'; }
-  else if (margin > 0) { marginScore = 8; marginStatus = 'RISKY'; }
+  // 1. THE BAD NIGHT — 35 points. The one that decides it.
+  let badScore = 0, badStatus = 'DANGEROUS';
+  if (bad.profit >= 0) { badScore = 35; badStatus = 'LOW RISK'; }
+  else if (bad.profit > -(guarantee * 0.15)) { badScore = 22; badStatus = 'MEDIUM RISK'; }
+  else if (bad.profit > -(guarantee * 0.40)) { badScore = 10; badStatus = 'HIGH RISK'; }
   factors.push({
-    factor: 'Profit margin',
-    score: marginScore,
-    max: 30,
-    status: marginStatus,
-    detail: netProfit >= 0
-      ? `${money(netProfit)} left on ${money(grossPotential)} of ticket revenue — ${pct(margin)} margin at a full house.`
-      : `A sellout still loses ${money(netProfit)}. Costs run ${money(totalCosts)} against ${money(grossPotential)} of ticket revenue.`,
+    factor: 'Half a house sold',
+    score: badScore, max: 35, status: badStatus,
+    detail: bad.profit >= 0
+      ? `${bad.tickets.toLocaleString('en-US')} tickets still clears ${money(bad.profit)}. This show survives a bad night.`
+      : `${bad.tickets.toLocaleString('en-US')} tickets leaves you ${money(bad.profit)} out of pocket. That is what a bad night costs you.`,
   });
 
-  // 2. Break-even as a share of the room, out of 30.
-  const breakEvenTickets = avgPrice > 0 ? Math.ceil(totalCosts / avgPrice) : Infinity;
-  // Measured against tickets actually ON SALE, not venue capacity. An 1,800-cap
-  // room with 600 tickets released cannot sell 1,800, and scoring against the
-  // bigger number makes every deal look safer than it is.
-  const onSale = sellable > 0 ? sellable : capacity;
-  const breakEvenPct = onSale > 0 && isFinite(breakEvenTickets) ? (breakEvenTickets / onSale) * 100 : 999;
-  let beScore = 0;
-  let beStatus = 'DANGEROUS';
-  if (breakEvenPct <= 50) { beScore = 30; beStatus = 'LOW RISK'; }
-  else if (breakEvenPct <= 65) { beScore = 23; beStatus = 'MEDIUM RISK'; }
-  else if (breakEvenPct <= 80) { beScore = 14; beStatus = 'HIGH RISK'; }
-  else if (breakEvenPct <= 100) { beScore = 6; beStatus = 'RISKY'; }
+  // 2. THE SOFT NIGHT — 25 points.
+  let softScore = 0, softStatus = 'HIGH RISK';
+  if (soft.profit >= 0) { softScore = 25; softStatus = 'LOW RISK'; }
+  else if (soft.profit > -(guarantee * 0.15)) { softScore = 14; softStatus = 'MEDIUM RISK'; }
+  else if (soft.profit > -(guarantee * 0.35)) { softScore = 6; softStatus = 'HIGH RISK'; }
+  factors.push({
+    factor: '70% sold',
+    score: softScore, max: 25, status: softStatus,
+    detail: soft.profit >= 0
+      ? `${soft.tickets.toLocaleString('en-US')} tickets clears ${money(soft.profit)}.`
+      : `${soft.tickets.toLocaleString('en-US')} tickets is still ${money(soft.profit)} down. A merely soft night loses money.`,
+  });
+
+  // 3. Break-even — 20 points.
+  let beScore = 0, beStatus = 'DANGEROUS';
+  if (breakEvenPct <= 50) { beScore = 20; beStatus = 'LOW RISK'; }
+  else if (breakEvenPct <= 65) { beScore = 15; beStatus = 'MEDIUM RISK'; }
+  else if (breakEvenPct <= 80) { beScore = 8; beStatus = 'HIGH RISK'; }
+  else if (breakEvenPct <= 100) { beScore = 3; beStatus = 'RISKY'; }
   factors.push({
     factor: 'Break-even point',
-    score: beScore,
-    max: 30,
-    status: beStatus,
-    detail: isFinite(breakEvenTickets) && breakEvenPct <= 100
-      ? `You need ${breakEvenTickets.toLocaleString('en-US')} of the ${onSale.toLocaleString('en-US')} tickets on sale to cover everything — ${pct(breakEvenPct)} of what you are selling.`
-      : `Costs of ${money(totalCosts)} are more than ${onSale.toLocaleString('en-US')} tickets can cover at ${money(avgPrice)} each. There is no break-even at this scaling.`,
+    score: beScore, max: 20, status: beStatus,
+    detail: breakEvenPct <= 100
+      ? `You need ${breakEvenTickets.toLocaleString('en-US')} of the ${onSale.toLocaleString('en-US')} tickets on sale before you keep a dollar — ${pct(breakEvenPct)} of what you are selling${mix === 'cheapest_first' ? ', selling the cheap tiers first' : ''}.`
+      : `A full house does not cover the costs. There is no break-even at this scaling.`,
   });
-  if (beScore < 23 && isFinite(breakEvenTickets)) {
+  if (beScore < 15 && breakEvenPct <= 100) {
     const target = Math.round(onSale * 0.6);
-    const costRoom = totalCosts - target * avgPrice;
-    if (costRoom > 0) {
-      tips.push(`Cut ${money(costRoom)} of cost (or raise the average ticket by ${money(costRoom / Math.max(1, target))}) to break even at 60% of the tickets on sale instead of ${pct(breakEvenPct)}.`);
-    }
+    const gap = -at((target / onSale) * 100).profit;
+    if (gap > 0) tips.push(`Cut ${money(gap)} of cost, or raise the guarantee's cover by that much, to break even at 60% of the tickets on sale instead of ${pct(breakEvenPct)}.`);
   }
 
-  // 3. What share of the gross the artist takes, out of 20.
-  const artistShare = grossPotential > 0 ? (guarantee / grossPotential) * 100 : 0;
-  let artistScore = 0;
-  let artistStatus = 'DANGEROUS';
-  if (artistShare <= 35) { artistScore = 20; artistStatus = 'EXCELLENT'; }
-  else if (artistShare <= 50) { artistScore = 15; artistStatus = 'GOOD'; }
-  else if (artistShare <= 65) { artistScore = 9; artistStatus = 'RISKY'; }
-  else if (artistShare < 100) { artistScore = 3; artistStatus = 'HIGH RISK'; }
+  // 4. Upside — 20 points. The sellout still counts, just not for much.
+  const margin = full.netGross > 0 ? (full.profit / full.netGross) * 100 : 0;
+  let upScore = 0, upStatus = 'DANGEROUS';
+  if (margin >= 30) { upScore = 20; upStatus = 'EXCELLENT'; }
+  else if (margin >= 20) { upScore = 16; upStatus = 'GOOD'; }
+  else if (margin >= 10) { upScore = 10; upStatus = 'DECENT'; }
+  else if (margin > 0) { upScore = 5; upStatus = 'RISKY'; }
   factors.push({
-    factor: 'Artist cost vs gross',
-    score: artistScore,
-    max: 20,
-    status: artistStatus,
-    detail: `The guarantee of ${money(guarantee)} is ${pct(artistShare)} of a full-house gross of ${money(grossPotential)}.`,
+    factor: 'Upside at a sellout',
+    score: upScore, max: 20, status: upStatus,
+    detail: full.profit >= 0
+      ? `A full house pays ${money(full.profit)} — ${pct(margin)} of ${money(full.netGross)} net.`
+      : `Even a full house loses ${money(full.profit)}.`,
   });
-  if (artistScore < 15 && artistShare > 0) {
-    const target = grossPotential * 0.5;
-    tips.push(`Getting the guarantee to ${money(target)} would put the artist at half the gross instead of ${pct(artistShare)} — that is ${money(guarantee - target)} back in your pocket.`);
-  }
 
-  // 4. Ticket scaling — does the pricing give you anywhere to go, out of 10.
-  const priced = tiers.filter((t) => n(t.price) > 0);
-  const prices = priced.map((t) => n(t.price));
-  const spread = prices.length > 1 ? Math.max(...prices) - Math.min(...prices) : 0;
-  let scaleScore = 0;
-  let scaleStatus = 'SIMPLISTIC';
-  if (priced.length >= 3 && spread > 0) { scaleScore = 10; scaleStatus = 'OPTIMIZED'; }
-  else if (priced.length === 2 && spread > 0) { scaleScore = 7; scaleStatus = 'BASIC'; }
-  else if (priced.length >= 1) { scaleScore = 3; scaleStatus = 'SIMPLISTIC'; }
-  factors.push({
-    factor: 'Ticket scaling',
-    score: scaleScore,
-    max: 10,
-    status: scaleStatus,
-    detail: priced.length > 1
-      ? `${priced.length} price levels from ${money(Math.min(...prices))} to ${money(Math.max(...prices))}, averaging ${money(avgPrice)}.`
-      : `One price level at ${money(avgPrice)}. Nothing to move if sales come in slow or fast.`,
-  });
-  if (scaleScore < 7) {
-    tips.push(`Add an early-bird tier below ${money(avgPrice)} and a door price above it — on ${sellable.toLocaleString('en-US')} tickets, a ${money(5)} swing either way is ${money(sellable * 5)}.`);
+  const artistShare = full.netGross > 0 ? (guarantee / full.netGross) * 100 : 0;
+  if (artistShare > 50 && guarantee > 0) {
+    const target = full.netGross * 0.45;
+    tips.push(`The guarantee of ${money(guarantee)} is ${pct(artistShare)} of a full-house net. At ${money(target)} the bad night improves by ${money(guarantee - target)}.`);
   }
-
-  // 5. The downside — what a half-full night costs, out of 10.
-  const halfHouse = Math.floor(sellable * 0.5);
-  const profitAtHalf = halfHouse * avgPrice - totalCosts;
-  let downsideScore = 0;
-  let downsideStatus = 'HIGH RISK';
-  if (profitAtHalf >= 0) { downsideScore = 10; downsideStatus = 'LOW RISK'; }
-  else if (profitAtHalf > -(totalCosts * 0.15)) { downsideScore = 6; downsideStatus = 'MEDIUM RISK'; }
-  else if (profitAtHalf > -(totalCosts * 0.35)) { downsideScore = 3; downsideStatus = 'HIGH RISK'; }
-  factors.push({
-    factor: 'Downside at half a house',
-    score: downsideScore,
-    max: 10,
-    status: downsideStatus,
-    detail: profitAtHalf >= 0
-      ? `Half the room sold still clears ${money(profitAtHalf)}.`
-      : `Half the room sold is ${money(profitAtHalf)} out of pocket.`,
-  });
+  if (bad.profit < 0 && extras.perHead === 0 && extras.flat === 0) {
+    tips.push(`Nothing but tickets is carrying this show. ${money(-bad.profit / Math.max(1, bad.tickets))} per head of bar, parking or sponsorship would cover the bad night.`);
+  }
+  if (tiers.length < 2) {
+    tips.push(`One price level means nothing to move when sales come in slow. On ${onSale.toLocaleString('en-US')} tickets a $5 swing is ${money(onSale * 5)}.`);
+  }
 
   const overall = factors.reduce((s, f) => s + f.score, 0);
   let recommendation: string;
   let recommendation_type: string;
-  if (overall >= 80) {
+  if (bad.profit >= 0 && overall >= 75) {
     recommendation_type = 'STRONG BUY';
-    recommendation = `The numbers hold up. ${money(netProfit)} at a sellout, break-even at ${pct(breakEvenPct)} of the tickets on sale.`;
-  } else if (overall >= 60) {
+    recommendation = `This one survives. Half a house still clears ${money(bad.profit)}, and a sellout pays ${money(full.profit)}.`;
+  } else if (soft.profit >= 0 && overall >= 55) {
     recommendation_type = 'PROCEED';
-    recommendation = `Workable deal. It makes ${money(netProfit)} full, but you need ${pct(breakEvenPct)} of the tickets on sale before you keep a dollar.`;
-  } else if (overall >= 40) {
+    recommendation = `Workable, but it needs a real crowd. 70% sold clears ${money(soft.profit)}; half a house is ${bad.profit >= 0 ? `${money(bad.profit)} up` : `${money(bad.profit)} down`}.`;
+  } else if (full.profit >= 0 && overall >= 35) {
     recommendation_type = 'CAUTION';
-    recommendation = `Thin. Break-even sits at ${pct(breakEvenPct)} of the tickets on sale and half a house is ${money(profitAtHalf)}. Review before you sign.`;
+    recommendation = `The sellout looks fine at ${money(full.profit)}, but you need ${pct(breakEvenPct)} of the tickets on sale before you keep a dollar, and a bad night is ${money(bad.profit)} out of pocket.`;
   } else {
     recommendation_type = 'PASS';
-    recommendation = `The math does not work as written. ${isFinite(breakEvenPct) && breakEvenPct <= 100 ? `You need ${pct(breakEvenPct)} of the tickets on sale to break even` : 'There is no break-even at this scaling'}, and half a house is ${money(profitAtHalf)}. Review the guarantee and the expense lines.`;
+    recommendation = full.profit < 0
+      ? `A full house still loses ${money(full.profit)}. The math does not work as written.`
+      : `Only a near-sellout saves this. Break-even is ${pct(breakEvenPct)} of the tickets on sale and a bad night costs you ${money(bad.profit)}.`;
   }
 
   return json({
@@ -193,6 +239,17 @@ Deno.serve(async (req) => {
     recommendation_type,
     factors,
     improvement_tips: tips,
+    // The three-number read, for the offers list and anything else that wants it.
+    scenarios: {
+      mix,
+      tickets_on_sale: onSale,
+      break_even_tickets: breakEvenTickets,
+      break_even_pct: breakEvenPct <= 100 ? Math.round(breakEvenPct) : null,
+      at_50: { tickets: bad.tickets, profit: Math.round(bad.profit) },
+      at_70: { tickets: soft.tickets, profit: Math.round(soft.profit) },
+      at_100: { tickets: full.tickets, profit: Math.round(full.profit) },
+      verdict: full.profit < 0 ? 'UNDERWATER' : bad.profit >= 0 ? 'SAFE' : soft.profit >= 0 ? 'TIGHT' : 'FRAGILE',
+    },
     analyzed_at: new Date().toISOString(),
   });
 });

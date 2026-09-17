@@ -40,29 +40,22 @@ export function DealAnalyzer({ offerData, onAnalysisComplete }: DealAnalyzerProp
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('DealAnalyzer offerData:', offerData);
     if (offerData && offerData.capacity > 0) {
-      console.log('Starting deal analysis...');
       analyzeDeal();
     } else {
-      console.log('Skipping analysis - capacity is 0 or data is missing');
     }
   }, [offerData]);
 
   async function analyzeDeal() {
-    console.log('analyzeDeal called');
     setLoading(true);
     setError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('Session:', session ? 'Found' : 'Not found');
       if (!session) {
         throw new Error('Not authenticated');
       }
 
       const apiUrl = `${SUPABASE_URL}/functions/v1/analyze-deal`;
-      console.log('Calling API:', apiUrl);
-      console.log('Request body:', offerData);
 
       const res = await fetch(apiUrl, {
         method: 'POST',
@@ -73,8 +66,6 @@ export function DealAnalyzer({ offerData, onAnalysisComplete }: DealAnalyzerProp
         body: JSON.stringify(offerData)
       });
 
-      console.log('Response status:', res.status);
-
       if (!res.ok) {
         const errorData = await res.json();
         console.error('Error response:', errorData);
@@ -82,7 +73,6 @@ export function DealAnalyzer({ offerData, onAnalysisComplete }: DealAnalyzerProp
       }
 
       const data = await res.json();
-      console.log('Analysis result:', data);
       setAnalysis(data);
 
       if (onAnalysisComplete) {
@@ -187,7 +177,7 @@ export function DealAnalyzer({ offerData, onAnalysisComplete }: DealAnalyzerProp
             <Sparkles className="h-8 w-8 text-white" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-slate-900">AI Deal Score</h3>
+            <h3 className="text-2xl font-bold text-slate-900">Deal Score</h3>
             <p className="text-sm text-slate-600">Powered by your historical data</p>
           </div>
         </div>

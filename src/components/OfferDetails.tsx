@@ -29,6 +29,7 @@ export function OfferDetails() {
   const [companySettings, setCompanySettings] = useState<CompanySettings | null>(null);
   const [costsOnly, setCostsOnly] = useState(false);
   const [dealScore, setDealScore] = useState<number | null>(null);
+  const [dealScoreFailed, setDealScoreFailed] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
@@ -247,11 +248,13 @@ export function OfferDetails() {
           total_costs: offer.calculations.totalShowCost ?? (offer.calculations.totalExpenses + offer.guarantee), ticket_tiers: offer.ticket_tiers,
         })
       });
-      if (!res.ok || !isMountedRef.current) return;
+      if (!isMountedRef.current) return;
+      if (!res.ok) { setDealScoreFailed(true); return; }
       const data = await res.json();
       if (isMountedRef.current) setDealScore(data.overall_score);
     } catch (error) {
       console.error('Error analyzing deal:', error);
+      if (isMountedRef.current) setDealScoreFailed(true);
     }
   };
 
@@ -392,7 +395,7 @@ export function OfferDetails() {
                 </span>
               </div>
             </div>
-            <DealScoreCard dealScore={dealScore} />
+            <DealScoreCard dealScore={dealScore} failed={dealScoreFailed} />
           </div>
         </div>
 
@@ -890,7 +893,7 @@ export function OfferDetails() {
   );
 }
 
-function DealScoreCard({ dealScore }: { dealScore: number | null }) {
+function DealScoreCard({ dealScore, failed }: { dealScore: number | null; failed?: boolean }) {
   const bg = dealScore === null ? 'bg-[#22262F]' :
     dealScore >= 80 ? 'bg-green-900/20 border border-green-800/30' :
     dealScore >= 60 ? 'bg-[#8FD3FF]/10 border border-[#8FD3FF]/30' :
@@ -901,7 +904,7 @@ function DealScoreCard({ dealScore }: { dealScore: number | null }) {
   const badgeBg = dealScore === null ? 'bg-[#22262F] text-gray-400' :
     dealScore >= 80 ? 'bg-green-900/50 text-green-300' : dealScore >= 60 ? 'bg-[#8FD3FF]/20 text-[#8FD3FF]' :
     dealScore >= 40 ? 'bg-yellow-900/50 text-yellow-300' : 'bg-red-900/50 text-red-300';
-  const badgeText = dealScore === null ? 'Calculating...' : dealScore >= 80 ? 'STRONG BUY' :
+  const badgeText = dealScore === null ? (failed ? 'Score unavailable' : 'Calculating...') : dealScore >= 80 ? 'STRONG BUY' :
     dealScore >= 60 ? 'PROCEED' : dealScore >= 40 ? 'CAUTION' : 'PASS';
   const barColor = dealScore === null ? 'bg-gray-600' : dealScore >= 80 ? 'bg-green-500' :
     dealScore >= 60 ? 'bg-[#8FD3FF]' : dealScore >= 40 ? 'bg-yellow-500' : 'bg-red-500';
@@ -912,7 +915,7 @@ function DealScoreCard({ dealScore }: { dealScore: number | null }) {
         <Sparkles className={`h-4 w-4 ${iconColor}`} />
         <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${badgeBg}`}>{badgeText}</span>
       </div>
-      <div className="text-xs text-gray-400 mb-1">AI Deal Score</div>
+      <div className="text-xs text-gray-400 mb-1">Deal Score</div>
       <div className={`text-lg font-bold ${iconColor}`}>{dealScore === null ? '\u2014' : `${dealScore}/100`}</div>
       <div className="mt-2">
         <div className="w-full bg-[#22262F] rounded-full h-2 overflow-hidden">

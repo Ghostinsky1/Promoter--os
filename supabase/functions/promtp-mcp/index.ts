@@ -417,6 +417,24 @@ const tools: Tool[] = [
         }
       }
       if (!(Number(a.capacity) > 0)) throw new UserError("capacity must be greater than 0.");
+
+      // Same artist, same room, same night: hand back the one that exists
+      // rather than making a second. A duplicate here inflated a month by
+      // $2,206 before anyone noticed. The database refuses the exact repeat
+      // too; this is the version that explains itself.
+      const norm = (v: unknown) => String(v ?? "").trim().toLowerCase();
+      const { data: sameNight } = await ctx.db
+        .from("shows").select("id, artist_name, venue_name, event_date, offers(id, status)")
+        .eq("organization_id", org.id).eq("event_date", a.event_date);
+      const clash = (sameNight || []).find((s: Any) =>
+        norm(s.artist_name) === norm(a.artist_name) && norm(s.venue_name) === norm(a.venue_name));
+      if (clash) {
+        const ex = Array.isArray(clash.offers) ? clash.offers[0] : clash.offers;
+        throw new UserError(
+          `${clash.artist_name} at ${clash.venue_name} on ${clash.event_date} is already in Promoter OS` +
+          (ex ? ` (offer ${ex.id}, status ${ex.status}). Use update_offer on it, or open ${APP_URL}/offers/${ex.id}.` : "."));
+      }
+
       const stamp = Date.now();
       const showId = `show_${stamp}`;
       const offerId = `offer_${stamp}`;

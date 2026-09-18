@@ -181,6 +181,13 @@ export function OffersList() {
   };
 
   const duplicateOffer = async (offer: OfferWithShow) => {
+    // A copy is a real offer the moment it exists: it counts in the month's
+    // profit and in the cash you need on hand, next to the original. Say so.
+    const go = confirm(
+      `This makes a second offer called "${offer.show.artist_name} (Copy)" on the same night.\n\n` +
+      `It will count in your totals alongside the original until you change or delete one of them. Continue?`,
+    );
+    if (!go) return;
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {

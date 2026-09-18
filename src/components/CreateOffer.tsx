@@ -12,6 +12,7 @@ import { TicketScalingTab } from './tabs/TicketScalingTab';
 import { ExpensesTab } from './tabs/ExpensesTab';
 import { SummaryTab } from './tabs/SummaryTab';
 import { ArrowLeft, ArrowRight, Check, FileText, X, ChevronLeft, ChevronRight, Save } from 'lucide-react';
+import { findExistingShow, isDuplicateShowError } from '../lib/duplicateShow';
 
 // A rate box the user cleared yields NaN; NaN serializes to null and silently
 // wipes the column. Never let that reach the database.
@@ -361,6 +362,18 @@ export function CreateOffer() {
         return;
       }
 
+      // Is this night already in here? Ask before writing anything, and say
+      // exactly what was found, with the link, instead of making a second one.
+      const existing = await findExistingShow(memberData.organization_id, artistName, venueName, eventDate);
+      if (existing) {
+        const open = confirm(
+          `You already have ${existing.artistName} at ${existing.venueName} on ${existing.eventDate}` +
+          ` (status: ${existing.status}).\n\nOpen that one instead? Cancel to stay here and change the date, artist or venue.`,
+        );
+        if (open && existing.offerId) navigate(`/offers/${existing.offerId}`);
+        return;
+      }
+
       const showId = `show_${Date.now()}`;
       const offerId = `offer_${Date.now()}`;
 
@@ -453,12 +466,22 @@ export function CreateOffer() {
         offer_sent_date: new Date().toISOString().split('T')[0],
       });
 
-      if (offerError) throw offerError;
+      if (offerError) {
+        // The show row went in and the offer did not. Left alone, that is an
+        // orphan show that collides with the next attempt -- six of them piled
+        // up for one night that way. Take it back out before reporting.
+        await supabase.from('shows').delete().eq('id', showId);
+        throw offerError;
+      }
 
       navigate('/offers');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving offer:', error);
-      alert('Failed to save offer. Please try again.');
+      if (isDuplicateShowError(error)) {
+        alert('That show is already in here: same artist, same venue, same night. Open it from your offers list instead of making another.');
+      } else {
+        alert('Failed to save offer. Please try again.');
+      }
     } finally {
       setSaving(false);
     }

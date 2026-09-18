@@ -10,6 +10,7 @@ import { PDFPreview } from './PDFPreview';
 import { EmailOfferModal } from './EmailOfferModal';
 import { EditableNum } from './EditableNum';
 import { survivalRead, downsideMixOf, type DownsideMix } from '../lib/downside';
+import { marketingAdvice, marketingBenchmark, type MarketingBenchmark } from '../lib/marketingBudget';
 import { CancellationSheet } from './CancellationSheet';
 import { cancellationPayload, type Cancellation } from '../lib/cancellation';
 import { parseLocalDate } from '../lib/dateHelpers';
@@ -33,6 +34,7 @@ export function OfferDetails() {
   const [costsOnly, setCostsOnly] = useState(false);
   const [dealScore, setDealScore] = useState<number | null>(null);
   const [dealScoreFailed, setDealScoreFailed] = useState(false);
+  const [mktBenchmark, setMktBenchmark] = useState<MarketingBenchmark | null>(null);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
@@ -161,6 +163,15 @@ export function OfferDetails() {
     if (error) console.error('Error saving bad-night assumption:', error);
   };
 
+  /** What a ticket has actually cost this promoter to sell, from their own
+   *  settled shows. Read once; it is the same for every offer. */
+  const loadMarketingBenchmark = async () => {
+    const { data } = await supabase
+      .from('settlements')
+      .select('actual_expenses, actual_attendance, actual_profit, offer:offers(expenses, show:shows(event_name, artist_name))');
+    if (data) setMktBenchmark(marketingBenchmark(data as any));
+  };
+
   const handleDownloadPDF = () => setShowPDFPreview(true);
   const handlePreviewPDF = () => setShowPDFPreview(true);
 
@@ -254,6 +265,7 @@ export function OfferDetails() {
       if (!showData) { navigate('/offers'); return; }
       if (!isMountedRef.current) return;
       setOffer({ ...offerData, show: showData });
+      loadMarketingBenchmark();
     } catch (error) {
       console.error('Error loading offer:', error);
       if (isMountedRef.current) navigate('/offers');
@@ -670,6 +682,10 @@ export function OfferDetails() {
             <CancellationSheet offer={offer} onSave={saveCancellation} />
           )}
 
+          {mktBenchmark && offer.status !== 'cancelled' && (
+            <MarketingPanel offer={offer} benchmark={mktBenchmark} />
+          )}
+
           {/* Variable Expenses */}
           <div className="bg-[#14171E] border border-gray-800 rounded-2xl px-4 pt-4 pb-2">
             <h2 className="text-base font-bold text-white mb-3">Variable Expenses</h2>
@@ -1001,6 +1017,64 @@ function DealScoreCard({ dealScore, failed, offer, onMixChange }: { dealScore: n
           <option value="blended">Bad night sells: same mix as a sellout</option>
         </select>
       </div>
+    </div>
+  );
+}
+
+
+/**
+ * What to spend on marketing, from what worked before.
+ *
+ * Budgeted against TICKETS, not a percentage of a gross that has not been
+ * earned. A show needing 498 of 600 tickets to break even needs more selling
+ * than one needing 200, whatever the two rooms gross.
+ */
+function MarketingPanel({ offer, benchmark }: { offer: OfferWithShow; benchmark: MarketingBenchmark }) {
+  const a = marketingAdvice(offer, benchmark);
+  const tone = a.gap > 25 ? 'text-amber-400' : a.gap < -25 ? 'text-[#8FD3FF]' : 'text-green-400';
+
+  return (
+    <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="text-base font-bold text-white">Marketing budget</h2>
+        <span className="text-[11px] text-gray-500">
+          {benchmark.fromHistory
+            ? `${formatCurrency(benchmark.costPerTicket)} a ticket, from your last ${benchmark.sample.length} profitable show${benchmark.sample.length === 1 ? '' : 's'}`
+            : 'No settled shows yet — using a placeholder rate'}
+        </span>
+      </div>
+
+      <p className={`text-xs mb-4 ${tone}`}>{a.verdict}</p>
+
+      <div className="grid grid-cols-3 gap-3">
+        {([
+          ['Budgeted now', a.budgeted, 'text-white'],
+          [`To sell ${a.breakEvenTickets.toLocaleString()} (break even)`, a.toBreakEven, 'text-gray-300'],
+          ['Recommended', a.recommended, 'text-[#8FD3FF]'],
+        ] as const).map(([label, amount, cls]) => (
+          <div key={label} className="bg-[#0B0D12] border border-gray-800 rounded-xl p-3">
+            <p className="text-[10px] text-gray-500 mb-1 leading-tight">{label}</p>
+            <p className={`text-base font-bold ${cls}`}>{formatCurrency(amount)}</p>
+          </div>
+        ))}
+      </div>
+
+      {benchmark.fromHistory && (
+        <div className="mt-3 pt-3 border-t border-gray-800">
+          <p className="text-[10px] text-gray-600 mb-1.5">What it cost you before</p>
+          <div className="space-y-1">
+            {benchmark.sample.map((s) => (
+              <div key={s.name} className="flex items-center justify-between text-[11px]">
+                <span className="text-gray-500 truncate">{s.name}</span>
+                <span className="text-gray-400 shrink-0 ml-3">
+                  {formatCurrency(s.marketing)} → {s.paidTickets.toLocaleString()} paid ·{' '}
+                  <span className="text-gray-300">{formatCurrency(s.costPerTicket)}/ticket</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

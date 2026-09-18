@@ -14,6 +14,8 @@ import { AIInsights } from './AIInsights';
 import { SubscriptionRequired } from './SubscriptionRequired';
 import { TrialBanner } from './TrialBanner';
 import { cancellationLoss, readCancellation } from '../lib/cancellation';
+import { cashOnHand, type CashOnHand } from '../lib/upfrontCost';
+import { CashOnHandPanel } from './CashOnHandPanel';
 
 interface DashboardStats {
   totalProfit: number;
@@ -53,6 +55,7 @@ export function Home() {
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [settledShows, setSettledShows] = useState(0);
+  const [cash, setCash] = useState<CashOnHand | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -94,6 +97,9 @@ export function Home() {
         // deposits paid, ads already run, refund fees -- and that money is
         // subtracted now. The loss lands in the month the show was cancelled,
         // not the month it was going to happen, because that is when it left.
+        // What is committed before any of these rooms open: deposits and ads.
+        setCash(cashOnHand(offers as any));
+
         const cancelledOffers = offers.filter(o => o.status === 'cancelled');
         const lossOf = (o: any) =>
           Number(o.cancellation_loss) || cancellationLoss(readCancellation(o));
@@ -287,6 +293,8 @@ export function Home() {
             </div>
           </div>
         )}
+
+        {cash && <CashOnHandPanel cash={cash} onOpenShow={(id) => navigate(`/offers/${id}`)} />}
 
         {/* Next event */}
         {nextEvent && (

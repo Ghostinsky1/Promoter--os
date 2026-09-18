@@ -30,6 +30,8 @@ import {
   RevenueChannel, channelTotals, defaultRevenueChannels, newRevenueChannel,
   readRevenueChannels, reconciliationNote, feesAlsoInExpenses,
 } from '../lib/revenueChannels';
+import { SettlementImport, type Extracted } from './SettlementImport';
+import { canImportDocuments } from '../lib/subscriptionTiers';
 
 interface ActualTicketTier {
   type: string;
@@ -296,6 +298,60 @@ export function Settlement() {
 
     const updated = { ...settlement };
     updated.actual_expenses[key] = {};
+    setSettlement(calculateActuals(updated));
+  };
+
+  /**
+   * Take what came off the scanned document and put it into the form.
+   *
+   * This only ever fills the form. The promoter has already approved the
+   * numbers on the review screen, and they still have to press Save here --
+   * two gates, on purpose, because a settlement is the record of what a night
+   * actually cost.
+   */
+  const applyExtracted = (e: Extracted) => {
+    if (!settlement) return;
+    const n = (v: unknown) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+    const updated = { ...settlement };
+
+    // Ticket counts, matched to the tiers already on the settlement by name.
+    // An unmatched tier from the document is left for the promoter rather than
+    // guessed into a row it might not belong to.
+    if (Array.isArray(e.ticket_tiers) && e.ticket_tiers.length > 0) {
+      updated.actual_attendance = updated.actual_attendance.map((tier) => {
+        const hit = e.ticket_tiers.find(
+          (t) => t.type && tier.type && t.type.toLowerCase().trim() === tier.type.toLowerCase().trim(),
+        );
+        return hit && hit.sold != null ? { ...tier, actual_sold: n(hit.sold) } : tier;
+      });
+    }
+
+    // Expense lines go in under the category the document put them in.
+    if (Array.isArray(e.expenses) && e.expenses.length > 0) {
+      const bucket: Record<string, string> = {
+        venue: 'general', staffing: 'general', hospitality: 'general', other: 'general',
+        production: 'production', marketing: 'marketing', travel: 'talent',
+      };
+      const next: any = { ...updated.actual_expenses };
+      for (const line of e.expenses) {
+        if (!line.label) continue;
+        const cat = bucket[line.category] ?? 'general';
+        const key = line.label.toLowerCase().trim().replace(/\s+/g, '_');
+        next[cat] = { ...(next[cat] || {}), [key]: n(line.amount) };
+      }
+      updated.actual_expenses = next;
+    }
+
+    // Where the money came in, when the document broke it out.
+    if (Array.isArray(e.revenue_channels) && e.revenue_channels.length > 0) {
+      updated.actual_revenue_channels = e.revenue_channels.map((c, i) => ({
+        id: `rc_import_${i}`,
+        label: c.label || 'Unnamed channel',
+        gross: n(c.gross),
+        fees: n(c.fees),
+      }));
+    }
+
     setSettlement(calculateActuals(updated));
   };
 
@@ -670,6 +726,14 @@ export function Settlement() {
                 }
               />
             </div>
+
+            {organization && canImportDocuments((organization as any).subscription_tier || 'starter') && (
+              <SettlementImport
+                offer={offer}
+                organizationId={organization.id}
+                onApply={applyExtracted}
+              />
+            )}
 
             <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-6">
               <div className="flex items-center justify-between mb-6">

@@ -162,3 +162,11 @@ export const AI_CONNECTOR_TIERS = ['pro', 'agency_scale'];
 export function canUseAiConnector(tierId: string): boolean {
   return AI_CONNECTOR_TIERS.includes(tierId);
 }
+
+/** Plans that can scan an uploaded settlement. Costs a few cents per document,
+ *  so it sits behind the same gate as the AI connector. */
+export const DOC_IMPORT_TIERS = ['pro', 'agency_scale'];
+
+export function canImportDocuments(tierId: string): boolean {
+  return DOC_IMPORT_TIERS.includes(tierId);
+}

@@ -12,6 +12,7 @@ import { DepositsTab } from './tabs/DepositsTab';
 import { TicketScalingTab } from './tabs/TicketScalingTab';
 import { ExpensesTab } from './tabs/ExpensesTab';
 import { SummaryTab } from './tabs/SummaryTab';
+import { WizardHeader } from './WizardHeader';
 import { EstimateImport, type EstimatePlanRow } from './EstimateImport';
 import { canImportDocuments } from '../lib/subscriptionTiers';
 import { useOrganization } from '../hooks/useOrganization';
@@ -468,71 +469,17 @@ export function EditOffer() {
 
   return (
     <div className="min-h-screen bg-[#1140F0]">
-      {/* Sticky Header */}
-      <div className="bg-[#14171E] border-b border-gray-800 sticky top-16 z-40">
-        <div className="max-w-5xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-white">Edit Offer</h1>
-              <span className="px-3 py-1 bg-[#22262F] text-gray-400 rounded-full text-sm">
-                Step {currentStep} of {steps.length}
-              </span>
-            </div>
-            <button
-              onClick={() => navigate(`/offers/${id}`)}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="relative mb-6">
-            <div className="h-2 bg-[#22262F] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[#8FD3FF] rounded-full transition-all duration-300"
-                style={{ width: `${(currentStep / steps.length) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-
-          {/* Step Indicators */}
-          <div className="flex items-center justify-between gap-2">
-            {steps.map((step) => (
-              <div
-                key={step.number}
-                className="flex flex-col items-center cursor-pointer flex-1"
-                onClick={() => setCurrentStep(step.number)}
-              >
-                <div
-                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-base sm:text-lg font-bold transition-all ${
-                    step.number === currentStep
-                      ? 'bg-[#8FD3FF] text-[#04214D] scale-110 shadow-lg shadow-[#8FD3FF]/30'
-                      : step.number < currentStep
-                      ? 'bg-[#8FD3FF]/30 text-[#8FD3FF]'
-                      : 'bg-[#22262F] text-gray-600'
-                  }`}
-                >
-                  {step.number < currentStep ? (
-                    <Check className="h-5 w-5 sm:h-6 sm:w-6" />
-                  ) : (
-                    step.number
-                  )}
-                </div>
-                <p className={`text-[10px] sm:text-xs mt-2 text-center leading-tight ${
-                  step.number === currentStep ? 'text-[#8FD3FF] font-semibold' : 'text-gray-500'
-                }`}>
-                  {step.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <WizardHeader
+        title="Edit Offer"
+        steps={steps}
+        current={currentStep}
+        onStep={setCurrentStep}
+        onClose={() => navigate(`/offers/${id}`)}
+      />
 
       {/* Main Form Content */}
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-8">
+      <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+        <div className="bg-[#14171E] border border-gray-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8">
           {currentStep === 1 && (
             <EventDetailsTab
               key="event-details"

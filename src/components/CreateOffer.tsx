@@ -11,6 +11,7 @@ import { DepositsTab } from './tabs/DepositsTab';
 import { TicketScalingTab } from './tabs/TicketScalingTab';
 import { ExpensesTab } from './tabs/ExpensesTab';
 import { SummaryTab } from './tabs/SummaryTab';
+import { WizardHeader } from './WizardHeader';
 import { ArrowLeft, ArrowRight, Check, FileText, X, ChevronLeft, ChevronRight, Save } from 'lucide-react';
 import { findExistingShow, isDuplicateShowError } from '../lib/duplicateShow';
 
@@ -253,19 +254,6 @@ export function CreateOffer() {
     setPreviewTemplate(null);
     setAppliedTemplate(template.name);
   };
-
-  const TemplateBanner = () =>
-    appliedTemplate ? (
-      <div className="mb-4 flex items-center justify-between bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 rounded-xl px-4 py-2.5">
-        <p className="text-xs text-[#8FD3FF]">
-          Started from <span className="font-bold">{appliedTemplate}</span> — tickets, expenses and fees
-          are filled in. Change anything you need.
-        </p>
-        <button onClick={() => setAppliedTemplate(null)} className="text-[#8FD3FF]/60 hover:text-[#8FD3FF] text-xs">
-          Dismiss
-        </button>
-      </div>
-    ) : null;
 
   const startFromScratch = () => {
     setShowInitialModal(false);
@@ -694,104 +682,52 @@ export function CreateOffer() {
         </div>
       )}
 
-      {/* Progress Header - Fixed */}
-      <div className="sticky top-16 z-40 bg-[#1140F0]/95 backdrop-blur-lg border-b border-[#04214D]/30">
-        <div className="max-w-5xl mx-auto px-6 py-6">
-          {/* Progress Info */}
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-gray-400 text-sm">Step {currentStep} of {steps.length}</p>
-              <h2 className="text-xl font-bold text-white">{steps[currentStep - 1].title}</h2>
-            </div>
-            <div className="flex items-center gap-3">
-              {templates.length > 0 && (
-                <div className="relative template-selector-container">
-                  <button
-                    onClick={() => setShowTemplateSelector(!showTemplateSelector)}
-                    className="px-4 py-2 bg-[#22262F] text-gray-300 hover:text-white hover:bg-[#2A3040] rounded-xl font-medium transition-colors flex items-center gap-2"
-                  >
-                    <FileText className="w-4 h-4" />
-                    Load Template
-                  </button>
-
-                  {showTemplateSelector && (
-                    <div className="absolute right-0 mt-2 w-72 bg-[#14171E] rounded-xl shadow-lg border border-gray-700 z-20">
-                      <div className="p-2 max-h-96 overflow-y-auto">
-                        {templates.map((template) => (
-                          <button
-                            key={template.id}
-                            onClick={() => loadTemplate(template)}
-                            className="w-full text-left p-3 hover:bg-[#22262F] rounded-lg transition-colors"
-                          >
-                            <div className="font-medium text-white">{template.name}</div>
-                            {template.description && (
-                              <div className="text-sm text-gray-400 mt-1">{template.description}</div>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+      <WizardHeader
+        steps={steps}
+        current={currentStep}
+        onStep={setCurrentStep}
+        onClose={() => navigate('/')}
+        actions={templates.length > 0 ? (
+          <div className="relative template-selector-container">
+            <button
+              onClick={() => setShowTemplateSelector(!showTemplateSelector)}
+              title="Load a template"
+              className="w-9 h-9 sm:w-auto sm:px-3 flex items-center justify-center gap-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#22262F] transition-colors text-xs font-medium"
+            >
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">Template</span>
+            </button>
+            {showTemplateSelector && (
+              <div className="absolute right-0 mt-2 w-72 bg-[#14171E] rounded-xl shadow-lg border border-gray-700 z-20">
+                <div className="p-2 max-h-96 overflow-y-auto">
+                  {templates.map((template) => (
+                    <button
+                      key={template.id}
+                      onClick={() => loadTemplate(template)}
+                      className="w-full text-left p-3 hover:bg-[#22262F] rounded-lg transition-colors"
+                    >
+                      <div className="font-medium text-white">{template.name}</div>
+                      {template.description && (
+                        <div className="text-sm text-gray-400 mt-1">{template.description}</div>
+                      )}
+                    </button>
+                  ))}
                 </div>
-              )}
-              <button
-                onClick={() => navigate('/')}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="relative mb-6">
-            <div className="h-2 bg-[#22262F] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[#8FD3FF] rounded-full transition-all duration-300"
-                style={{ width: `${(currentStep / steps.length) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-
-          <TemplateBanner />
-
-          {/* Step Indicators */}
-          <div className="flex items-center justify-between">
-            {steps.map((step) => (
-              <div
-                key={step.number}
-                className="flex flex-col items-center cursor-pointer"
-                onClick={() => setCurrentStep(step.number)}
-              >
-                <div
-                  className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold transition-all ${
-                    step.number === currentStep
-                      ? 'bg-[#8FD3FF] text-[#04214D] scale-110'
-                      : step.number < currentStep
-                      ? 'bg-[#8FD3FF]/30 text-[#8FD3FF]'
-                      : 'bg-[#22262F] text-gray-600'
-                  }`}
-                >
-                  {step.number < currentStep ? (
-                    <Check className="h-6 w-6" />
-                  ) : (
-                    step.number
-                  )}
-                </div>
-                <p className={`text-xs mt-2 ${
-                  step.number === currentStep ? 'text-[#8FD3FF] font-semibold' : 'text-gray-500'
-                }`}>
-                  {step.label}
-                </p>
               </div>
-            ))}
+            )}
           </div>
-        </div>
-      </div>
+        ) : undefined}
+        note={appliedTemplate ? (
+          <div className="flex items-center justify-between gap-3 text-[11px] text-[#8FD3FF]/80">
+            <span className="truncate">Started from <b>{appliedTemplate}</b> — tickets, expenses and fees filled in.</span>
+            <button onClick={() => setAppliedTemplate(null)} className="text-[#8FD3FF]/50 hover:text-[#8FD3FF] shrink-0">Dismiss</button>
+          </div>
+        ) : undefined}
+      />
 
       {/* Main Form Content */}
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-8">
+      <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+        <div className="bg-[#14171E] border border-gray-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8">
           {currentStep === 1 && (
             <EventDetailsTab
               eventName={eventName}

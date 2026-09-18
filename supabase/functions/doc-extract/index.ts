@@ -47,8 +47,8 @@ const SCHEMA = {
     properties: {
       document_kind: {
         type: 'string',
-        enum: ['settlement', 'offer', 'invoice', 'contract', 'ticket_report', 'unknown'],
-        description: 'What this document actually is. Only settlements are acted on.',
+        enum: ['settlement', 'artist_offer', 'venue_quote', 'rider', 'invoice', 'contract', 'ticket_report', 'unknown'],
+        description: 'What this document actually is. settlement = what a show finished at. artist_offer = an agent offering an act, with a guarantee. venue_quote = a room quoting its charges. rider = an act stating hospitality and production requirements.',
       },
       event_name: { type: ['string', 'null'] },
       artist_name: { type: ['string', 'null'] },
@@ -94,7 +94,19 @@ const SCHEMA = {
           required: ['label', 'category'],
         },
       },
-      artist_payout: { type: ['number', 'null'], description: 'What the document says the artist was paid.' },
+      artist_payout: { type: ['number', 'null'], description: 'On a settlement: what the document says the artist WAS paid. Leave null on a quote or an offer -- use artist_deal there.' },
+      artist_deal: {
+        type: ['object', 'null'],
+        description: 'Only on an artist offer or a contract: the deal as written. Null on a settlement or a venue quote.',
+        properties: {
+          guarantee: { type: ['number', 'null'], description: 'The flat fee offered or agreed.' },
+          deposit_pct: { type: ['number', 'null'], description: 'Deposit as a percentage, if stated as a percentage.' },
+          deposit_amount: { type: ['number', 'null'], description: 'Deposit as a dollar figure, if stated that way.' },
+          artist_percentage: { type: ['number', 'null'], description: 'The artist share of a door or backend split, if any.' },
+          deal_type: { type: ['string', 'null'], description: 'How the document describes it: flat, guarantee vs percentage, door deal, versus.' },
+          payment_terms: { type: ['string', 'null'], description: 'One short line: when the balance is due, how it is paid.' },
+        },
+      },
       stated_gross_revenue: { type: ['number', 'null'] },
       stated_total_expenses: { type: ['number', 'null'] },
       stated_net_profit: { type: ['number', 'null'] },
@@ -116,7 +128,15 @@ const SCHEMA = {
   },
 };
 
-const SYSTEM = `You read one concert settlement document and fill in the schema. Nothing else.
+const SYSTEM = `You read one live-music document and fill in the schema. Nothing else.
+
+WHAT THE DOCUMENT MIGHT BE:
+- settlement: what a show finished at. Tickets sold, expenses incurred, what the artist was paid.
+- artist_offer: an agent offering an act. A guarantee, a deposit, payment terms. Fill artist_deal.
+- venue_quote: a room quoting its charges -- rental, security, sound, staffing. These are EXPENSES.
+- rider: an act's hospitality and production requirements. Only price lines where the rider states
+  an amount; never invent a cost for "3 bottles of tequila" because it does not say what it costs.
+Work out which it is first. Fill only the fields that document actually states.
 
 HOW YOU TALK ABOUT PROBLEMS — the rule that matters most:
 When the paperwork does not add up you say "check this". You NEVER say or imply that anyone is
@@ -236,7 +256,7 @@ Deno.serve(async (req) => {
           role: 'user',
           content: [
             docBlock,
-            { type: 'text', text: `Read this settlement and fill in the schema. Only the first ${MAX_PAGES} pages matter; skip riders, stage plots and blank pages.` },
+            { type: 'text', text: `Read this document and fill in the schema. First work out what it is -- a settlement, an artist offer, a venue quote, or a rider -- then pull out the numbers it actually states. Only the first ${MAX_PAGES} pages matter; skip stage plots and blank pages.` },
           ],
         }],
       }),

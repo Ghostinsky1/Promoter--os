@@ -12,6 +12,9 @@ import { DepositsTab } from './tabs/DepositsTab';
 import { TicketScalingTab } from './tabs/TicketScalingTab';
 import { ExpensesTab } from './tabs/ExpensesTab';
 import { SummaryTab } from './tabs/SummaryTab';
+import { EstimateImport, type EstimatePlanRow } from './EstimateImport';
+import { canImportDocuments } from '../lib/subscriptionTiers';
+import { useOrganization } from '../hooks/useOrganization';
 import { Check, X, ChevronLeft, ChevronRight, Save } from 'lucide-react';
 
 // A rate box the user cleared yields NaN; NaN serializes to null and silently
@@ -24,6 +27,7 @@ interface ArtistDeduction {
 }
 
 export function EditOffer() {
+  const { organization } = useOrganization();
   const { id } = useParams();
   const navigate = useNavigate();
   const isMountedRef = useRef(true);
@@ -293,6 +297,35 @@ export function EditOffer() {
     { number: 5, label: 'Expenses' },
     { number: 6, label: 'Summary' },
   ];
+
+  /**
+   * Put a scanned document's numbers into this estimate.
+   *
+   * Replace-matching-and-add-the-rest, which is what Jose asked for -- but the
+   * review screen has already shown him every replacement as old -> new and let
+   * him untick any of them, so nothing here overwrites work he did by hand
+   * without him having seen it first.
+   */
+  const applyScannedDocument = (rows: EstimatePlanRow[], deal: any) => {
+    if (rows.length > 0) {
+      setExpenses((prev) => {
+        const next: any = { ...prev };
+        for (const r of rows) {
+          next[r.category] = { ...(next[r.category] || {}), [r.key]: r.amount };
+        }
+        return next;
+      });
+    }
+    if (deal) {
+      if (Number.isFinite(Number(deal.guarantee))) setGuarantee(Number(deal.guarantee));
+      if (Number.isFinite(Number(deal.deposit_pct))) setDepositPct(Number(deal.deposit_pct));
+      else if (Number.isFinite(Number(deal.deposit_amount)) && Number(deal.guarantee) > 0) {
+        // The document gave a dollar deposit; the estimate stores a percentage.
+        setDepositPct(Math.round((Number(deal.deposit_amount) / Number(deal.guarantee)) * 100));
+      }
+      if (Number.isFinite(Number(deal.artist_percentage))) setArtistPercentage(Number(deal.artist_percentage));
+    }
+  };
 
   const handleNext = () => {
     console.log('handleNext called, currentStep:', currentStep);
@@ -682,6 +715,17 @@ export function EditOffer() {
             }
 
             return (
+              <>
+              {organization && canImportDocuments((organization as any).subscription_tier || 'starter') && (
+                <div className="mb-6">
+                  <EstimateImport
+                    offerId={id!}
+                    organizationId={organization.id}
+                    expenses={expenses}
+                    onApply={applyScannedDocument}
+                  />
+                </div>
+              )}
               <ExpensesTab
                 key="expenses"
                 expenses={expenses}
@@ -701,6 +745,7 @@ export function EditOffer() {
                 estimatedVariableExpenses={calculations.totalExpenses - (supportActsCost + accommodationTotal + Object.values(expenses).reduce((sum, cat) => sum + Object.values(cat).reduce((s, v) => s + v, 0), 0))}
                 artistGuarantee={guarantee}
               />
+              </>
             );
           })()}
 

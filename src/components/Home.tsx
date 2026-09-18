@@ -20,6 +20,12 @@ import { CashOnHandPanel } from './CashOnHandPanel';
 interface DashboardStats {
   totalProfit: number;
   revenue: number;
+  /** Money that actually came in, from settled shows. */
+  actualRevenue: number;
+  /** Projected gross on shows still to come. */
+  projectedRevenue: number;
+  /** Past shows never settled -- neither actual nor a forecast. */
+  unsettledPast: number;
   costs: number;
   margin: number;
   activeEvents: number;
@@ -74,6 +80,11 @@ export function Home() {
         .from('tours')
         .select('*');
 
+      const { data: settledData } = await supabase
+        .from('settlements')
+        .select('offer_id, actual_revenue');
+      const settledRows = settledData || [];
+
       if (offers) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -81,6 +92,21 @@ export function Home() {
         const activeOffers = offers.filter(o => o.status !== 'cancelled');
 
         const totalRevenue = activeOffers.reduce((sum, o) => sum + (o.calculations?.netGross || 0), 0);
+
+        // The old "Revenue" ticker summed projected gross across every offer
+        // that was not cancelled -- settled shows, upcoming shows, and 25 past
+        // shows nobody ever settled, which were 61% of the figure. $605K on a
+        // dashboard where $29K had actually arrived. Split it into what came
+        // in, what is projected, and what is just sitting there.
+        const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
+        const isPast = (o: any) => new Date(o.show?.event_date).getTime() < dayStart.getTime();
+        const actualRevenue = settledRows.reduce((sum, s) => sum + (Number(s.actual_revenue) || 0), 0);
+        const projectedRevenue = activeOffers
+          .filter(o => o.status !== 'settled' && !isPast(o))
+          .reduce((sum, o) => sum + (o.calculations?.netGross || 0), 0);
+        const unsettledPast = activeOffers
+          .filter(o => o.status !== 'settled' && isPast(o))
+          .reduce((sum, o) => sum + (o.calculations?.netGross || 0), 0);
         const totalCosts = activeOffers.reduce((sum, o) => sum + (o.calculations?.totalExpenses || 0), 0);
         const totalProfit = activeOffers.reduce((sum, o) => sum + (o.calculations?.netProfit || 0), 0);
 
@@ -159,6 +185,9 @@ export function Home() {
           yearCancelledLoss,
           cancelledShows: cancelledOffers.length,
           revenue: totalRevenue,
+          actualRevenue,
+          projectedRevenue,
+          unsettledPast,
           costs: totalCosts,
           margin: totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100) : 0,
           activeEvents,
@@ -252,19 +281,38 @@ export function Home() {
 
       <div className="px-6 py-6 max-w-7xl mx-auto space-y-6">
         {/* KPI row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {[
-            { label: 'Active events', value: `${stats?.activeEvents || 0}` },
-            { label: 'Profit this month', value: `$${((stats?.monthProfit || 0) / 1000).toFixed(1)}K` },
-            { label: 'Revenue', value: `$${((stats?.revenue || 0) / 1000).toFixed(1)}K` },
-            { label: 'Margin', value: `${Math.round(stats?.margin || 0)}%` },
+            { label: 'Active events', value: `${stats?.activeEvents || 0}`, sub: null },
+            { label: 'Profit this month', value: `$${((stats?.monthProfit || 0) / 1000).toFixed(1)}K`, sub: null },
+            { label: 'Actual revenue', value: `$${((stats?.actualRevenue || 0) / 1000).toFixed(1)}K`, sub: 'from settled shows' },
+            { label: 'Projected revenue', value: `$${((stats?.projectedRevenue || 0) / 1000).toFixed(1)}K`, sub: 'upcoming, at a sellout' },
           ].map((k) => (
-            <div key={k.label} className="bg-[#14171E] border border-gray-800 rounded-[22px] p-6">
-              <p className="font-display text-4xl text-[#8FD3FF] mb-1" style={{ textShadow: '0 0 18px rgba(143,211,255,0.45)' }}>{k.value}</p>
-              <p className="font-label text-[11px] tracking-[0.22em] uppercase text-gray-500">{k.label}</p>
+            <div key={k.label} className="bg-[#14171E] border border-gray-800 rounded-[22px] p-4 sm:p-6 min-w-0">
+              <p className="font-display text-3xl sm:text-4xl text-[#8FD3FF] mb-1 leading-none truncate" style={{ textShadow: '0 0 18px rgba(143,211,255,0.45)' }}>{k.value}</p>
+              <p className="font-label text-[10px] sm:text-[11px] tracking-[0.16em] sm:tracking-[0.22em] uppercase text-gray-500 leading-snug">{k.label}</p>
+              {k.sub && <p className="text-[10px] text-gray-600 mt-0.5">{k.sub}</p>}
             </div>
           ))}
         </div>
+
+        {/* Shows that already happened and were never settled. Their projected
+            gross was inflating the revenue ticker; it is neither money that
+            came in nor a forecast. Say so, and point at the fix. */}
+        {(stats?.unsettledPast || 0) > 0 && (
+          <div className="bg-[#14171E] border border-amber-800/40 rounded-[22px] p-4 sm:p-5 flex items-start justify-between gap-4">
+            <div>
+              <p className="font-label text-[11px] tracking-[0.22em] uppercase text-amber-400 mb-1">Not counted anywhere</p>
+              <p className="text-xs text-gray-400">
+                ${Math.round((stats?.unsettledPast || 0) / 1000)}K of projected gross sits on shows that already
+                happened but were never settled. Settle them and it becomes real revenue; cancel them and it's gone.
+              </p>
+            </div>
+            <button onClick={() => navigate('/offers')} className="text-[11px] text-gray-500 hover:text-[#8FD3FF] whitespace-nowrap">
+              See them
+            </button>
+          </div>
+        )}
 
         {/* What cancellations have cost. Only shown when there is something to
             show -- a promoter with no dead shows does not need the reminder. */}

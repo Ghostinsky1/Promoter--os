@@ -77,16 +77,20 @@ export function Header() {
       <header className="sticky top-0 z-50 border-b border-[#2A3040]" style={{ background: "linear-gradient(180deg, rgba(23,26,32,0.96) 0%, rgba(8,9,13,0.96) 100%)", backdropFilter: "blur(14px)", boxShadow: "0 12px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
+            {/* The logo used to be hidden on phones once you were signed in
+                (hidden md:flex), which left the whole top bar empty except for
+                the menu button. It shows everywhere now; the mark stays, the
+                wordmark comes in once there is room for it. */}
             <Link
               to={user ? "/dashboard" : "/"}
-              className={`${user ? 'hidden md:flex' : 'flex'} items-center gap-2 group flex-shrink-0`}
+              className="flex items-center gap-2 group flex-shrink-0"
             >
               <img
                 src="/promoter-os-mark.png"
                 alt="PROMOTER OS Logo"
-                className="w-10 h-10 object-contain transform group-hover:scale-110 transition-transform"
+                className="w-9 h-9 md:w-10 md:h-10 object-contain transform group-hover:scale-110 transition-transform"
               />
-              <img src="/promoter-os-wordmark.png" alt="PROMOTER OS" className="h-6 w-auto object-contain" />
+              <img src="/promoter-os-wordmark.png" alt="PROMOTER OS" className="hidden sm:block h-6 w-auto object-contain" />
             </Link>
 
             {user && (

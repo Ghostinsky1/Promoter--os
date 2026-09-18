@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import { OfferWithShow, CompanySettings } from '../types';
 import { formatCurrency } from './calculations';
 import { parseLocalDate } from './dateHelpers';
+import { channelTotals, readRevenueChannels, reconciliationNote, feesAlsoInExpenses } from './revenueChannels';
 import { PDF, useBrandFonts, drawHeader, drawFooters, tableTheme, label as brandLabel } from './pdfTheme';
 
 interface ActualTicketTier {
@@ -14,6 +15,7 @@ interface ActualTicketTier {
 
 interface Settlement {
   actual_attendance: ActualTicketTier[];
+  actual_revenue_channels?: { id: string; label: string; gross: number; fees: number }[];
   actual_expenses: {
     talent: Record<string, number>;
     general: Record<string, number>;
@@ -140,12 +142,79 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
 
   yPos = (doc as any).lastAutoTable.finalY + 15;
 
+  // Where the money came in. One gross figure cannot be checked; a split can.
+  // It also catches a channel counted twice -- door card taps that actually ran
+  // through the online link are already inside the online total, and without
+  // this the night just quietly looks better than it was.
+  const channels = readRevenueChannels(settlement);
+  const ct = channelTotals(channels, nz(settlement.actual_revenue));
+  if (ct.used) {
+    if (yPos > 220) { doc.addPage(); yPos = 20; }
+    brandLabel(doc, '[ 03 ]  Where the money came in', 20, yPos, { color: PDF.blue });
+    yPos += 2;
+
+    const channelRows: any[] = channels
+      .filter((c) => nz(c.gross) !== 0 || nz(c.fees) !== 0)
+      .map((c) => [
+        c.label || 'Unnamed channel',
+        formatCurrency(nz(c.gross)),
+        formatCurrency(nz(c.fees)),
+        formatCurrency(nz(c.gross) - nz(c.fees)),
+      ]);
+
+    // Anything recorded as gross that no channel accounts for is stated, not
+    // absorbed into whichever row happens to be biggest.
+    if (ct.difference > 0.005) {
+      channelRows.push(['Recorded as gross, channel not listed', formatCurrency(ct.difference), formatCurrency(0), formatCurrency(ct.difference)]);
+    }
+
+    channelRows.push([
+      { content: 'TOTAL', styles: { fontStyle: 'bold' } },
+      { content: formatCurrency(ct.difference > 0.005 ? ct.recordedGross : ct.gross), styles: { fontStyle: 'bold' } },
+      { content: formatCurrency(ct.fees), styles: { fontStyle: 'bold' } },
+      { content: formatCurrency((ct.difference > 0.005 ? ct.recordedGross : ct.gross) - ct.fees), styles: { fontStyle: 'bold' } },
+    ]);
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Channel', 'Gross', 'Fees kept', 'Net']],
+      body: channelRows,
+      ...tableTheme(doc),
+    });
+    yPos = (doc as any).lastAutoTable.finalY + 6;
+
+    // The channels adding up to MORE than the recorded gross is the double-count
+    // case, and it is the one worth shouting about.
+    const warn = ct.difference < -0.005 ? reconciliationNote(ct) : null;
+    const feesBothSides = feesAlsoInExpenses(settlement);
+    const warnings = [
+      warn,
+      feesBothSides > 0 && ct.fees > 0
+        ? `Processing fees appear twice: ${formatCurrency(feesBothSides)} in the expense list and ${formatCurrency(ct.fees)} above. Counted on both sides the night reads worse than it was.`
+        : null,
+    ].filter(Boolean) as string[];
+
+    for (const w of warnings) {
+      doc.setFontSize(8);
+      doc.setTextColor(200, 80, 20);
+      const lines: string[] = doc.splitTextToSize(w, 170);
+      for (const line of lines) {
+        if (yPos > doc.internal.pageSize.getHeight() - 30) { doc.addPage(); yPos = 20; }
+        doc.text(line, 20, yPos);
+        yPos += 4.5;
+      }
+      yPos += 2;
+    }
+    doc.setTextColor(0);
+    yPos += 8;
+  }
+
   if (yPos > 250) {
     doc.addPage();
     yPos = 20;
   }
 
-  brandLabel(doc, '[ 03 ]  Expense breakdown', 20, yPos, { color: PDF.blue });
+  brandLabel(doc, `[ 0${ct.used ? 4 : 3} ]  Expense breakdown`, 20, yPos, { color: PDF.blue });
 
   yPos += 2;
   const expenseData: any[] = [];
@@ -278,7 +347,7 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
   // A document titled "Settlement Report" and handed to an artist never said
   // anywhere what the artist was actually paid. It does now.
   if (yPos > 220) { doc.addPage(); yPos = 20; }
-  brandLabel(doc, '[ 04 ]  Artist payment', 20, yPos, { color: PDF.blue });
+  brandLabel(doc, `[ 0${ct.used ? 5 : 4} ]  Artist payment`, 20, yPos, { color: PDF.blue });
   yPos += 2;
 
   const withholdingPct = nz(offer.tax_withholding_pct);
@@ -339,7 +408,7 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
 
   if (settlement.notes && settlement.notes.trim()) {
     const LH = 4.5;
-    sectionHeading('[ 05 ]  Settlement notes', LH);
+    sectionHeading(`[ 0${ct.used ? 6 : 5} ]  Settlement notes`, LH);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(40);
@@ -356,7 +425,7 @@ export function generateSettlementPDF(offer: OfferWithShow, settlement: Settleme
 
   if (companySettings?.legal_terms) {
     const LH = 4;
-    sectionHeading('[ 06 ]  Terms & conditions', LH);
+    sectionHeading(`[ 0${ct.used ? 7 : 6} ]  Terms & conditions`, LH);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(60);

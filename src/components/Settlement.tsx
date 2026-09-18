@@ -26,6 +26,10 @@ import {
   Printer,
   Send
 } from 'lucide-react';
+import {
+  RevenueChannel, channelTotals, defaultRevenueChannels, newRevenueChannel,
+  readRevenueChannels, reconciliationNote, feesAlsoInExpenses,
+} from '../lib/revenueChannels';
 
 interface ActualTicketTier {
   type: string;
@@ -45,6 +49,7 @@ interface Settlement {
     production: Record<string, number>;
   };
   actual_revenue: number;
+  actual_revenue_channels?: RevenueChannel[];
   actual_total_expenses: number;
   actual_profit: number;
   variance_revenue: number;
@@ -655,6 +660,15 @@ export function Settlement() {
                   </p>
                 </div>
               </div>
+
+              <RevenueChannelsPanel
+                channels={readRevenueChannels(settlement)}
+                recordedGross={settlement.actual_revenue}
+                feesInExpenses={feesAlsoInExpenses(settlement)}
+                onChange={(channels) =>
+                  setSettlement({ ...settlement, actual_revenue_channels: channels })
+                }
+              />
             </div>
 
             <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-6">
@@ -1031,6 +1045,143 @@ export function Settlement() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+
+/**
+ * Where the money came in.
+ *
+ * One gross figure cannot be checked. Split by channel it can: the rows have to
+ * add up to the gross, and when they do not the panel says which way it is out
+ * and what that usually means. On After Hours Vol 1 the ~$360 of door card taps
+ * may have run through the same online link as the app sales, which would have
+ * meant the night lost $360 more than the settlement said -- and nothing in the
+ * document could have told you.
+ */
+function RevenueChannelsPanel({
+  channels,
+  recordedGross,
+  feesInExpenses,
+  onChange,
+}: {
+  channels: RevenueChannel[];
+  recordedGross: number;
+  feesInExpenses: number;
+  onChange: (c: RevenueChannel[]) => void;
+}) {
+  const rows = channels.length > 0 ? channels : [];
+  const t = channelTotals(rows, recordedGross);
+  const note = reconciliationNote(t);
+  const doubleCountedFees = feesInExpenses > 0 && t.fees > 0;
+
+  const patch = (id: string, p: Partial<RevenueChannel>) =>
+    onChange(rows.map((c) => (c.id === id ? { ...c, ...p } : c)));
+
+  const numCls =
+    'w-28 bg-[#14171E] border border-gray-700 text-white text-sm rounded-lg px-2 py-1.5 text-right focus:outline-none focus:ring-1 focus:ring-[#8FD3FF]';
+
+  return (
+    <div className="mt-4 bg-[#0B0D12] border border-gray-800 rounded-2xl p-5">
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-sm font-bold text-white">Where the money came in</h3>
+        {rows.length === 0 && (
+          <button
+            type="button"
+            onClick={() => onChange(defaultRevenueChannels())}
+            className="text-[11px] text-[#8FD3FF] hover:underline"
+          >
+            Set it up
+          </button>
+        )}
+      </div>
+      <p className="text-[11px] text-gray-500 mb-4">
+        Split the gross by how it was taken. If the rows do not add up to the gross, something is
+        missing or counted twice — and you will be told which.
+      </p>
+
+      {rows.length === 0 ? (
+        <p className="text-xs text-gray-600">
+          Not broken out. The report will show one gross figure with nothing behind it.
+        </p>
+      ) : (
+        <>
+          <div className="flex items-center gap-2 text-[10px] text-gray-500 mb-1 px-1">
+            <span className="flex-1">Channel</span>
+            <span className="w-28 text-right">Gross</span>
+            <span className="w-28 text-right">Fees kept</span>
+            <span className="w-24 text-right">Net</span>
+            <span className="w-6" />
+          </div>
+
+          <div className="space-y-2">
+            {rows.map((c) => (
+              <div key={c.id} className="flex items-center gap-2">
+                <input
+                  value={c.label}
+                  placeholder="Channel name"
+                  onChange={(e) => patch(c.id, { label: e.target.value })}
+                  className="flex-1 min-w-0 bg-[#14171E] border border-gray-700 text-white text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#8FD3FF]"
+                />
+                <input
+                  type="number" step="0.01" value={c.gross || ''} placeholder="0"
+                  onChange={(e) => patch(c.id, { gross: parseFloat(e.target.value) || 0 })}
+                  className={numCls}
+                />
+                <input
+                  type="number" step="0.01" value={c.fees || ''} placeholder="0"
+                  onChange={(e) => patch(c.id, { fees: parseFloat(e.target.value) || 0 })}
+                  className={numCls}
+                />
+                <span className="w-24 text-right text-sm text-gray-300">
+                  {formatCurrency((c.gross || 0) - (c.fees || 0))}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onChange(rows.filter((r) => r.id !== c.id))}
+                  title="Remove this channel"
+                  className="w-6 text-gray-600 hover:text-red-400"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onChange([...rows, newRevenueChannel()])}
+            className="w-full mt-3 py-2 border border-dashed border-gray-700 rounded-lg text-[11px] text-gray-500 hover:border-[#8FD3FF] hover:text-[#8FD3FF] transition-colors"
+          >
+            + Add a channel
+          </button>
+
+          <div className="mt-4 pt-3 border-t border-gray-800 flex items-center justify-between text-sm">
+            <span className="text-gray-400">Channels add up to</span>
+            <span className={`font-bold ${t.reconciles ? 'text-white' : 'text-orange-400'}`}>
+              {formatCurrency(t.gross)}
+              <span className="text-gray-500 font-normal"> of {formatCurrency(t.recordedGross)}</span>
+            </span>
+          </div>
+
+          {note && (
+            <p className="mt-2 text-[11px] text-orange-400 leading-relaxed">{note}</p>
+          )}
+          {t.used && t.reconciles && (
+            <p className="mt-2 text-[11px] text-green-400">
+              Reconciles. Net after fees: {formatCurrency(t.net)}.
+            </p>
+          )}
+          {doubleCountedFees && (
+            <p className="mt-2 text-[11px] text-orange-400 leading-relaxed">
+              You have {formatCurrency(feesInExpenses)} of fees in the expense list AND
+              {' '}{formatCurrency(t.fees)} entered here. Counted on both sides, the night looks
+              worse than it was — keep them in one place.
+            </p>
+          )}
+        </>
+      )}
     </div>
   );
 }

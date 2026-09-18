@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { TicketTier, Expenses, OfferStatus, SupportAct, Template } from '../types';
 import { ExtraRevenuePanel } from './ExtraRevenuePanel';
@@ -24,10 +24,12 @@ interface ArtistDeduction {
 
 
 export function CreateOffer() {
+  const location = useLocation();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [appliedTemplate, setAppliedTemplate] = useState<string | null>(null);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   const [showInitialModal, setShowInitialModal] = useState(true);
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
@@ -173,12 +175,43 @@ export function CreateOffer() {
     }
   };
 
+  /**
+   * The Templates page hands a template over in router state when the promoter
+   * presses Use. Nothing here ever read it, so that button navigated to a blank
+   * create form and the template was silently dropped -- the feature looked
+   * broken from the only place it is advertised.
+   */
+  const handedOverRef = useRef(false);
+  useEffect(() => {
+    if (handedOverRef.current) return;
+    const handed = (location.state as any)?.template;
+    if (!handed) return;
+    handedOverRef.current = true;
+    loadTemplate(handed as Template);
+    // Clear it so a refresh does not re-apply over work already done.
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.state]);
+
   const loadTemplate = (template: Template) => {
     setDealType(template.deal_type || 'flat_fee');
     setTaxWithholdingPct(template.tax_withholding_pct ?? 2);
     setDepositPct(template.deposit_pct ?? 20);
     setDepositDueTiming(template.deposit_due_timing || '30_days_before');
     setSalesTaxPct(template.sales_tax_pct ?? 13.18);
+
+    // A template exists so the next show at this venue starts from the last
+    // one. The rights, insurance and card-fee rates are part of that deal, and
+    // they used to be dropped -- the template reproduced the tickets and the
+    // expenses, then quietly reset the fees to the blank form's defaults.
+    const t = template as any;
+    if (t.facility_fee_per_ticket != null) setFacilityFeePerTicket(Number(t.facility_fee_per_ticket));
+    if (t.ascap_rate != null) setAscapRate(Number(t.ascap_rate));
+    if (t.bmi_rate != null) setBmiRate(Number(t.bmi_rate));
+    if (t.sesac_rate != null) setSesacRate(Number(t.sesac_rate));
+    if (t.insurance_per_attendee != null) setInsurancePerAttendee(Number(t.insurance_per_attendee));
+    if (t.cc_fee_rate != null) setCcFeeRate(Number(t.cc_fee_rate));
+    if (t.include_extra_revenue != null) setIncludeExtraRevenue(!!t.include_extra_revenue);
+    if (Array.isArray(t.extra_revenue) && t.extra_revenue.length > 0) setExtraRevenue(t.extra_revenue);
 
     if (template.ticket_tier_templates && template.ticket_tier_templates.length > 0) {
       const tiers: TicketTier[] = template.ticket_tier_templates.map((tt) => ({
@@ -217,7 +250,21 @@ export function CreateOffer() {
     setShowTemplateSelector(false);
     setShowInitialModal(false);
     setPreviewTemplate(null);
+    setAppliedTemplate(template.name);
   };
+
+  const TemplateBanner = () =>
+    appliedTemplate ? (
+      <div className="mb-4 flex items-center justify-between bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 rounded-xl px-4 py-2.5">
+        <p className="text-xs text-[#8FD3FF]">
+          Started from <span className="font-bold">{appliedTemplate}</span> — tickets, expenses and fees
+          are filled in. Change anything you need.
+        </p>
+        <button onClick={() => setAppliedTemplate(null)} className="text-[#8FD3FF]/60 hover:text-[#8FD3FF] text-xs">
+          Dismiss
+        </button>
+      </div>
+    ) : null;
 
   const startFromScratch = () => {
     setShowInitialModal(false);
@@ -682,6 +729,8 @@ export function CreateOffer() {
               ></div>
             </div>
           </div>
+
+          <TemplateBanner />
 
           {/* Step Indicators */}
           <div className="flex items-center justify-between">

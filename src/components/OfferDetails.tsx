@@ -200,6 +200,16 @@ export function OfferDetails() {
           default_allotment: tier.allotment, default_comps: tier.comps
         })),
         expense_categories: expenseCategories,
+        // The fees are part of the deal this template is meant to reproduce.
+        // Without them the next show starts from the blank form's defaults.
+        facility_fee_per_ticket: offer.facility_fee_per_ticket ?? 0,
+        ascap_rate: offer.ascap_rate ?? 0,
+        bmi_rate: offer.bmi_rate ?? 0,
+        sesac_rate: offer.sesac_rate ?? 0,
+        insurance_per_attendee: offer.insurance_per_attendee ?? 0,
+        cc_fee_rate: offer.cc_fee_rate ?? 0,
+        include_extra_revenue: (offer as any).include_extra_revenue ?? false,
+        extra_revenue: (offer as any).extra_revenue ?? [],
         legal_terms: companySettings?.legal_terms || ''
       }]);
       if (error) throw error;

@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Sparkles, TrendingUp, RefreshCw, Loader2 } from 'lucide-react';
+import { Sparkles, TrendingUp, TrendingDown, DollarSign, Target, BarChart3, RefreshCw, Loader2, Calculator } from 'lucide-react';
+
+/** The function sends an icon NAME. Printing that name as text at 4xl was
+ *  the giant "trending-up" taking up half the card on phones. */
+const ICONS: Record<string, typeof TrendingUp> = {
+  'trending-up': TrendingUp,
+  'trending-down': TrendingDown,
+  'dollar-sign': DollarSign,
+  'target': Target,
+  'bar-chart': BarChart3,
+};
 import { supabase, SUPABASE_URL } from '../lib/supabase';
 
 interface Insight {
@@ -123,9 +133,9 @@ export function AIInsights() {
       <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg shadow-sm p-8">
         <div className="text-center">
           <Sparkles className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-          <h3 className="text-xl font-bold mb-2 text-slate-900">AI Learning Mode</h3>
+          <h3 className="text-xl font-bold mb-2 text-slate-900" style={{ textTransform: 'none', letterSpacing: 0 }}>Not enough settled shows yet</h3>
           <p className="text-slate-700 mb-4">
-            {message || 'Settle more shows to unlock AI insights'}
+            {message || 'Settle more shows and patterns will show up here'}
           </p>
           <div className="flex items-center justify-center gap-2 text-sm text-slate-700">
             <div className="w-48 h-3 bg-purple-200 rounded-full overflow-hidden">
@@ -142,67 +152,68 @@ export function AIInsights() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Sparkles className="h-8 w-8 text-purple-600" />
-          <div>
-            <h3 className="text-2xl font-bold text-slate-900">AI Business Insights</h3>
-            <p className="text-sm text-slate-600">
-              Discovered from {insights?.length || 0} patterns in your data
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6">
+      <div className="flex items-start justify-between gap-3 mb-5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <Calculator className="h-5 w-5 text-purple-600 shrink-0" />
+          <div className="min-w-0">
+            {/* Not "AI". It is arithmetic on the promoter's own settlements --
+                every figure is theirs, nothing is generated -- and the label
+                should say so. Same reason the deal score lost the word. */}
+            <h3 className="text-base sm:text-xl font-bold text-slate-900 leading-tight" style={{ textTransform: 'none', letterSpacing: 0 }}>
+              What your settlements say
+            </h3>
+            <p className="text-xs text-slate-500">
+              {insights?.length || 0} pattern{insights?.length === 1 ? '' : 's'} worth acting on, from your own numbers
             </p>
           </div>
         </div>
         <button
           onClick={loadInsights}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+          title="Refresh"
+          className="w-9 h-9 shrink-0 flex items-center justify-center text-slate-500 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
         >
           <RefreshCw className="h-4 w-4" />
-          Refresh
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {insights && insights.length > 0 ? (
-          insights.map((insight, i) => (
-            <div
-              key={i}
-              className="border-l-4 border-purple-500 bg-purple-50 p-4 rounded-r-lg hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start gap-3">
-                <div className="text-4xl flex-shrink-0">{insight.icon}</div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <h4 className="font-bold text-lg text-slate-900">{insight.title}</h4>
-                    <span
-                      className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${getImpactColor(
-                        insight.impact
-                      )}`}
-                    >
-                      {insight.impact} Impact
-                    </span>
+          insights.map((insight, i) => {
+            const Icon = ICONS[insight.icon] ?? BarChart3;
+            return (
+              <div
+                key={i}
+                className="border-l-4 border-purple-500 bg-purple-50 p-3 sm:p-4 rounded-r-xl"
+              >
+                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                  <Icon className="h-4 w-4 text-purple-600 shrink-0" />
+                  <h4 className="font-bold text-sm sm:text-base text-slate-900 leading-snug" style={{ textTransform: 'none', letterSpacing: 0 }}>
+                    {insight.title}
+                  </h4>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${getImpactColor(insight.impact)}`}>
+                    {insight.impact}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-700 mb-2.5 leading-relaxed">{insight.description}</p>
+                <div className="bg-white p-3 rounded-lg border-l-2 border-green-500">
+                  <div className="text-[10px] text-slate-500 mb-0.5 font-semibold uppercase tracking-wide">
+                    What to do
                   </div>
-                  <p className="text-sm text-slate-700 mb-3">{insight.description}</p>
-                  <div className="bg-white p-3 rounded-lg border-l-2 border-green-500">
-                    <div className="text-xs text-slate-600 mb-1 font-semibold">
-                      AI Recommendation
-                    </div>
-                    <div className="font-semibold text-slate-900">{insight.recommendation}</div>
-                  </div>
+                  <div className="text-sm font-semibold text-slate-900 leading-snug">{insight.recommendation}</div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
-          <p className="text-center text-slate-600 py-8">
-            No insights available yet. Settle more shows to unlock AI analysis.
+          <p className="text-center text-slate-600 py-8 text-sm">
+            Nothing to say yet. Settle more shows and patterns will show up here.
           </p>
         )}
       </div>
 
-      <div className="mt-6 pt-6 border-t text-center text-sm text-slate-500">
-        <TrendingUp className="h-4 w-4 inline mr-2" />
-        Powered by your settlement data • Updates automatically
+      <div className="mt-5 pt-4 border-t text-center text-[11px] text-slate-500">
+        Arithmetic on your settled shows. No numbers are generated — every figure here is yours.
       </div>
     </div>
   );

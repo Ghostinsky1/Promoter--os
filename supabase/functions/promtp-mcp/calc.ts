@@ -230,24 +230,44 @@ export function dealSummary(o: Offer) {
 /** Break-even, scenarios, capital needed and risk score (Deal Analyzer). */
 export function analyze(o: Offer, eventDate?: string) {
   const tiers: TicketTier[] = o.ticket_tiers || [];
-  const calc = o.calculations && Object.keys(o.calculations).length ? o.calculations : calculateOffer(o);
-  const fixed = n(calc.fixedExpensesTotal ?? calc.totalExpenses);
-  const variable = n(calc.variableExpensesTotal);
-  const totalCosts = fixed + variable + n(o.guarantee);
+  const calc = calculateOffer(o);
+  const totalCosts = n(calc.totalExpenses) + n(calc.artistCost); // show costs + artist at full sell-through
   const totalSellable = tiers.reduce((s, t) => s + n(t.allotment) - n(t.comps), 0);
   if (totalSellable <= 0) {
     return { error: "No sellable tickets yet — add ticket tiers (allotment and price) first." };
   }
   const avg = tiers.reduce((s, t) => s + n(t.price) * (n(t.allotment) - n(t.comps)), 0) / totalSellable;
-  const tax = n(o.sales_tax_pct) / 100;
-  const beGross = totalCosts / (1 - tax);
-  const beTickets = avg > 0 ? Math.ceil(beGross / avg) : Infinity;
-  const bePct = (beTickets / totalSellable) * 100;
+  const r = variableRates(o);
+  const terms = dealTermsOf(o);
+  const dealTerms = {
+    dealType: dealTypeOf(o), guarantee: n(o.guarantee), taxWithholdingPct: n(o.tax_withholding_pct),
+    artistPercentage: terms.artistPercentage, artistPctBasis: terms.artistPctBasis, doorSplitBasis: terms.doorSplitBasis,
+    artistBackendPct: n(o.artist_backend_pct, 85), promoterBackendPct: n(o.promoter_backend_pct, 15),
+  };
+  const fixed = n(calc.fixedExpensesTotal);
+  // Same math as the app: tax on top (never deducted), fee per the show's switch, artist per the deal type.
+  const at = (tickets: number) => {
+    const ng = netGrossOf(tickets * avg, tickets, n(o.sales_tax_pct), terms.facilityFeePerTicket, terms.facilityFeeMode).netGross;
+    const costs = fixed + ng * (r.ascap + r.bmi + r.sesac + r.cc) + tickets * r.insurance;
+    const d = computeDeal(ng, costs, dealTerms);
+    const r2 = (x: number) => Math.round(x * 100) / 100;
+    return { net_revenue: r2(ng), profit: r2(d.promoterProfit) };
+  };
+  let beTickets = Infinity;
+  if (avg > 0) {
+    let lo = 0, hi = totalSellable;
+    if (at(hi).profit < 0) beTickets = Infinity;
+    else {
+      while (lo < hi) { const mid = Math.floor((lo + hi) / 2); if (at(mid).profit >= 0) hi = mid; else lo = mid + 1; }
+      beTickets = lo;
+    }
+  }
+  const bePct = beTickets === Infinity ? 999 : Math.round((beTickets / totalSellable) * 1000) / 10;
 
   const scenarios = [50, 70, 85, 100].map((p) => {
     const tickets = Math.floor(totalSellable * (p / 100));
-    const net = tickets * avg * (1 - tax);
-    return { sold_pct: p, tickets, net_revenue: net, profit: net - totalCosts };
+    const s = at(tickets);
+    return { sold_pct: p, tickets, net_revenue: s.net_revenue, profit: s.profit };
   });
 
   const artistDeposit = n(o.guarantee) * (n(o.deposit_pct) / 100);
@@ -266,13 +286,15 @@ export function analyze(o: Offer, eventDate?: string) {
     total_costs_including_artist: totalCosts,
     average_ticket_price: avg,
     total_sellable_tickets: totalSellable,
-    break_even: {
-      tickets: beTickets,
-      percent_of_sellable: bePct,
-      net_revenue: beGross * (1 - tax),
-      ticket_buffer: totalSellable - beTickets,
-      confidence: bePct < 50 ? "HIGH" : bePct < 70 ? "MEDIUM" : "LOW",
-    },
+    break_even: beTickets === Infinity
+      ? { tickets: null, percent_of_sellable: null, net_revenue: null, ticket_buffer: null, confidence: "LOW", note: "Does not break even even at a sellout." }
+      : {
+        tickets: beTickets,
+        percent_of_sellable: bePct,
+        net_revenue: at(beTickets).net_revenue,
+        ticket_buffer: totalSellable - beTickets,
+        confidence: bePct < 50 ? "HIGH" : bePct < 70 ? "MEDIUM" : "LOW",
+      },
     scenarios,
     capital_required_upfront: {
       total: artistDeposit + venueDeposit + marketing,

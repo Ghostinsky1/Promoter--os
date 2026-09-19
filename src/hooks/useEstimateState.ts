@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { OfferWithShow, Calculations, TicketTier, Expenses } from '../types';
+import { netGrossOf, computeDeal, dealTermsOf, dealTypeOf, type DealType, type FacilityFeeMode, type PctBasis } from '../lib/calculations';
 
 export function toNumber(val: string | number): number {
   if (typeof val === 'number') return val;
@@ -47,9 +48,14 @@ export interface EstimateState {
   supportActs: SupportActItem[];
   accommodationTotal: number;
   variableRates: VariableRates;
-  dealType: string;
+  dealType: DealType;
   artistBackendPct: number;
   promoterBackendPct: number;
+  facilityFeePerTicket: number;
+  facilityFeeMode: FacilityFeeMode;
+  artistPercentage: number;
+  artistPctBasis: PctBasis;
+  doorSplitBasis: PctBasis;
 }
 
 function initEstimateState(offer: OfferWithShow): EstimateState {
@@ -105,24 +111,29 @@ function initEstimateState(offer: OfferWithShow): EstimateState {
       insurancePerAttendee: offer.insurance_per_attendee ?? 0,
       ccFeeRate: offer.cc_fee_rate ?? 0,
     },
-    dealType: offer.deal_type,
+    dealType: dealTypeOf(offer),
     artistBackendPct: offer.artist_backend_pct ?? 85,
     promoterBackendPct: offer.promoter_backend_pct ?? 15,
+    ...dealTermsOf(offer),
   };
 }
 
 function computeFromState(s: EstimateState): Calculations {
+  // This used to be a second copy of the deal arithmetic that only knew flat
+  // and promoter_profit. It reads the shared model now, so what the offer page
+  // shows while you edit is exactly what gets saved.
   const grossPotential = s.ticketTiers.reduce(
     (sum, t) => sum + (t.allotment - t.comps) * t.price, 0
   );
-  const salesTax = grossPotential * (s.salesTaxPct / 100);
-  const netGross = grossPotential - salesTax;
+  const totalSellable = s.ticketTiers.reduce((sum, t) => sum + (t.allotment - t.comps), 0);
+
+  const g = netGrossOf(grossPotential, totalSellable, s.salesTaxPct, s.facilityFeePerTicket, s.facilityFeeMode);
+  const netGross = g.netGross;
 
   const expenseItemsTotal = s.fixedExpenses.reduce((sum, e) => sum + e.amount, 0);
   const supportActsTotal = s.supportActs.reduce((sum, a) => sum + a.guarantee, 0);
   const fixedExpensesTotal = expenseItemsTotal + supportActsTotal + s.accommodationTotal;
 
-  const totalSellable = s.ticketTiers.reduce((sum, t) => sum + (t.allotment - t.comps), 0);
   let variableExpensesTotal = 0;
   variableExpensesTotal += netGross * s.variableRates.ascapRate;
   variableExpensesTotal += netGross * s.variableRates.bmiRate;
@@ -132,43 +143,37 @@ function computeFromState(s: EstimateState): Calculations {
 
   const totalExpenses = fixedExpensesTotal + variableExpensesTotal;
 
-  let artistTotalPayout = s.artistGuarantee * (1 - s.taxWithholdingPct / 100);
-  let promoterProfit = 0;
-  let splitPoint = 0;
-  let artistBackend = 0;
-  let promoterBackend = 0;
-  let profitPool = 0;
-
-  if (s.dealType === 'promoter_profit') {
-    profitPool = netGross - totalExpenses - s.artistGuarantee;
-    if (profitPool > 0) {
-      artistBackend = profitPool * (s.artistBackendPct / 100);
-      promoterBackend = profitPool * (s.promoterBackendPct / 100);
-      artistTotalPayout = (s.artistGuarantee + artistBackend) * (1 - s.taxWithholdingPct / 100);
-      promoterProfit = promoterBackend;
-    }
-    splitPoint = s.artistGuarantee + totalExpenses;
-  }
-
-  const taxMul = 1 - s.taxWithholdingPct / 100;
-  const grossArtistCost = taxMul > 0 ? artistTotalPayout / taxMul : s.artistGuarantee;
-  const netProfit = netGross - totalExpenses - grossArtistCost;
+  const deal = computeDeal(netGross, totalExpenses, {
+    dealType: s.dealType,
+    guarantee: s.artistGuarantee,
+    taxWithholdingPct: s.taxWithholdingPct,
+    artistPercentage: s.artistPercentage,
+    artistPctBasis: s.artistPctBasis,
+    doorSplitBasis: s.doorSplitBasis,
+    artistBackendPct: s.artistBackendPct,
+    promoterBackendPct: s.promoterBackendPct,
+  });
 
   return {
     grossPotential,
-    salesTax,
+    salesTax: g.salesTax,
     netGross,
     totalExpenses,
+    totalShowCost: totalExpenses + deal.artistCost,
+    artistCost: deal.artistCost,
+    facilityFeeTotal: g.facilityFeeTotal,
+    facilityFeeDeducted: g.facilityFeeDeducted,
+    dealDescription: deal.describe,
     fixedExpensesTotal,
     variableExpensesTotal,
-    netProfit,
-    artistTotalPayout,
-    profitPool: s.dealType === 'promoter_profit' ? profitPool : undefined,
-    promoterProfit: s.dealType === 'promoter_profit' ? promoterProfit : undefined,
-    splitPoint: s.dealType === 'promoter_profit' ? splitPoint : undefined,
-    backend: s.dealType === 'promoter_profit' ? profitPool : undefined,
-    artistBackend: s.dealType === 'promoter_profit' ? artistBackend : undefined,
-    promoterBackend: s.dealType === 'promoter_profit' ? promoterBackend : undefined,
+    netProfit: deal.netProfit,
+    artistTotalPayout: deal.artistTotalPayout,
+    profitPool: s.dealType === 'promoter_profit' ? deal.profitPool : undefined,
+    promoterProfit: s.dealType === 'promoter_profit' ? deal.promoterProfit : undefined,
+    splitPoint: s.dealType === 'promoter_profit' ? deal.splitPoint : undefined,
+    backend: s.dealType === 'promoter_profit' ? deal.profitPool : undefined,
+    artistBackend: deal.artistBackend > 0 ? deal.artistBackend : undefined,
+    promoterBackend: s.dealType === 'promoter_profit' ? deal.promoterBackend : undefined,
   };
 }
 
@@ -211,6 +216,12 @@ export function buildUpdatePayload(s: EstimateState, calc: Calculations) {
     cc_fee_rate: s.variableRates.ccFeeRate,
     artist_backend_pct: s.artistBackendPct,
     promoter_backend_pct: s.promoterBackendPct,
+    deal_type: s.dealType,
+    facility_fee_per_ticket: s.facilityFeePerTicket,
+    facility_fee_mode: s.facilityFeeMode,
+    artist_percentage: s.artistPercentage,
+    artist_pct_basis: s.artistPctBasis,
+    door_split_basis: s.doorSplitBasis,
   };
 }
 
@@ -359,6 +370,11 @@ export function useEstimateState(offer: OfferWithShow | null) {
     setState(prev => prev ? { ...prev, taxWithholdingPct: value } : prev);
   }, []);
 
+  const setDealTerms = useCallback((patch: Partial<Pick<EstimateState,
+    'dealType' | 'facilityFeePerTicket' | 'facilityFeeMode' | 'artistPercentage' | 'artistPctBasis' | 'doorSplitBasis'>>) => {
+    setState(prev => prev ? { ...prev, ...patch } : prev);
+  }, []);
+
   const setDepositPct = useCallback((value: number) => {
     setState(prev => prev ? { ...prev, depositPct: value } : prev);
   }, []);
@@ -382,5 +398,6 @@ export function useEstimateState(offer: OfferWithShow | null) {
     setSalesTaxPct,
     setTaxWithholdingPct,
     setDepositPct,
+    setDealTerms,
   };
 }

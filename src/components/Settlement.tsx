@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { OfferWithShow, CompanySettings } from '../types';
-import { formatCurrency } from '../lib/calculations';
+import { formatCurrency, netGrossOf, computeDeal, dealTermsOf, dealTypeOf } from '../lib/calculations';
 import { generateSettlementPDF } from '../lib/generateSettlementPDF';
 import { parseLocalDate } from '../lib/dateHelpers';
 import { useOrganization } from '../hooks/useOrganization';
@@ -200,25 +200,41 @@ export function Settlement() {
       accommodationTotal += currentOffer.rider_cap;
     }
 
-    // Calculate variable expenses based on actual sales
-    const totalSellable = updatedSettlement.actual_attendance.reduce((sum, tier) => sum + tier.actual_sold, 0);
-    const salesTax = actualRevenue * (currentOffer?.sales_tax_pct || 0) / 100;
-    const netGross = actualRevenue - salesTax;
+    // Same money model as the offer. This screen used to count the facility
+    // fee as an expense (the offer PDF deducted it from gross, the app ignored
+    // it -- three answers), subtract sales tax that is not the promoter's
+    // money, and pay the artist the PROJECTED take-home whatever the deal
+    // said. On a percentage deal the artist is paid on what actually sold.
+    const paidSold = updatedSettlement.actual_attendance
+      .filter((tier) => (tier.price || 0) > 0)
+      .reduce((sum, tier) => sum + tier.actual_sold, 0);
+    const terms = dealTermsOf(currentOffer);
+    const g = netGrossOf(actualRevenue, paidSold, currentOffer?.sales_tax_pct || 0, terms.facilityFeePerTicket, terms.facilityFeeMode);
+    const netGross = g.netGross;
 
-    const facilityFees = totalSellable * (currentOffer?.facility_fee_per_ticket || 0);
     const ascap = netGross * (currentOffer?.ascap_rate || 0);
     const bmi = netGross * (currentOffer?.bmi_rate || 0);
     const sesac = netGross * (currentOffer?.sesac_rate || 0);
-    const insurance = totalSellable * (currentOffer?.insurance_per_attendee || 0);
+    const insurance = paidSold * (currentOffer?.insurance_per_attendee || 0);
     const ccFee = netGross * (currentOffer?.cc_fee_rate || 0);
-    const variableExpenses = facilityFees + ascap + bmi + sesac + insurance + ccFee;
+    const variableExpenses = ascap + bmi + sesac + insurance + ccFee;
 
-    // Total all expenses
+    // Total all expenses (excluding the artist, as everywhere else)
     const actualTotalExpenses = baseExpenses + supportActsCost + accommodationTotal + variableExpenses;
 
-    // Calculate profit after expenses AND artist payment
-    const artistPayment = currentOffer?.calculations.artistTotalPayout || 0;
-    const actualProfit = actualRevenue - actualTotalExpenses - artistPayment;
+    // What the artist is actually owed on the night's real numbers.
+    const deal = computeDeal(netGross, actualTotalExpenses, {
+      dealType: dealTypeOf(currentOffer),
+      guarantee: currentOffer?.guarantee || 0,
+      taxWithholdingPct: currentOffer?.tax_withholding_pct || 0,
+      artistPercentage: terms.artistPercentage,
+      artistPctBasis: terms.artistPctBasis,
+      doorSplitBasis: terms.doorSplitBasis,
+      artistBackendPct: currentOffer?.artist_backend_pct ?? 85,
+      promoterBackendPct: currentOffer?.promoter_backend_pct ?? 15,
+    });
+    const artistPayment = deal.artistCost;
+    const actualProfit = netGross - actualTotalExpenses - artistPayment;
 
     const projectedRevenue = currentOffer?.calculations.grossPotential || 0;
     const projectedExpenses = currentOffer?.calculations.totalExpenses || 0;

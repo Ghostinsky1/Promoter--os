@@ -59,6 +59,10 @@ export function CreateOffer() {
   const [dealType, setDealType] = useState<string>('flat_fee');
   const [guarantee, setGuarantee] = useState<number>(0);
   const [artistPercentage, setArtistPercentage] = useState<number>(100);
+  // Jose's decisions, Sep 19 2026: fee on top, percentages after costs.
+  const [facilityFeeMode, setFacilityFeeMode] = useState<'on_top' | 'inside'>('on_top');
+  const [artistPctBasis, setArtistPctBasis] = useState<'net_after_costs' | 'gross'>('net_after_costs');
+  const [doorSplitBasis, setDoorSplitBasis] = useState<'net_after_costs' | 'gross'>('net_after_costs');
   const [taxWithholdingPct, setTaxWithholdingPct] = useState<number>(2);
   const [depositPct, setDepositPct] = useState<number>(20);
   const [artistBackendPct, setArtistBackendPct] = useState<number>(85);
@@ -288,7 +292,8 @@ export function CreateOffer() {
       insurancePerAttendee,
       ccFeeRate
     },
-    { include: includeExtraRevenue, lines: extraRevenue }
+    { include: includeExtraRevenue, lines: extraRevenue },
+    { facilityFeePerTicket, facilityFeeMode, artistPercentage, artistPctBasis, doorSplitBasis },
   );
 
   const steps = [
@@ -391,6 +396,9 @@ export function CreateOffer() {
         deal_type: dealType,
         guarantee: guarantee,
         artist_percentage: artistPercentage,
+        facility_fee_mode: facilityFeeMode,
+        artist_pct_basis: artistPctBasis,
+        door_split_basis: doorSplitBasis,
         tax_withholding_pct: taxWithholdingPct,
         deposit_pct: depositPct,
         artist_backend_pct: artistBackendPct,
@@ -794,6 +802,12 @@ export function CreateOffer() {
               salesTaxPct={salesTaxPct}
               expenses={expenses}
               facilityFeePerTicket={facilityFeePerTicket}
+              facilityFeeMode={facilityFeeMode}
+              setFacilityFeeMode={setFacilityFeeMode}
+              artistPctBasis={artistPctBasis}
+              setArtistPctBasis={setArtistPctBasis}
+              doorSplitBasis={doorSplitBasis}
+              setDoorSplitBasis={setDoorSplitBasis}
               ascapRate={ascapRate}
               bmiRate={bmiRate}
               sesacRate={sesacRate}

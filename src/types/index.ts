@@ -63,6 +63,12 @@ export interface Calculations {
   /** Everything the night costs, artist fee included. Use this anywhere the
    *  label says "expenses" or "what this show costs". */
   totalShowCost?: number;
+  /** What the show pays the artist before withholding: guarantee, or the
+   *  percentage the deal works out to, whichever the deal type says. */
+  artistCost?: number;
+  facilityFeeTotal?: number;
+  facilityFeeDeducted?: number;
+  dealDescription?: string;
   fixedExpensesTotal?: number;
   variableExpensesTotal?: number;
   netProfit: number;

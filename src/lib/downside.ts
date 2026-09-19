@@ -1,5 +1,5 @@
 import { OfferWithShow } from '../types';
-import { splitExtraRevenue, calculateTotalExpenses } from './calculations';
+import { splitExtraRevenue, calculateTotalExpenses, netGrossOf, computeDeal, dealTermsOf, dealTypeOf } from './calculations';
 
 /**
  * PROMOTER OS — the bad-night test.
@@ -32,7 +32,7 @@ export interface DownsideResult {
   variableExpenses: number;
   /** Venue, production, security, marketing — these do not. */
   fixedExpenses: number;
-  /** What the artist costs, before withholding. Does not move on a flat deal. */
+  /** What the artist costs at this attendance, before withholding. Flat on a flat deal; moves with the door on a percentage deal. */
   artistCost: number;
   /** Bar, parking, sponsorship at this attendance. */
   extraRevenue: number;
@@ -96,9 +96,10 @@ export function downsideAt(offer: OfferWithShow, pct: number): DownsideResult {
   const tickets = Math.floor(sellable * (pct / 100));
 
   const grossRevenue = revenueFor(offer, tickets, downsideMixOf(anyOffer));
-  const facilityFee = num(anyOffer.facility_fee_per_ticket) * tickets;
-  const afterFacility = Math.max(0, grossRevenue - facilityFee);
-  const netGross = afterFacility * (1 - num(offer.sales_tax_pct) / 100);
+  // Same money model as everywhere else: the fee only bites when it is inside
+  // the price, and sales tax is on top and passes through.
+  const terms = dealTermsOf(anyOffer);
+  const netGross = netGrossOf(grossRevenue, tickets, num(offer.sales_tax_pct), terms.facilityFeePerTicket, terms.facilityFeeMode).netGross;
 
   // These follow the count down.
   const variableExpenses =
@@ -116,11 +117,24 @@ export function downsideAt(offer: OfferWithShow, pct: number): DownsideResult {
   if (anyOffer.include_flights) fixedExpenses += num(anyOffer.flight_budget);
   if (anyOffer.include_rider) fixedExpenses += num(anyOffer.rider_cap);
 
-  // A flat guarantee is a flat guarantee whether 40 people show up or 4,000.
-  const artistCost = num(offer.guarantee);
+  // What the artist costs at THIS attendance. A flat guarantee is flat whether
+  // 40 people show up or 4,000; a percentage deal moves with the door, which
+  // is exactly why a promoter picks one -- and why the bad night looks
+  // different under each.
+  const deal = computeDeal(netGross, variableExpenses + fixedExpenses, {
+    dealType: dealTypeOf(anyOffer),
+    guarantee: num(offer.guarantee),
+    taxWithholdingPct: num(anyOffer.tax_withholding_pct),
+    artistPercentage: terms.artistPercentage,
+    artistPctBasis: terms.artistPctBasis,
+    doorSplitBasis: terms.doorSplitBasis,
+    artistBackendPct: num(anyOffer.artist_backend_pct, 85),
+    promoterBackendPct: num(anyOffer.promoter_backend_pct, 15),
+  });
+  const artistCost = deal.artistCost;
 
   const extraRevenue = extrasFor(anyOffer, tickets);
-  const profit = netGross - variableExpenses - fixedExpenses - artistCost + extraRevenue;
+  const profit = deal.netProfit + extraRevenue;
 
   return {
     pct,

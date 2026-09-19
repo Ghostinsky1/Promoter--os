@@ -212,6 +212,7 @@ const OFFER_FIELDS = [
   "hotel_notes", "include_transport", "transport_budget", "transport_notes", "include_flights", "flight_budget",
   "flight_notes", "include_rider", "rider_cap", "rider_notes", "payment_method", "settlement_days",
   "full_payment_due_date", "offer_expires_at", "tour_id",
+  "facility_fee_mode", "artist_pct_basis", "door_split_basis",
 ];
 const SHOW_FIELDS = ["artist_name", "venue_name", "event_date", "capacity", "event_name"];
 
@@ -269,11 +270,14 @@ const offerEditProps = {
   status: statusSchema,
   deal_type: dealTypeSchema,
   guarantee: { type: "number", description: "Artist guarantee in USD" },
-  artist_percentage: { type: "number", description: "Artist % of net (for percentage deals)" },
+  artist_percentage: { type: "number", description: "Artist % for guarantee_vs_percentage, percentage_only and door_deal" },
+  artist_pct_basis: { type: "string", enum: ["net_after_costs", "gross"], description: "What the artist % is of. Default net_after_costs (after the promoter's show costs)." },
+  door_split_basis: { type: "string", enum: ["net_after_costs", "gross"], description: "For door_deal: split after the promoter's costs (default) or the gross door." },
+  facility_fee_mode: { type: "string", enum: ["on_top", "inside"], description: "on_top (default): the venue adds the fee to the ticket price and keeps it, so it never touches the promoter's gross. inside: it is carved out of the face price." },
   deposit_pct: { type: "number", description: "Artist deposit as % of guarantee" },
   deposit_due_date: { type: "string" },
   tax_withholding_pct: { type: "number" },
-  sales_tax_pct: { type: "number", description: "Sales/ticket tax %, app default 13.18" },
+  sales_tax_pct: { type: "number", description: "Sales tax % charged ON TOP of the ticket price and remitted. It is not the promoter's money and never reduces net gross; it is recorded so the pass-through amount is visible." },
   ticket_tiers: tierSchema,
   expenses: expensesSchema,
   venue_street: { type: "string" }, venue_city: { type: "string" }, venue_state: { type: "string" }, venue_zip: { type: "string" },

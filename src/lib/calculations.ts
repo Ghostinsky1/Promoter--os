@@ -49,13 +49,158 @@ export function extraRevenueAt(lines: ExtraRevenueLine[] = [], paidAttendance: n
   return flat + perHead * Math.max(0, paidAttendance || 0);
 }
 
+/**
+ * THE MONEY MODEL. Every path that turns tickets into profit -- the offer
+ * engine, the estimate hook, the bad-night test, break-even, the PDF, the
+ * settlement, the connector -- goes through these two functions. There used
+ * to be four separate copies of this arithmetic and only one of them knew
+ * what a percentage deal was; the one that got saved did not.
+ *
+ * Jose's decisions, Sep 19 2026:
+ *   - Sales tax is added on top of the ticket price and is NOT the promoter's
+ *     money. It passes through. It never reduces net gross.
+ *   - The facility fee is added on top by default: the venue charges it and
+ *     keeps it, neutral to the promoter. Per show it can be switched to
+ *     "inside", where it is carved out of the face price first.
+ *   - The artist's percentage is of net AFTER the promoter's costs, switchable
+ *     per show to a share of gross.
+ *   - A door split is after the promoter's costs, switchable per show.
+ */
+export type DealType =
+  | 'flat_fee' | 'flat_guarantee' | 'promoter_profit'
+  | 'guarantee_vs_percentage' | 'percentage_only' | 'door_deal';
+export type FacilityFeeMode = 'on_top' | 'inside';
+export type PctBasis = 'net_after_costs' | 'gross';
+
+export interface DealTerms {
+  dealType: DealType;
+  guarantee: number;
+  taxWithholdingPct: number;
+  /** For guarantee_vs_percentage, percentage_only and door_deal. */
+  artistPercentage?: number;
+  artistPctBasis?: PctBasis;
+  doorSplitBasis?: PctBasis;
+  /** For promoter_profit only. */
+  artistBackendPct?: number;
+  promoterBackendPct?: number;
+}
+
+export interface GrossResult {
+  /** Face value of every paid ticket. */
+  grossPotential: number;
+  facilityFeeTotal: number;
+  /** What the facility fee did to the promoter's gross: 0 when on top. */
+  facilityFeeDeducted: number;
+  /** Informational. Collected on top and remitted; never the promoter's. */
+  salesTax: number;
+  /** The promoter's gross. Equals grossPotential unless the fee is inside. */
+  netGross: number;
+}
+
+const nz = (v: unknown, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
+
+/** From face value to the promoter's gross. */
+export function netGrossOf(
+  grossPotential: number,
+  paidTickets: number,
+  salesTaxPct: number,
+  facilityFeePerTicket: number,
+  facilityFeeMode: FacilityFeeMode = 'on_top',
+): GrossResult {
+  const facilityFeeTotal = Math.max(0, nz(facilityFeePerTicket)) * Math.max(0, paidTickets);
+  const facilityFeeDeducted = facilityFeeMode === 'inside' ? facilityFeeTotal : 0;
+  const netGross = Math.max(0, grossPotential - facilityFeeDeducted);
+  // Charged on what the promoter actually sells for, on top, passed through.
+  const salesTax = netGross * (nz(salesTaxPct) / 100);
+  return { grossPotential, facilityFeeTotal, facilityFeeDeducted, salesTax, netGross };
+}
+
+export interface DealResult {
+  /** What the show pays the artist, before withholding. The cost to the promoter. */
+  artistCost: number;
+  /** What the artist actually receives, after withholding. */
+  artistTotalPayout: number;
+  /** The percentage-driven part of artistCost, where there is one. */
+  artistBackend: number;
+  /** For promoter_profit deals. */
+  promoterBackend: number;
+  promoterProfit: number;
+  profitPool: number;
+  splitPoint: number;
+  /** netGross - costs - artistCost. Extras are added by the caller. */
+  netProfit: number;
+  /** One line, in the promoter's terms, for screens and the PDF. */
+  describe: string;
+}
+
+/** From the promoter's gross and costs to what the artist gets and what is left. */
+export function computeDeal(netGross: number, totalCosts: number, t: DealTerms): DealResult {
+  const guarantee = Math.max(0, nz(t.guarantee));
+  const withhold = 1 - nz(t.taxWithholdingPct) / 100;
+  const pct = nz(t.artistPercentage) / 100;
+  const netAfterCosts = netGross - totalCosts;
+
+  let artistCost = guarantee;
+  let artistBackend = 0;
+  let promoterBackend = 0;
+  let profitPool = 0;
+  let splitPoint = 0;
+  let describe = `Flat guarantee of $${Math.round(guarantee).toLocaleString('en-US')}.`;
+
+  switch (t.dealType) {
+    case 'guarantee_vs_percentage': {
+      const basis = t.artistPctBasis === 'gross' ? netGross : netAfterCosts;
+      const pctAmount = Math.max(0, basis) * pct;
+      artistCost = Math.max(guarantee, pctAmount);
+      artistBackend = Math.max(0, artistCost - guarantee);
+      describe = `${Math.round(pct * 100)}% of ${t.artistPctBasis === 'gross' ? 'gross' : 'net after your costs'} vs a $${Math.round(guarantee).toLocaleString('en-US')} guarantee, whichever is more.`;
+      break;
+    }
+    case 'percentage_only': {
+      const basis = t.artistPctBasis === 'gross' ? netGross : netAfterCosts;
+      artistCost = Math.max(0, basis) * pct;
+      artistBackend = artistCost;
+      describe = `${Math.round(pct * 100)}% of ${t.artistPctBasis === 'gross' ? 'gross' : 'net after your costs'}, no guarantee.`;
+      break;
+    }
+    case 'door_deal': {
+      const basis = t.doorSplitBasis === 'gross' ? netGross : netAfterCosts;
+      artistCost = Math.max(0, basis) * pct;
+      artistBackend = artistCost;
+      describe = `Artist takes ${Math.round(pct * 100)}% of the door ${t.doorSplitBasis === 'gross' ? 'before' : 'after'} your costs.`;
+      break;
+    }
+    case 'promoter_profit': {
+      const aPct = nz(t.artistBackendPct, 85) / 100;
+      const pPct = nz(t.promoterBackendPct, 15) / 100;
+      profitPool = netGross - totalCosts - guarantee;
+      splitPoint = guarantee + totalCosts;
+      if (profitPool > 0) {
+        artistBackend = profitPool * aPct;
+        promoterBackend = profitPool * pPct;
+        artistCost = guarantee + artistBackend;
+      }
+      describe = `$${Math.round(guarantee).toLocaleString('en-US')} guarantee, then ${Math.round(aPct * 100)}/${Math.round(pPct * 100)} of what is left after costs.`;
+      break;
+    }
+    default:
+      artistCost = guarantee;
+  }
+
+  const artistTotalPayout = artistCost * withhold;
+  const netProfit = netGross - totalCosts - artistCost;
+  const promoterProfit = t.dealType === 'promoter_profit' ? promoterBackend : netProfit;
+
+  return { artistCost, artistTotalPayout, artistBackend, promoterBackend, promoterProfit, profitPool, splitPoint, netProfit, describe };
+}
+
 export function calculateOffer(
   ticketTiers: TicketTier[],
   salesTaxPct: number,
   expenses: Expenses,
   guarantee: number,
   taxWithholdingPct: number,
-  dealType: 'flat_guarantee' | 'promoter_profit',
+  dealType: DealType,
   mode: 'estimate' | 'settlement',
   artistBackendPct: number = 85,
   promoterBackendPct: number = 15,
@@ -78,7 +223,14 @@ export function calculateOffer(
     insurancePerAttendee?: number;
     ccFeeRate?: number;
   },
-  extraRevenue?: { include?: boolean; lines?: ExtraRevenueLine[] }
+  extraRevenue?: { include?: boolean; lines?: ExtraRevenueLine[] },
+  terms?: {
+    facilityFeePerTicket?: number;
+    facilityFeeMode?: FacilityFeeMode;
+    artistPercentage?: number;
+    artistPctBasis?: PctBasis;
+    doorSplitBasis?: PctBasis;
+  },
 ): Calculations {
   const supportActsCost = supportActs.reduce((sum, act) => sum + act.guarantee, 0);
 
@@ -107,9 +259,6 @@ export function calculateOffer(
     return sum + (tickets * tier.price);
   }, 0);
 
-  const salesTax = grossPotential * (salesTaxPct / 100);
-  const netGross = grossPotential - salesTax;
-
   // Paid heads drive anything charged per person.
   const paidAttendance = ticketTiers.reduce((sum, tier) => {
     const tickets = mode === 'settlement' && tier.actualSold !== undefined
@@ -117,6 +266,10 @@ export function calculateOffer(
       : (tier.allotment - tier.comps);
     return sum + tickets;
   }, 0);
+
+  const g = netGrossOf(grossPotential, paidAttendance, salesTaxPct, terms?.facilityFeePerTicket ?? 0, terms?.facilityFeeMode ?? 'on_top');
+  const salesTax = g.salesTax;
+  const netGross = g.netGross;
 
   const extra = splitExtraRevenue(extraRevenue?.lines, extraRevenue?.include !== false);
   const extraRevenueTotal = extra.flat + extra.perHead * paidAttendance;
@@ -141,39 +294,32 @@ export function calculateOffer(
   const fixedExpensesTotal = calculateTotalExpenses(expenses) + supportActsCost + accommodationTotal;
   const totalExpenses = fixedExpensesTotal + variableExpenses;
 
-  let artistTotalPayout = guarantee * (1 - taxWithholdingPct / 100);
-  let promoterProfit = 0;
-  let splitPoint = 0;
-  let backend = 0;
-  let artistBackend = 0;
-  let promoterBackend = 0;
-  let profitPool = 0;
-
-  if (dealType === 'promoter_profit') {
-    profitPool = netGross - totalExpenses - guarantee;
-
-    if (profitPool > 0) {
-      artistBackend = profitPool * (artistBackendPct / 100);
-      promoterBackend = profitPool * (promoterBackendPct / 100);
-      artistTotalPayout = (guarantee + artistBackend) * (1 - taxWithholdingPct / 100);
-      promoterProfit = promoterBackend;
-    }
-
-    splitPoint = guarantee + totalExpenses;
-    backend = profitPool;
-  }
+  const deal = computeDeal(netGross, totalExpenses, {
+    dealType, guarantee, taxWithholdingPct,
+    artistPercentage: terms?.artistPercentage,
+    artistPctBasis: terms?.artistPctBasis,
+    doorSplitBasis: terms?.doorSplitBasis,
+    artistBackendPct, promoterBackendPct,
+  });
+  const artistTotalPayout = deal.artistTotalPayout;
+  const promoterProfit = deal.promoterProfit;
+  const splitPoint = deal.splitPoint;
+  const backend = deal.profitPool;
+  const artistBackend = deal.artistBackend;
+  const promoterBackend = deal.promoterBackend;
+  const profitPool = deal.profitPool;
 
   // Extra revenue lands in the promoter's pocket after the artist is paid. It is
-  // intentionally absent from profitPool above, so the artist's percentage is
+  // intentionally absent from the deal above, so the artist's percentage is
   // calculated on box office alone.
-  const netProfit = netGross - totalExpenses - artistTotalPayout / (1 - taxWithholdingPct / 100) + extraRevenueTotal;
+  const netProfit = deal.netProfit + extraRevenueTotal;
 
   const baseExpenses = calculateTotalExpenses(expenses) + supportActsCost + accommodationTotal;
 
   const projections = mode === 'estimate' ? {
-    capacity70: calculateProjection(ticketTiers, 0.7, salesTaxPct, baseExpenses, guarantee, taxWithholdingPct, dealType, artistBackendPct, promoterBackendPct, variableRates),
-    capacity85: calculateProjection(ticketTiers, 0.85, salesTaxPct, baseExpenses, guarantee, taxWithholdingPct, dealType, artistBackendPct, promoterBackendPct, variableRates),
-    capacity100: calculateProjection(ticketTiers, 1.0, salesTaxPct, baseExpenses, guarantee, taxWithholdingPct, dealType, artistBackendPct, promoterBackendPct, variableRates),
+    capacity70: calculateProjection(ticketTiers, 0.7, salesTaxPct, baseExpenses, guarantee, taxWithholdingPct, dealType, artistBackendPct, promoterBackendPct, variableRates, terms),
+    capacity85: calculateProjection(ticketTiers, 0.85, salesTaxPct, baseExpenses, guarantee, taxWithholdingPct, dealType, artistBackendPct, promoterBackendPct, variableRates, terms),
+    capacity100: calculateProjection(ticketTiers, 1.0, salesTaxPct, baseExpenses, guarantee, taxWithholdingPct, dealType, artistBackendPct, promoterBackendPct, variableRates, terms),
   } : undefined;
 
   return {
@@ -187,7 +333,11 @@ export function calculateOffer(
     // Artist money is a cost of the night like any other. totalExpenses leaves it
     // out because the profit formula subtracts it separately; every screen that
     // says "expenses" should use this instead.
-    totalShowCost: totalExpenses + artistTotalPayout / (1 - taxWithholdingPct / 100),
+    totalShowCost: totalExpenses + deal.artistCost,
+    artistCost: deal.artistCost,
+    facilityFeeTotal: g.facilityFeeTotal,
+    facilityFeeDeducted: g.facilityFeeDeducted,
+    dealDescription: deal.describe,
     extraRevenueTotal,
     extraRevenuePerHead: extra.perHead,
     artistTotalPayout,
@@ -195,7 +345,7 @@ export function calculateOffer(
     promoterProfit: dealType === 'promoter_profit' ? promoterProfit : undefined,
     splitPoint: dealType === 'promoter_profit' ? splitPoint : undefined,
     backend: dealType === 'promoter_profit' ? backend : undefined,
-    artistBackend: dealType === 'promoter_profit' ? artistBackend : undefined,
+    artistBackend: artistBackend > 0 ? artistBackend : undefined,
     promoterBackend: dealType === 'promoter_profit' ? promoterBackend : undefined,
     projections,
   };
@@ -208,7 +358,7 @@ function calculateProjection(
   baseExpenses: number,
   guarantee: number,
   taxWithholdingPct: number,
-  dealType: 'flat_guarantee' | 'promoter_profit',
+  dealType: DealType,
   artistBackendPct: number = 85,
   promoterBackendPct: number = 15,
   variableRates?: {
@@ -217,7 +367,14 @@ function calculateProjection(
     sesacRate?: number;
     insurancePerAttendee?: number;
     ccFeeRate?: number;
-  }
+  },
+  terms?: {
+    facilityFeePerTicket?: number;
+    facilityFeeMode?: FacilityFeeMode;
+    artistPercentage?: number;
+    artistPctBasis?: PctBasis;
+    doorSplitBasis?: PctBasis;
+  },
 ): ProjectionResult {
   const totalSellable = ticketTiers.reduce((sum, tier) => sum + (tier.allotment - tier.comps), 0);
   const projectedTickets = Math.floor(totalSellable * capacityPct);
@@ -228,10 +385,10 @@ function calculateProjection(
     return sum + (tierProjected * tier.price);
   }, 0);
 
-  const salesTax = grossPotential * (salesTaxPct / 100);
-  const netGross = grossPotential - salesTax;
+  // Same money model as the full offer, at this attendance.
+  const g = netGrossOf(grossPotential, projectedTickets, salesTaxPct, terms?.facilityFeePerTicket ?? 0, terms?.facilityFeeMode ?? 'on_top');
+  const netGross = g.netGross;
 
-  // Calculate variable expenses for this projection
   let variableExpenses = 0;
   if (variableRates) {
     variableExpenses += netGross * (variableRates.ascapRate || 0);
@@ -243,32 +400,22 @@ function calculateProjection(
 
   const totalExpenses = baseExpenses + variableExpenses;
 
-  let artistPayout = guarantee * (1 - taxWithholdingPct / 100);
-  let promoterProfit = 0;
-  let splitPointHit = false;
-
-  if (dealType === 'promoter_profit') {
-    const profitPool = netGross - totalExpenses - guarantee;
-
-    if (profitPool > 0) {
-      splitPointHit = true;
-      const artistBackend = profitPool * (artistBackendPct / 100);
-      const promoterBackend = profitPool * (promoterBackendPct / 100);
-      artistPayout = (guarantee + artistBackend) * (1 - taxWithholdingPct / 100);
-      promoterProfit = promoterBackend;
-    }
-  }
-
-  const netProfit = netGross - totalExpenses - artistPayout / (1 - taxWithholdingPct / 100);
+  const deal = computeDeal(netGross, totalExpenses, {
+    dealType, guarantee, taxWithholdingPct,
+    artistPercentage: terms?.artistPercentage,
+    artistPctBasis: terms?.artistPctBasis,
+    doorSplitBasis: terms?.doorSplitBasis,
+    artistBackendPct, promoterBackendPct,
+  });
 
   return {
     tickets: projectedTickets,
     grossPotential,
     netGross,
-    artistPayout,
-    promoterProfit,
-    netProfit,
-    splitPointHit,
+    artistPayout: deal.artistTotalPayout,
+    promoterProfit: deal.promoterProfit,
+    netProfit: deal.netProfit,
+    splitPointHit: dealType === 'promoter_profit' ? deal.profitPool > 0 : deal.netProfit >= 0,
   };
 }
 
@@ -320,18 +467,32 @@ export function getExpenseBreakdown(calculations: Calculations, guarantee: numbe
  * `offer.calculations.totalExpenses`, which on those offers is undefined, and
  * the page filled with NaN and "$NaN". Run the offer through this first.
  */
-export function ensureCalculations(offer: any): Calculations {
-  const c = offer?.calculations;
-  if (c && typeof c === 'object' && typeof c.totalExpenses === 'number') return c as Calculations;
+/** The deal switches as stored on an offer row, with the decided defaults. */
+export function dealTermsOf(offer: any) {
+  return {
+    facilityFeePerTicket: Number(offer?.facility_fee_per_ticket) || 0,
+    facilityFeeMode: (offer?.facility_fee_mode === 'inside' ? 'inside' : 'on_top') as FacilityFeeMode,
+    artistPercentage: Number(offer?.artist_percentage) || 0,
+    artistPctBasis: (offer?.artist_pct_basis === 'gross' ? 'gross' : 'net_after_costs') as PctBasis,
+    doorSplitBasis: (offer?.door_split_basis === 'gross' ? 'gross' : 'net_after_costs') as PctBasis,
+  };
+}
 
+const DEAL_TYPES = new Set<DealType>(['flat_fee', 'flat_guarantee', 'promoter_profit', 'guarantee_vs_percentage', 'percentage_only', 'door_deal']);
+export function dealTypeOf(offer: any): DealType {
+  return DEAL_TYPES.has(offer?.deal_type) ? offer.deal_type : 'flat_fee';
+}
+
+/** Recompute an offer's calculations from its own row. The one way to do it. */
+export function calculateFromOffer(offer: any, mode: 'estimate' | 'settlement' = 'estimate'): Calculations {
   return calculateOffer(
     offer?.ticket_tiers || [],
     Number(offer?.sales_tax_pct) || 0,
     offer?.expenses || { talent: {}, general: {}, marketing: {}, production: {} },
     Number(offer?.guarantee) || 0,
     Number(offer?.tax_withholding_pct) || 0,
-    offer?.deal_type === 'promoter_profit' ? 'promoter_profit' : 'flat_guarantee',
-    'estimate',
+    dealTypeOf(offer),
+    mode,
     Number(offer?.artist_backend_pct) || 85,
     Number(offer?.promoter_backend_pct) || 15,
     offer?.support_acts || [],
@@ -354,5 +515,12 @@ export function ensureCalculations(offer: any): Calculations {
       ccFeeRate: Number(offer?.cc_fee_rate) || 0,
     },
     { include: offer?.include_extra_revenue, lines: offer?.extra_revenue || [] },
+    dealTermsOf(offer),
   );
+}
+
+export function ensureCalculations(offer: any): Calculations {
+  const c = offer?.calculations;
+  if (c && typeof c === 'object' && typeof c.totalExpenses === 'number') return c as Calculations;
+  return calculateFromOffer(offer);
 }

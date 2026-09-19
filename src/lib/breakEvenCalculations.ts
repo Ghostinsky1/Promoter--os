@@ -1,13 +1,6 @@
 import { OfferWithShow } from '../types';
-import { getExpenseBreakdown, splitExtraRevenue } from './calculations';
-
-/** The promoter's bar / extras on an offer, split into a flat total and a per-head rate. */
-function extrasOn(offer: OfferWithShow) {
-  return splitExtraRevenue(
-    (offer as any).extra_revenue,
-    (offer as any).include_extra_revenue !== false,
-  );
-}
+import { getExpenseBreakdown } from './calculations';
+import { survivalRead, downsideAt } from './downside';
 
 export interface BreakEvenResult {
   tickets: number;
@@ -25,53 +18,33 @@ export interface ScenarioResult {
 }
 
 export function calculateBreakEven(offer: OfferWithShow): BreakEvenResult {
-  const totalCosts = getExpenseBreakdown(offer.calculations, offer.guarantee).totalExpenses;
+  // Reads the same bad-night engine as the Deal Score, so this page and that
+  // one never disagree. That engine walks the room a ticket at a time with
+  // every cost line moving the way it actually moves; the old version here
+  // divided costs by an average price and subtracted sales tax that is not
+  // the promoter's money.
   const totalSellable = offer.ticket_tiers.reduce((sum, tier) => sum + (tier.allotment - tier.comps), 0);
-  const avgTicketPrice = offer.ticket_tiers.reduce((sum, tier) =>
-    sum + (tier.price * (tier.allotment - tier.comps)), 0
-  ) / totalSellable;
-
-  // Bar and extras change break-even two different ways, so they're applied
-  // separately: a flat sponsorship is money you don't have to sell tickets for,
-  // while a per-head bar cut raises what every ticket is worth to you.
-  const { flat, perHead } = extrasOn(offer);
-
-  const netPerTicket = avgTicketPrice * (1 - (offer.sales_tax_pct / 100)) + perHead;
-  const costsToCover = Math.max(0, totalCosts - flat);
-
-  const breakEvenTickets = netPerTicket > 0 ? Math.ceil(costsToCover / netPerTicket) : 0;
-  const breakEvenNetRevenue = breakEvenTickets * avgTicketPrice * (1 - (offer.sales_tax_pct / 100));
+  const read = survivalRead(offer);
+  const breakEvenTickets = read.breakEvenTickets >= 0 ? read.breakEvenTickets : totalSellable;
+  const atBreakEven = downsideAt(offer, totalSellable > 0 ? (breakEvenTickets / totalSellable) * 100 : 0);
 
   return {
     tickets: breakEvenTickets,
     percentage: totalSellable > 0 ? (breakEvenTickets / totalSellable) * 100 : 0,
-    revenue: breakEvenNetRevenue,
-    buffer: totalSellable - breakEvenTickets
+    revenue: atBreakEven.netGross,
+    buffer: totalSellable - breakEvenTickets,
   };
 }
 
 export function calculateScenarios(offer: OfferWithShow): ScenarioResult[] {
-  const totalSellable = offer.ticket_tiers.reduce((sum, tier) => sum + (tier.allotment - tier.comps), 0);
-  const avgTicketPrice = offer.ticket_tiers.reduce((sum, tier) =>
-    sum + (tier.price * (tier.allotment - tier.comps)), 0
-  ) / totalSellable;
-  const totalCosts = getExpenseBreakdown(offer.calculations, offer.guarantee).totalExpenses;
-  const { flat, perHead } = extrasOn(offer);
-
   return [50, 70, 85, 100].map(pct => {
-    const tickets = Math.floor(totalSellable * (pct / 100));
-    const grossRevenue = tickets * avgTicketPrice;
-    const salesTax = grossRevenue * (offer.sales_tax_pct / 100);
-    const netRevenue = grossRevenue - salesTax;
-    const extras = flat + perHead * tickets;
-    const profit = netRevenue + extras - totalCosts;
-
+    const d = downsideAt(offer, pct);
     return {
       percentage: pct,
-      tickets,
-      revenue: netRevenue,
-      profit,
-      isProfit: profit >= 0
+      tickets: d.tickets,
+      revenue: d.netGross,
+      profit: d.profit,
+      isProfit: d.profit >= 0,
     };
   });
 }

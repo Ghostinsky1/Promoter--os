@@ -2,6 +2,7 @@ import { formatCurrency } from '../../lib/calculations';
 import { SupportAct, TicketTier, Expenses } from '../../types';
 import { SupportActCard } from './SupportActCard';
 import { Plus, Music, Info, Hotel, Car, Plane, AlertCircle, DollarSign, Check, Banknote, CalendarCheck, Calendar } from 'lucide-react';
+import { netGrossOf, computeDeal, calculateTotalExpenses, type FacilityFeeMode, type PctBasis, type DealType } from '../../lib/calculations';
 
 interface ArtistDeduction {
   name: string;
@@ -35,6 +36,12 @@ interface ArtistDealTabProps {
   salesTaxPct?: number;
   expenses?: Expenses;
   facilityFeePerTicket?: number;
+  facilityFeeMode?: FacilityFeeMode;
+  setFacilityFeeMode?: (v: FacilityFeeMode) => void;
+  artistPctBasis?: PctBasis;
+  setArtistPctBasis?: (v: PctBasis) => void;
+  doorSplitBasis?: PctBasis;
+  setDoorSplitBasis?: (v: PctBasis) => void;
   ascapRate?: number;
   bmiRate?: number;
   sesacRate?: number;
@@ -102,6 +109,12 @@ export function ArtistDealTab({
   salesTaxPct = 0,
   expenses = { talent: {}, production: {}, marketing: {}, general: {} },
   facilityFeePerTicket = 2,
+  facilityFeeMode = 'on_top',
+  setFacilityFeeMode = () => {},
+  artistPctBasis = 'net_after_costs',
+  setArtistPctBasis = () => {},
+  doorSplitBasis = 'net_after_costs',
+  setDoorSplitBasis = () => {},
   ascapRate = 0.0023,
   bmiRate = 0.003,
   sesacRate = 0.000214,
@@ -146,72 +159,41 @@ export function ArtistDealTab({
   const depositAmount = guarantee * (depositPct / 100);
 
   const calculateDealPayouts = () => {
-    const grossPotential = ticketTiers.reduce((sum, tier) =>
-      sum + (tier.allotment * tier.price), 0
-    );
+    // This tab used to carry its own copy of the deal math -- the only copy
+    // that knew what a percentage deal was, and not the one that got saved.
+    // It reads the shared engine now, so the preview here is the number that
+    // lands on the offer, the PDF, and the bad-night test.
+    const totalSellable = ticketTiers.reduce((sum, tier) => sum + (tier.allotment - tier.comps), 0);
+    const grossPotential = ticketTiers.reduce((sum, tier) => sum + ((tier.allotment - tier.comps) * tier.price), 0);
+    const g = netGrossOf(grossPotential, totalSellable, salesTaxPct, facilityFeePerTicket, facilityFeeMode);
+    const netGross = g.netGross;
 
-    const totalSellable = ticketTiers.reduce((sum, tier) =>
-      sum + (tier.allotment - tier.comps), 0
-    );
+    const fixedExpenses = calculateTotalExpenses(expenses) + supportActs.reduce((sum, act) => sum + (act.guarantee || 0), 0);
+    const variableExpenses =
+      netGross * ascapRate + netGross * bmiRate + netGross * sesacRate +
+      totalSellable * insurancePerAttendee + netGross * ccFeeRate;
+    const totalExpenses = fixedExpenses + variableExpenses;
+    const netRevenue = netGross - totalExpenses;
 
-    const facilityFees = totalSellable * facilityFeePerTicket;
-    const adjustedGross = grossPotential - facilityFees;
-    const salesTax = adjustedGross * (salesTaxPct / 100);
-    const netGross = adjustedGross - salesTax;
-
-    const fixedExpenses =
-      Object.values(expenses.talent || {}).reduce((sum: number, val) => sum + (val || 0), 0) +
-      Object.values(expenses.production || {}).reduce((sum: number, val) => sum + (val || 0), 0) +
-      Object.values(expenses.marketing || {}).reduce((sum: number, val) => sum + (val || 0), 0) +
-      Object.values(expenses.general || {}).reduce((sum: number, val) => sum + (val || 0), 0) +
-      supportActs.reduce((sum, act) => sum + (act.guarantee || 0), 0);
-
-    const ascap = netGross * ascapRate;
-    const bmi = netGross * bmiRate;
-    const sesac = netGross * sesacRate;
-    const insurance = totalSellable * insurancePerAttendee;
-    const ccFee = netGross * ccFeeRate;
-    const variableExpenses = ascap + bmi + sesac + insurance + ccFee;
-
-    const netRevenue = netGross - fixedExpenses - variableExpenses;
-
-    let artistPayout = 0;
-    let promoterProfit = 0;
-
-    switch (dealType) {
-      case 'flat_fee':
-        artistPayout = guarantee;
-        promoterProfit = netRevenue - artistPayout;
-        break;
-
-      case 'guarantee_vs_percentage':
-        const percentageAmount = netRevenue * (artistPercentage / 100);
-        artistPayout = Math.max(guarantee, percentageAmount);
-        promoterProfit = netRevenue - artistPayout;
-        break;
-
-      case 'percentage_only':
-        artistPayout = netRevenue * (artistPercentage / 100);
-        promoterProfit = netRevenue - artistPayout;
-        break;
-
-      case 'door_deal':
-        artistPayout = netRevenue * (artistPercentage / 100);
-        promoterProfit = netRevenue - artistPayout;
-        break;
-
-      default:
-        artistPayout = guarantee;
-        promoterProfit = netRevenue - artistPayout;
-    }
+    const deal = computeDeal(netGross, totalExpenses, {
+      dealType: dealType as DealType,
+      guarantee,
+      taxWithholdingPct,
+      artistPercentage,
+      artistPctBasis,
+      doorSplitBasis,
+      artistBackendPct,
+      promoterBackendPct,
+    });
 
     return {
       grossPotential,
       netGross,
       netRevenue,
-      artistPayout,
-      promoterProfit,
-      totalExpenses: fixedExpenses + variableExpenses
+      artistPayout: deal.artistCost,
+      promoterProfit: deal.netProfit,
+      totalExpenses,
+      describe: deal.describe,
     };
   };
 
@@ -388,11 +370,62 @@ export function ArtistDealTab({
                 />
                 <span className="text-gray-400 font-medium">%</span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                % of net revenue after expenses
-              </p>
+
+              {/* The switch. Of what? After your costs is the default because
+                  that is how these deals are actually written; gross is there
+                  for the agent who insists. */}
+              {dealType === 'door_deal' ? (
+                <BasisSwitch
+                  label="Split the door"
+                  value={doorSplitBasis}
+                  onChange={setDoorSplitBasis}
+                  afterLabel="after your costs"
+                  grossLabel="before costs (gross)"
+                />
+              ) : (
+                <BasisSwitch
+                  label="Percentage of"
+                  value={artistPctBasis}
+                  onChange={setArtistPctBasis}
+                  afterLabel="net after your costs"
+                  grossLabel="gross"
+                />
+              )}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Facility fee: on top by default. The venue charges the fan and keeps
+          it, so it never touches your gross. Switch it when the fee is carved
+          out of the face price instead. */}
+      <div className="bg-[#0B0D12] border border-gray-700 rounded-2xl p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h4 className="text-sm font-bold text-white">Facility fee</h4>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {facilityFeePerTicket > 0
+                ? `$${facilityFeePerTicket.toFixed(2)} a ticket. ${facilityFeeMode === 'inside'
+                    ? 'Carved out of your ticket price — it comes off your gross first.'
+                    : 'Added on top of the price by the venue, who keeps it. Not your money either way.'}`
+                : 'No facility fee on this show.'}
+            </p>
+          </div>
+          <div className="flex rounded-lg overflow-hidden border border-gray-700 shrink-0">
+            {(['on_top', 'inside'] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setFacilityFeeMode(m)}
+                style={{ textTransform: 'none', letterSpacing: 0 }}
+                className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                  facilityFeeMode === m ? 'bg-[#8FD3FF] text-[#04214D]' : 'bg-[#14171E] text-gray-400 hover:text-white'
+                }`}
+              >
+                {m === 'on_top' ? 'On top' : 'Inside price'}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1322,6 +1355,38 @@ export function ArtistDealTab({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+
+function BasisSwitch({
+  label, value, onChange, afterLabel, grossLabel,
+}: {
+  label: string;
+  value: PctBasis;
+  onChange: (v: PctBasis) => void;
+  afterLabel: string;
+  grossLabel: string;
+}) {
+  return (
+    <div className="mt-3">
+      <p className="text-xs text-gray-500 mb-1.5">{label}</p>
+      <div className="flex rounded-lg overflow-hidden border border-gray-700 w-fit">
+        {([['net_after_costs', afterLabel], ['gross', grossLabel]] as const).map(([v, text]) => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => onChange(v)}
+            style={{ textTransform: 'none', letterSpacing: 0 }}
+            className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+              value === v ? 'bg-[#8FD3FF] text-[#04214D]' : 'bg-[#14171E] text-gray-400 hover:text-white'
+            }`}
+          >
+            {text}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

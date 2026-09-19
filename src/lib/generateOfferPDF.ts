@@ -1,4 +1,4 @@
-import { extraRevenueAt, ensureCalculations } from './calculations';
+import { extraRevenueAt, calculateFromOffer, netGrossOf, dealTermsOf } from './calculations';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { OfferWithShow, CompanySettings } from '../types';
@@ -47,19 +47,26 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
 
   // Some offers (AI connector, imports, older builds) carry no calculations at
   // all. Without this the whole PDF prints NaN.
-  const calc = ensureCalculations(offer);
+  // Always recompute from the row. The stored blob is only as fresh as the
+  // last save, and this document goes to an artist.
+  const calc = calculateFromOffer(offer);
   offer = { ...offer, calculations: calc } as typeof offer;
 
-  const facilityFee = Number.isFinite(Number(offer.facility_fee_per_ticket)) ? Number(offer.facility_fee_per_ticket) : 0;
+  const terms = dealTermsOf(offer);
+  const facilityFee = terms.facilityFeePerTicket;
   const totalAllotment = offer.ticket_tiers.reduce((sum, t) => sum + t.allotment, 0);
   const totalComps = offer.ticket_tiers.reduce((sum, t) => sum + t.comps, 0);
   const totalSellable = totalAllotment - totalComps;
 
-  const grossPotential = offer.ticket_tiers.reduce((sum, t) => sum + (t.allotment * t.price), 0);
-  const totalFacilityFee = totalSellable * facilityFee;
-  const adjustedGrossPotential = grossPotential - totalFacilityFee;
-  const salesTaxAmount = adjustedGrossPotential * (offer.sales_tax_pct / 100);
-  const netGrossPotential = adjustedGrossPotential - salesTaxAmount;
+  // The same money model as the app. The PDF used to deduct the facility fee
+  // AND sales tax from gross on its own, while the app ignored the fee and
+  // the settlement counted it as an expense -- three answers for one show.
+  const grossPotential = offer.ticket_tiers.reduce((sum, t) => sum + ((t.allotment - t.comps) * t.price), 0);
+  const g = netGrossOf(grossPotential, totalSellable, offer.sales_tax_pct, facilityFee, terms.facilityFeeMode);
+  const totalFacilityFee = g.facilityFeeTotal;
+  const facilityFeeDeducted = g.facilityFeeDeducted;
+  const salesTaxAmount = g.salesTax;
+  const netGrossPotential = g.netGross;
 
   // NEVER default these to a "standard" rate. If the promoter set a rate to 0
   // (or never set one), the PDF must print 0 -- inventing an ASCAP fee the
@@ -83,11 +90,11 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
   const totalFixedExpenses = offer.calculations.fixedExpensesTotal
     ?? Math.max(0, offer.calculations.totalExpenses - (offer.calculations.variableExpensesTotal ?? variableFromRates));
 
-  const artistWalkout = offer.calculations.artistTotalPayout;
+  const artistWalkout = calc.artistTotalPayout;
   // What the artist receives is net of withholding; what the SHOW costs is the
-  // full guarantee, because the withheld part is still money you hand over.
-  const withholding = 1 - ((offer.tax_withholding_pct ?? 0) / 100);
-  const artistCost = withholding > 0 ? artistWalkout / withholding : artistWalkout;
+  // full amount the deal works out to -- guarantee or percentage -- because
+  // the withheld part is still money you hand over.
+  const artistCost = calc.artistCost ?? artistWalkout;
   const artistDeductionsTotal = (offer.artist_deductions || []).reduce((sum, d) => sum + (d.amount || 0), 0);
 
   // Bar, parking, sponsorship — promoter money, internal view only.
@@ -189,7 +196,7 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
   const tableData = offer.ticket_tiers.map(tier => {
     const sellable = tier.allotment - tier.comps;
     const tierRevenue = tier.allotment * tier.price;
-    const netAfterFees = tier.price - facilityFee;
+    const netAfterFees = tier.price - (terms.facilityFeeMode === 'inside' ? facilityFee : 0);
     const breakEvenTickets = netAfterFees > 0 ? Math.ceil((totalFixedExpenses + totalVariableExpenses + artistCost) / netAfterFees) : 0;
     const grossShort = tierRevenue >= 1000 ? `$${(tierRevenue / 1000).toFixed(1)}K` : formatMoney(tierRevenue);
 
@@ -294,14 +301,21 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
 
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...darkGray);
-  doc.text('Facility Fees', margin + 15, summaryY + 63);
-  doc.setTextColor(...orange);
-  doc.text(`-${formatMoney(totalFacilityFee)}`, margin + summaryColWidth - 15, summaryY + 63, { align: 'right' });
+  if (facilityFeeDeducted > 0) {
+    doc.text('Facility fee (inside price)', margin + 15, summaryY + 63);
+    doc.setTextColor(...orange);
+    doc.text(`-${formatMoney(facilityFeeDeducted)}`, margin + summaryColWidth - 15, summaryY + 63, { align: 'right' });
+  } else {
+    doc.text(totalFacilityFee > 0 ? 'Facility fee (venue, on top)' : 'Facility fee', margin + 15, summaryY + 63);
+    doc.setTextColor(...darkGray);
+    doc.text(totalFacilityFee > 0 ? 'not deducted' : formatMoney(0), margin + summaryColWidth - 15, summaryY + 63, { align: 'right' });
+  }
 
+  // Sales tax is charged on top and passed through. It is shown so the
+  // promoter can see what will be remitted; it never reduces their gross.
   doc.setTextColor(...darkGray);
-  doc.text('Sales Tax', margin + 15, summaryY + 81);
-  doc.setTextColor(...orange);
-  doc.text(`-${formatMoney(salesTaxAmount)}`, margin + summaryColWidth - 15, summaryY + 81, { align: 'right' });
+  doc.text('Sales tax (on top, remitted)', margin + 15, summaryY + 81);
+  doc.text(salesTaxAmount > 0 ? `${formatMoney(salesTaxAmount)} pass-through` : formatMoney(0), margin + summaryColWidth - 15, summaryY + 81, { align: 'right' });
 
   // Divider line
   doc.setDrawColor(...borderGray);

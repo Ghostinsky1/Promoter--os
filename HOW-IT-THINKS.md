@@ -40,6 +40,13 @@ arithmetic.** Nothing is estimated from "industry norms," nothing is generated, 
   to $1,883.33, the field says $1,383.33 and a flag says the two disagree. It never "fixes" a
   document.
 
+**The money rules are fixed and the same everywhere** (offer page, PDF, settlement, dashboard,
+the connector). Sales tax is added on top and is never the promoter's money — it is shown, never
+subtracted. The facility fee is on top by default (the venue's) and can be switched to "inside the
+price" per show. An artist's percentage and a door split are of what is left *after the promoter's
+costs*, and can be switched to gross per show. The switch is always visible on the Artist Deal tab;
+the app never picks a basis silently.
+
 **When the app has no history, it says so.** "No settled shows yet — using a placeholder rate" is
 the honest state, and the placeholder is labelled as one.
 

@@ -11,7 +11,7 @@ import { useAsk } from './AskProvider';
  */
 
 const APP_PREFIXES = ['/dashboard', '/offers', '/tours', '/templates', '/settings', '/subscription', '/deal-estimator', '/artist-fee'];
-const CHIPS = ['What needs me today?', 'How much cash do I need?', 'Which shows are unsettled?', 'What is coming up?'];
+const CHIPS = ['What needs me?', 'Cash I need', 'Unsettled shows', 'Coming up'];
 
 /** Turn "[Open X](/offers/abc)" into a tappable link. Paths only. */
 function renderText(text: string, go: (path: string) => void) {
@@ -144,9 +144,9 @@ export function AskDock() {
             </div>
 
             {ask.messages.length === 0 && (
-              <div className="flex gap-2 overflow-x-auto px-4 sm:px-5 pb-2 scrollbar-none">
+              <div className="flex flex-wrap gap-2 px-4 sm:px-5 pb-2">
                 {CHIPS.map((c) => (
-                  <button key={c} onClick={() => ask.send(c)} disabled={ask.sending} className="shrink-0 text-[13px] text-gray-200 bg-[#14171E] border border-[#2A3040] rounded-full px-3 py-1.5 hover:border-[#8FD3FF]/50" style={{ textTransform: 'none', letterSpacing: 0 }}>{c}</button>
+                  <button key={c} onClick={() => ask.send(c)} disabled={ask.sending} className="text-[13px] text-gray-200 bg-[#14171E] border border-[#2A3040] rounded-full px-3 py-1.5 hover:border-[#8FD3FF]/50" style={{ textTransform: 'none', letterSpacing: 0 }}>{c}</button>
                 ))}
               </div>
             )}

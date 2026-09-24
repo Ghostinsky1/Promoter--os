@@ -31,6 +31,7 @@ import {
   readRevenueChannels, reconciliationNote, feesAlsoInExpenses,
 } from '../lib/revenueChannels';
 import { SettlementImport, type Extracted } from './SettlementImport';
+import { SettlementChat, type ChatApply } from './SettlementChat';
 import { canImportDocuments } from '../lib/subscriptionTiers';
 
 interface ActualTicketTier {
@@ -369,6 +370,77 @@ export function Settlement() {
     }
 
     setSettlement(calculateActuals(updated));
+  };
+
+  /**
+   * The chat wrote. Jose chose "chat confirms, then writes" over a review
+   * table, so this puts the numbers in AND saves the settlement row -- but it
+   * does not mark the show settled. That still takes the Save button, once
+   * the ticket counts and everything else are in.
+   */
+  const applyFromChat = async (a: ChatApply) => {
+    if (!settlement) return;
+    const n = (v: unknown) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+    const updated = { ...settlement };
+
+    if (a.expenses?.length) {
+      const next: any = { ...updated.actual_expenses };
+      for (const line of a.expenses) {
+        if (!line.label) continue;
+        const cat = next[line.category] !== undefined ? line.category : 'general';
+        const key = line.label.toLowerCase().trim().replace(/\s+/g, '_');
+        next[cat] = { ...(next[cat] || {}), [key]: n(line.amount) };
+      }
+      updated.actual_expenses = next;
+    }
+    if (a.ticket_counts?.length) {
+      updated.actual_attendance = updated.actual_attendance.map((tier) => {
+        const hit = a.ticket_counts.find(
+          (t) => t.type && tier.type && t.type.toLowerCase().trim() === tier.type.toLowerCase().trim(),
+        );
+        return hit ? { ...tier, actual_sold: n(hit.sold) } : tier;
+      });
+    }
+    if (a.revenue_channels?.length) {
+      updated.actual_revenue_channels = a.revenue_channels.map((c, i) => ({
+        id: `rc_chat_${i}`, label: c.label || 'Unnamed channel', gross: n(c.gross), fees: n(c.fees),
+      }));
+    }
+    const recalculated = calculateActuals(updated);
+    setSettlement(recalculated);
+    await persistSettlement(recalculated, { markSettled: false, quiet: true });
+  };
+
+  const persistSettlement = async (
+    s: Settlement,
+    opts: { markSettled: boolean; quiet: boolean },
+  ): Promise<boolean> => {
+    if (!offer || !organization) return false;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const settlementData = {
+      ...s,
+      organization_id: organization.id,
+      user_id: user.id,
+      ...(opts.markSettled ? { settled_at: new Date().toISOString() } : {}),
+    };
+    if (s.id) {
+      const { error } = await supabase.from('settlements').update(settlementData).eq('id', s.id);
+      if (error) throw error;
+    } else {
+      const { data, error } = await supabase.from('settlements').insert([settlementData]).select().single();
+      if (error) throw error;
+      setSettlement((cur) => (cur ? { ...cur, id: data.id } : cur));
+    }
+    if (opts.markSettled) {
+      const { error: offerError } = await supabase
+        .from('offers')
+        .update({ is_settled: true, actual_profit: s.actual_profit, status: 'settled' })
+        .eq('id', offer.id);
+      if (offerError) throw offerError;
+    }
+    if (!opts.quiet) alert('Settlement saved successfully!');
+    return true;
   };
 
   const handleSave = async () => {
@@ -742,6 +814,14 @@ export function Settlement() {
                 }
               />
             </div>
+
+            {organization && canImportDocuments((organization as any).subscription_tier || 'starter') && (
+              <SettlementChat
+                offer={offer}
+                organizationId={organization.id}
+                onApply={applyFromChat}
+              />
+            )}
 
             {organization && canImportDocuments((organization as any).subscription_tier || 'starter') && (
               <SettlementImport

@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  TrendingUp,
-  Calendar,
-  MapPin,
-  Plus,
-  Sparkles
-} from 'lucide-react';
+import { Calendar, MapPin, Plus, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { useOrganization } from '../hooks/useOrganization';
@@ -16,6 +10,8 @@ import { TrialBanner } from './TrialBanner';
 import { cancellationLoss, readCancellation } from '../lib/cancellation';
 import { cashOnHand, type CashOnHand } from '../lib/upfrontCost';
 import { CashOnHandPanel } from './CashOnHandPanel';
+import { useAsk } from './ask/AskProvider';
+import { NeedsYou } from './ask/NeedsYou';
 
 interface DashboardStats {
   totalProfit: number;
@@ -56,6 +52,7 @@ export function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { needsSubscription, loading: orgLoading } = useOrganization();
+  const ask = useAsk();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [nextEvent, setNextEvent] = useState<UpcomingEvent | null>(null);
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
@@ -227,8 +224,6 @@ export function Home() {
   };
 
   const showAILearning = settledShows < 5;
-  const upcomingProgress = Math.min(100, ((stats?.upcomingShows || 0) / (stats?.totalShows || 1)) * 100);
-  const completedProgress = Math.min(100, ((stats?.completedShows || 0) / (stats?.totalShows || 1)) * 100);
 
   if (orgLoading) {
     return (
@@ -250,243 +245,173 @@ export function Home() {
     return local ? local.charAt(0).toUpperCase() + local.slice(1) : 'there';
   })();
 
+  const k = (v: number) => `$${(v / 1000).toFixed(1)}K`;
+  const verdictOf = (id: string) => ask.brief?.upcoming.find((u) => u.offer_id === id)?.verdict;
+  const verdictCls: Record<string, string> = {
+    SAFE: 'bg-emerald-900/30 text-emerald-300', TIGHT: 'bg-[#1140F0]/30 text-[#8FD3FF]',
+    FRAGILE: 'bg-amber-900/30 text-amber-300', UNDERWATER: 'bg-red-900/30 text-red-300',
+  };
+
   return (
     <>
       <TrialBanner />
       <div className="min-h-screen">
-      <div className="px-6 pt-10 pb-2">
-        <div className="flex flex-wrap items-end justify-between gap-6 max-w-7xl mx-auto">
+      <div className="px-5 sm:px-6 pt-7 pb-1">
+        <div className="flex flex-wrap items-end justify-between gap-4 max-w-7xl mx-auto">
           <div>
-            <p className="font-label text-[#04214D] text-[11px] tracking-[0.22em] uppercase mb-2">
+            <p className="font-label text-[#04214D] text-[11px] tracking-[0.22em] uppercase mb-1.5">
               [ 01 ] Today · {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </p>
-            <h1 className="text-[#08090D] text-4xl md:text-5xl leading-none">
+            <h1 className="text-[#08090D] text-3xl md:text-5xl leading-none">
               Welcome back, {firstName}.
             </h1>
+            {ask.brief && <p className="text-[#04214D] text-sm mt-1.5">{ask.brief.headline}</p>}
           </div>
 
-          <div className="flex flex-wrap gap-3 items-center">
-            <button onClick={() => navigate('/tours')} className="px-5 py-3 rounded-xl text-white text-sm border border-[#2A3040]" style={{ background: 'linear-gradient(180deg, #2A3040 0%, #14171E 100%)', boxShadow: '0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)' }}>
-              View Tours
+          <div className="flex flex-wrap gap-2 items-center">
+            <button onClick={() => navigate('/tours')} className="px-4 py-2.5 rounded-xl text-white text-xs border border-[#2A3040]" style={{ background: 'linear-gradient(180deg, #2A3040 0%, #14171E 100%)', boxShadow: '0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)' }}>
+              Tours
             </button>
-            <button onClick={() => navigate('/offers')} className="px-5 py-3 rounded-xl text-white text-sm border border-[#2A3040]" style={{ background: 'linear-gradient(180deg, #2A3040 0%, #14171E 100%)', boxShadow: '0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)' }}>
+            <button onClick={() => navigate('/offers')} className="px-4 py-2.5 rounded-xl text-white text-xs border border-[#2A3040]" style={{ background: 'linear-gradient(180deg, #2A3040 0%, #14171E 100%)', boxShadow: '0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)' }}>
               All Offers
             </button>
-            <button onClick={() => navigate('/offers/create')} className="px-5 py-3 rounded-xl bg-[#8FD3FF] text-[#04214D] text-sm flex items-center gap-2">
-              <Plus className="h-4 w-4" strokeWidth={2.5} /> New Offer
+            <button onClick={() => navigate('/offers/create')} className="px-4 py-2.5 rounded-xl bg-[#8FD3FF] text-[#04214D] text-xs flex items-center gap-1.5">
+              <Plus className="h-3.5 w-3.5" strokeWidth={2.5} /> New Offer
             </button>
           </div>
         </div>
       </div>
 
-      <div className="px-6 py-6 max-w-7xl mx-auto space-y-6">
-        {/* KPI row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="px-5 sm:px-6 py-5 max-w-7xl mx-auto space-y-4">
+        {/* [02] What needs the promoter. Same rows the Ask bar reads. */}
+        <NeedsYou brief={ask.brief} loading={ask.loading} onOpen={(link) => navigate(link)} />
+
+        {/* Four numbers, one row. */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           {[
-            { label: 'Active events', value: `${stats?.activeEvents || 0}`, sub: null },
-            { label: 'Profit this month', value: `$${((stats?.monthProfit || 0) / 1000).toFixed(1)}K`, sub: null },
-            { label: 'Actual revenue', value: `$${((stats?.actualRevenue || 0) / 1000).toFixed(1)}K`, sub: 'from settled shows' },
-            { label: 'Projected revenue', value: `$${((stats?.projectedRevenue || 0) / 1000).toFixed(1)}K`, sub: 'upcoming, at a sellout' },
-          ].map((k) => (
-            <div key={k.label} className="bg-[#14171E] border border-gray-800 rounded-[22px] p-4 sm:p-6 min-w-0">
-              <p className="font-display text-3xl sm:text-4xl text-[#8FD3FF] mb-1 leading-none truncate" style={{ textShadow: '0 0 18px rgba(143,211,255,0.45)' }}>{k.value}</p>
-              <p className="font-label text-[10px] sm:text-[11px] tracking-[0.16em] sm:tracking-[0.22em] uppercase text-gray-500 leading-snug">{k.label}</p>
-              {k.sub && <p className="text-[10px] text-gray-600 mt-0.5">{k.sub}</p>}
+            { label: 'Active events', value: `${stats?.activeEvents || 0}`, sub: `${ask.brief?.next30 ?? stats?.upcomingShows ?? 0} in the next 30 days` },
+            { label: 'Profit this month', value: k(stats?.monthProfit || 0), sub: (stats?.monthCancelledLoss || 0) > 0 ? `after $${Math.round(stats?.monthCancelledLoss || 0).toLocaleString()} cancelled` : null },
+            { label: 'Actual revenue', value: k(stats?.actualRevenue || 0), sub: 'from settled shows' },
+            { label: 'Projected revenue', value: k(stats?.projectedRevenue || 0), sub: 'upcoming, at a sellout' },
+          ].map((t) => (
+            <div key={t.label} className="bg-[#14171E] border border-gray-800 rounded-2xl px-4 py-3.5 min-w-0">
+              <p className="font-display text-2xl sm:text-[28px] text-[#8FD3FF] leading-none truncate" style={{ textShadow: '0 0 18px rgba(143,211,255,0.45)' }}>{t.value}</p>
+              <p className="font-label text-[10px] tracking-[0.18em] uppercase text-gray-500 mt-1.5 leading-snug">{t.label}</p>
+              {t.sub && <p className="text-[10px] text-gray-600 mt-0.5 truncate">{t.sub}</p>}
             </div>
           ))}
         </div>
 
-        {/* Shows that already happened and were never settled. Their projected
-            gross was inflating the revenue ticker; it is neither money that
-            came in nor a forecast. Say so, and point at the fix. */}
-        {(stats?.unsettledPast || 0) > 0 && (
-          <div className="bg-[#14171E] border border-amber-800/40 rounded-[22px] p-4 sm:p-5 flex items-start justify-between gap-4">
-            <div>
-              <p className="font-label text-[11px] tracking-[0.22em] uppercase text-amber-400 mb-1">Not counted anywhere</p>
-              <p className="text-xs text-gray-400">
-                ${Math.round((stats?.unsettledPast || 0) / 1000)}K of projected gross sits on shows that already
-                happened but were never settled. Settle them and it becomes real revenue; cancel them and it's gone.
-              </p>
-            </div>
-            <button onClick={() => navigate('/offers')} className="text-[11px] text-gray-500 hover:text-[#8FD3FF] whitespace-nowrap">
-              See them
-            </button>
-          </div>
-        )}
-
-        {/* What cancellations have cost. Only shown when there is something to
-            show -- a promoter with no dead shows does not need the reminder. */}
-        {(stats?.yearCancelledLoss || 0) > 0 && (
-          <div className="bg-[#14171E] border border-red-800/40 rounded-[22px] p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="font-label text-[11px] tracking-[0.22em] uppercase text-red-400 mb-2">
-                  Cancellations this year
-                </p>
-                <p className="font-display text-4xl text-red-400 mb-1" style={{ textShadow: '0 0 18px rgba(248,113,113,0.35)' }}>
-                  -${((stats?.yearCancelledLoss || 0) / 1000).toFixed(1)}K
-                </p>
-                <p className="text-xs text-gray-500">
-                  {stats?.cancelledShows} {stats?.cancelledShows === 1 ? 'show' : 'shows'} called off
-                  {(stats?.monthCancelledLoss || 0) > 0 &&
-                    ` — $${Math.round(stats?.monthCancelledLoss || 0).toLocaleString()} of it this month`}
-                </p>
-              </div>
-              <button
-                onClick={() => navigate('/offers?status=cancelled')}
-                className="text-[11px] text-gray-500 hover:text-[#8FD3FF] transition-colors whitespace-nowrap"
-              >
-                See them
+        {/* Two things worth watching, one line each. */}
+        {((stats?.unsettledPast || 0) > 0 || (stats?.yearCancelledLoss || 0) > 0) && (
+          <div className="bg-[#14171E] border border-gray-800 rounded-2xl divide-y divide-[#1F2430]">
+            {(stats?.unsettledPast || 0) > 0 && (
+              <button onClick={() => navigate('/offers?status=unsettled')} className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left" style={{ textTransform: 'none', letterSpacing: 0 }}>
+                <span className="text-xs text-gray-300"><span className="font-label text-[10px] tracking-[0.18em] uppercase text-amber-400 mr-2">Not counted</span>${Math.round((stats?.unsettledPast || 0) / 1000)}K sits on shows that happened and were never settled</span>
+                <span className="text-[11px] text-gray-500 whitespace-nowrap">Settle them →</span>
               </button>
-            </div>
+            )}
+            {(stats?.yearCancelledLoss || 0) > 0 && (
+              <button onClick={() => navigate('/offers?status=cancelled')} className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left" style={{ textTransform: 'none', letterSpacing: 0 }}>
+                <span className="text-xs text-gray-300"><span className="font-label text-[10px] tracking-[0.18em] uppercase text-red-400 mr-2">Cancelled</span>-${Math.round(stats?.yearCancelledLoss || 0).toLocaleString()} lost this year on {stats?.cancelledShows} {stats?.cancelledShows === 1 ? 'show' : 'shows'}</span>
+                <span className="text-[11px] text-gray-500 whitespace-nowrap">See them →</span>
+              </button>
+            )}
           </div>
         )}
 
         {cash && <CashOnHandPanel cash={cash} onOpenShow={(id) => navigate(`/offers/${id}`)} />}
 
-        {/* Next event */}
+        {/* Next event, one compact card. */}
         {nextEvent && (
           <div
             onClick={() => navigate(`/offers/${nextEvent.id}`)}
-            className="bg-[#14171E] border border-gray-800 rounded-[22px] p-7 relative overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
+            className="bg-[#14171E] border border-gray-800 rounded-2xl p-5 relative overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
           >
-            <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-[#8FD3FF]" style={{ boxShadow: '0 0 10px #8FD3FF' }}></div>
-            <div className="absolute bottom-4 left-4 w-2 h-2 rounded-full bg-[#3A4150]"></div>
-            <div className="flex items-center justify-between mb-5">
-              <span className="font-label text-[11px] tracking-[0.22em] uppercase text-[#8FD3FF]">[ 02 ] Next event</span>
-              <span className="font-label text-[11px] tracking-[0.22em] uppercase text-gray-500">In {nextEvent.daysUntil} {nextEvent.daysUntil === 1 ? 'day' : 'days'}</span>
+            <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-[#8FD3FF]" style={{ boxShadow: '0 0 10px #8FD3FF' }}></div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-label text-[11px] tracking-[0.22em] uppercase text-[#8FD3FF]">[ 03 ] Next event</span>
+              <span className="font-label text-[11px] tracking-[0.22em] uppercase text-gray-500 mr-4">{nextEvent.daysUntil === 0 ? 'Tonight' : `In ${nextEvent.daysUntil} ${nextEvent.daysUntil === 1 ? 'day' : 'days'}`}</span>
             </div>
-            <h2 className="text-3xl md:text-4xl text-white mb-3 leading-none">{nextEvent.artist}</h2>
-            <div className="flex flex-wrap gap-x-6 gap-y-1 text-gray-400 mb-6">
-              <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[#8FD3FF]" />{nextEvent.venue}</span>
-              <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-[#8FD3FF]" />{nextEvent.date}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-[#08090D] border border-[#2A3040] rounded-2xl p-4">
-                <p className="font-label text-[10px] tracking-[0.2em] uppercase text-gray-500 mb-1">Expected profit</p>
-                <p className="font-display text-2xl text-[#8FD3FF]">${(nextEvent.profit / 1000).toFixed(1)}K</p>
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="text-2xl md:text-3xl text-white leading-none mb-2 truncate">{nextEvent.artist}</h2>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-400">
+                  <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-[#8FD3FF]" />{nextEvent.venue}</span>
+                  <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5 text-[#8FD3FF]" />{nextEvent.date}</span>
+                </div>
               </div>
-              <div className="bg-[#08090D] border border-[#2A3040] rounded-2xl p-4">
-                <p className="font-label text-[10px] tracking-[0.2em] uppercase text-gray-500 mb-1">Capacity</p>
-                <p className="font-display text-2xl text-white">{nextEvent.capacity}</p>
+              <div className="flex items-center gap-4">
+                <div>
+                  <p className="font-label text-[10px] tracking-[0.18em] uppercase text-gray-500">Expected profit</p>
+                  <p className="font-display text-2xl text-[#8FD3FF] leading-none mt-1">{k(nextEvent.profit)}</p>
+                </div>
+                {verdictOf(nextEvent.id) && (
+                  <span className={`font-label text-[10px] tracking-[0.16em] uppercase px-2.5 py-1 rounded-md ${verdictCls[verdictOf(nextEvent.id) as string]}`}>{verdictOf(nextEvent.id)}</span>
+                )}
+                <span className="text-[#8FD3FF] text-sm">Open →</span>
               </div>
             </div>
-            <button className="w-full bg-[#8FD3FF] text-[#04214D] rounded-xl py-4 text-sm">
-              View event details →
-            </button>
           </div>
         )}
 
         {/* Coming up */}
-        {upcomingEvents.length > 0 && (
-          <div className="bg-[#14171E] border border-gray-800 rounded-[22px] p-7">
-            <div className="flex items-center justify-between mb-4">
+        {upcomingEvents.length > 1 && (
+          <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-baseline gap-3">
-                <span className="font-label text-[11px] tracking-[0.22em] uppercase text-[#8FD3FF]">[ 03 ]</span>
-                <h2 className="text-2xl text-white">Coming up</h2>
+                <span className="font-label text-[11px] tracking-[0.22em] uppercase text-[#8FD3FF]">[ 04 ]</span>
+                <h2 className="text-xl text-white">Coming up</h2>
               </div>
               <button onClick={() => navigate('/offers')} className="text-[#8FD3FF] hover:text-white text-xs transition-colors">
                 View all →
               </button>
             </div>
-            <div className="hidden md:grid grid-cols-[2fr_1.6fr_1fr_1fr_1.1fr] gap-3 px-3 pb-2 font-label text-[11px] tracking-[0.2em] uppercase text-gray-500">
-              <span>Artist</span><span>Venue</span><span>Date</span><span>Net profit</span><span>Status</span>
-            </div>
             <div>
-              {upcomingEvents.map((event) => (
+              {upcomingEvents.slice(1).map((event) => (
                 <div
                   key={event.id}
                   onClick={() => navigate(`/offers/${event.id}`)}
-                  className="grid grid-cols-2 md:grid-cols-[2fr_1.6fr_1fr_1fr_1.1fr] gap-3 items-center px-3 py-4 border-t border-[#1F2430] hover:bg-white/[0.03] cursor-pointer transition-colors"
+                  className="grid grid-cols-[1fr_auto] md:grid-cols-[2fr_1.6fr_1fr_1fr_auto] gap-3 items-center px-2 py-3 border-t border-[#1F2430] hover:bg-white/[0.03] cursor-pointer transition-colors"
                 >
-                  <span className="text-white font-semibold">{event.artist}</span>
-                  <span className="text-gray-400">{event.venue}</span>
-                  <span className="text-gray-400">{event.date} <span className="text-[#8FD3FF] text-xs ml-1">{event.daysUntil}d</span></span>
-                  <span className="text-[#8FD3FF] font-semibold">${(event.profit / 1000).toFixed(1)}K</span>
-                  <span className={`justify-self-start font-label text-[10px] tracking-[0.16em] uppercase px-2.5 py-1 rounded-md ${getStatusBadgeColor(event.status)}`}>
-                    {event.status.replace('_', ' ')}
-                  </span>
+                  <div className="min-w-0">
+                    <span className="block text-white font-semibold truncate">{event.artist}</span>
+                    <span className="md:hidden block text-xs text-gray-400 truncate">{event.venue} · {event.date}</span>
+                  </div>
+                  <span className="hidden md:block text-gray-400 truncate">{event.venue}</span>
+                  <span className="hidden md:block text-gray-400">{event.date} <span className="text-[#8FD3FF] text-xs ml-1">{event.daysUntil}d</span></span>
+                  <span className="hidden md:block text-[#8FD3FF] font-semibold">{k(event.profit)}</span>
+                  <div className="flex items-center gap-2 justify-self-end">
+                    <span className="md:hidden text-[#8FD3FF] text-sm font-semibold">{k(event.profit)}</span>
+                    {verdictOf(event.id) ? (
+                      <span className={`font-label text-[10px] tracking-[0.16em] uppercase px-2 py-1 rounded-md ${verdictCls[verdictOf(event.id) as string]}`}>{verdictOf(event.id)}</span>
+                    ) : (
+                      <span className={`font-label text-[10px] tracking-[0.16em] uppercase px-2 py-1 rounded-md ${getStatusBadgeColor(event.status)}`}>{event.status.replace('_', ' ')}</span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Forecast + tours */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-[#14171E] border border-gray-800 rounded-[22px] p-7 relative overflow-hidden">
-            <p className="font-label text-[11px] tracking-[0.22em] uppercase text-gray-500 mb-2">Revenue forecast · next 30 days</p>
-            <h3 className="font-display text-5xl text-[#8FD3FF] mb-6" style={{ textShadow: '0 0 18px rgba(143,211,255,0.45)' }}>
-              ${((stats?.forecastRevenue || 0) / 1000).toFixed(1)}K
-            </h3>
-            <div className="flex items-end justify-around h-24 gap-2">
-              {[40, 60, 85, 100, 75].map((h, i) => (
-                <div key={i} className="w-full rounded-t-lg" style={{ height: `${h}%`, background: i === 3 ? '#8FD3FF' : 'rgba(143,211,255,0.28)' }}></div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-[#14171E] border border-gray-800 rounded-[22px] p-7">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-[#08090D] border border-[#2A3040] flex items-center justify-center">
-                <span className="font-display text-2xl text-[#8FD3FF]">{stats?.activeTours || 0}</span>
-              </div>
-              <div>
-                <p className="font-label text-[11px] tracking-[0.22em] uppercase text-gray-500">Active tours</p>
-                <h4 className="text-2xl text-white">{stats?.totalShows || 0} shows</h4>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-label text-[11px] tracking-[0.2em] uppercase text-gray-400">Upcoming</span>
-                  <span className="text-white font-semibold">{stats?.upcomingShows || 0}</span>
-                </div>
-                <div className="w-full h-2 bg-[#08090D] rounded-full overflow-hidden">
-                  <div className="h-full bg-[#8FD3FF] rounded-full transition-all duration-1000" style={{ width: `${upcomingProgress}%` }}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-label text-[11px] tracking-[0.2em] uppercase text-gray-400">Completed</span>
-                  <span className="text-white font-semibold">{stats?.completedShows || 0}</span>
-                </div>
-                <div className="w-full h-2 bg-[#08090D] rounded-full overflow-hidden">
-                  <div className="h-full bg-[#6FB8F2] rounded-full transition-all duration-1000" style={{ width: `${completedProgress}%` }}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {showAILearning && (
-          <div className="bg-[#14171E] border border-gray-800 rounded-[22px] p-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#8FD3FF] to-[#6FB8F2] rounded-3xl mb-4">
-              <Sparkles className="h-8 w-8 text-[#04214D]" />
+          <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-5 flex items-center gap-4">
+            <div className="w-11 h-11 shrink-0 bg-gradient-to-br from-[#8FD3FF] to-[#6FB8F2] rounded-2xl flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-[#04214D]" />
             </div>
-
-            <h4 className="text-2xl text-white mb-2">AI Learning Mode</h4>
-            <p className="text-gray-400 mb-6">
-              Need {5 - settledShows} more settled {5 - settledShows === 1 ? 'show' : 'shows'} to generate insights
-            </p>
-
-            <div className="max-w-xs mx-auto">
-              <div className="flex items-center justify-between mb-2 text-sm">
-                <span className="text-gray-400 font-semibold">Progress</span>
-                <span className="text-[#8FD3FF] font-bold">{settledShows} / 5</span>
-              </div>
-              <div className="w-full h-2 bg-[#08090D] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#8FD3FF] transition-all duration-1000"
-                  style={{width: `${(settledShows / 5) * 100}%`}}
-                ></div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-semibold">Insights unlock at 5 settled shows</p>
+              <p className="text-xs text-gray-400">{settledShows} of 5 settled. {5 - settledShows} more and this reads your own numbers back to you.</p>
+              <div className="w-full h-1.5 bg-[#08090D] rounded-full overflow-hidden mt-2">
+                <div className="h-full bg-[#8FD3FF] transition-all duration-1000" style={{ width: `${(settledShows / 5) * 100}%` }}></div>
               </div>
             </div>
           </div>
         )}
 
         {!showAILearning && (
-          <div className="mt-8">
+          <div className="mt-2">
             <AIInsights />
           </div>
         )}

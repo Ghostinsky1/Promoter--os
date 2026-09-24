@@ -36,6 +36,8 @@ import OAuthConsentPage from './pages/OAuthConsentPage';
 import { safeNext } from './lib/safeNext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { initFacebookPixel, trackPageView } from './lib/facebookPixel';
+import { AskProvider } from './components/ask/AskProvider';
+import { AskDock } from './components/ask/AskDock';
 
 function AfterLogin() {
   const [params] = useSearchParams();
@@ -122,9 +124,14 @@ function AppRoutes() {
  *  broken screen never leaves the whole app blank. */
 function RoutesWithBoundary() {
   const location = useLocation();
+  const { user } = useAuth();
+  // Room at the bottom for the Ask bar (and the phone tabs under it).
+  const padded = !!user && !['/', '/login', '/signup', '/oauth/consent', '/pricing', '/privacy', '/terms', '/security', '/faq', '/checkout', '/success'].includes(location.pathname);
   return (
     <ErrorBoundary key={location.pathname}>
-      <AppRoutes />
+      <div className={padded ? 'pb-44 md:pb-24' : ''}>
+        <AppRoutes />
+      </div>
     </ErrorBoundary>
   );
 }
@@ -135,8 +142,11 @@ function App() {
       <div className="min-h-screen">
         <PixelPageViews />
         <CrtMode />
-        <Header />
-        <RoutesWithBoundary />
+        <AskProvider>
+          <Header />
+          <RoutesWithBoundary />
+          <AskDock />
+        </AskProvider>
       </div>
     </Router>
   );

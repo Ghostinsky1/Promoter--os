@@ -815,7 +815,7 @@ export function Settlement() {
               />
             </div>
 
-            {organization && canImportDocuments((organization as any).subscription_tier || 'starter') && (
+            {organization && canImportDocuments((organization as any).subscription_tier || 'starter', (organization as any).subscription_status) && (
               <SettlementChat
                 offer={offer}
                 organizationId={organization.id}
@@ -823,7 +823,7 @@ export function Settlement() {
               />
             )}
 
-            {organization && canImportDocuments((organization as any).subscription_tier || 'starter') && (
+            {organization && canImportDocuments((organization as any).subscription_tier || 'starter', (organization as any).subscription_status) && (
               <SettlementImport
                 offer={offer}
                 organizationId={organization.id}

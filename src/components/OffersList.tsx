@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { OfferWithShow, OfferStatus } from '../types';
 import { formatCurrency } from '../lib/calculations';
@@ -58,7 +58,14 @@ export function OffersList() {
   const navigate = useNavigate();
   const [offers, setOffers] = useState<OfferWithShow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState<OfferStatus | 'all'>('all');
+  const location = useLocation();
+  // ?status=cancelled from the dashboard; ?status=unsettled from the Settle tab
+  // (shows that already happened and were never settled).
+  const urlStatus = new URLSearchParams(location.search).get('status');
+  const [selectedStatus, setSelectedStatus] = useState<OfferStatus | 'all'>(
+    urlStatus && urlStatus !== 'unsettled' ? (urlStatus as OfferStatus) : 'all',
+  );
+  const unsettledOnly = urlStatus === 'unsettled';
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
@@ -289,6 +296,8 @@ export function OffersList() {
   };
 
   const filteredOffers = offers.filter(offer => {
+    const past = new Date(offer.show.event_date) < new Date(new Date().toDateString());
+    if (unsettledOnly && !(past && offer.status !== 'settled' && offer.status !== 'cancelled')) return false;
     const matchesStatus = selectedStatus === 'all' || (offer.status || 'planning') === selectedStatus;
     const matchesSearch = !searchQuery ||
       (offer.show.event_name && offer.show.event_name.toLowerCase().includes(searchQuery.toLowerCase())) ||

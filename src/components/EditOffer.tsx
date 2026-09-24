@@ -683,7 +683,7 @@ export function EditOffer() {
 
             return (
               <>
-              {organization && canImportDocuments((organization as any).subscription_tier || 'starter') && (
+              {organization && canImportDocuments((organization as any).subscription_tier || 'starter', (organization as any).subscription_status) && (
                 <div className="mb-6">
                   <EstimateImport
                     offerId={id!}

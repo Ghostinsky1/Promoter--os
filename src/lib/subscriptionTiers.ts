@@ -167,6 +167,7 @@ export function canUseAiConnector(tierId: string): boolean {
  *  so it sits behind the same gate as the AI connector. */
 export const DOC_IMPORT_TIERS = ['pro', 'agency_scale'];
 
-export function canImportDocuments(tierId: string): boolean {
-  return DOC_IMPORT_TIERS.includes(tierId);
+/** Pro, Agency Scale — and the trial, which gets 20 credits to feel the whole thing. */
+export function canImportDocuments(tierId: string, status?: string): boolean {
+  return DOC_IMPORT_TIERS.includes(tierId) || status === 'trialing';
 }

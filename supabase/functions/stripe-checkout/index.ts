@@ -50,8 +50,20 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Stripe is not configured. Please add STRIPE_SECRET_KEY to your environment variables.' }, 500);
     }
 
-    const { price_id, success_url, cancel_url, return_url, ui_mode, mode, email, metadata } = await req.json();
+    const body = await req.json();
+    const { success_url, cancel_url, return_url, ui_mode, email, metadata } = body;
+    let { price_id, mode } = body;
     const embedded = ui_mode === 'embedded';
+
+    // AI credit packs. One-time, priced inline so no Stripe product setup is
+    // needed. Jose's numbers: 100 for $9, 500 for $35.
+    const PACKS: Record<string, { credits: number; cents: number; name: string }> = {
+      credits_100: { credits: 100, cents: 900, name: '100 AI credits' },
+      credits_500: { credits: 500, cents: 3500, name: '500 AI credits' },
+    };
+    const pack = typeof body.pack === 'string' ? PACKS[body.pack] : undefined;
+    if (body.pack && !pack) return corsResponse({ error: 'Unknown credit pack' }, 400);
+    if (pack) { mode = 'payment'; price_id = price_id || 'pack'; }
 
     const isSignupFlow = metadata?.signup_flow === 'true';
 
@@ -212,16 +224,29 @@ Deno.serve(async (req) => {
       const { data: om } = await supabase.from('organization_members').select('organization_id').eq('user_id', user.id).eq('is_active', true).limit(1).maybeSingle();
       if (om?.organization_id) sessionMetadata.organization_id = om.organization_id;
     }
-    if (!sessionMetadata.tier) sessionMetadata.tier = price_id === 'price_1UG3GxGeegvFIqACTTpeqq4n' ? 'pro' : 'starter';
+    if (pack) {
+      if (!sessionMetadata.organization_id) return corsResponse({ error: 'Sign in to buy credits.' }, 401);
+      sessionMetadata.credits = String(pack.credits);
+      sessionMetadata.pack = body.pack;
+      delete sessionMetadata.tier;
+    } else if (!sessionMetadata.tier) {
+      sessionMetadata.tier = price_id === 'price_1UG3GxGeegvFIqACTTpeqq4n' ? 'pro' : 'starter';
+    }
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [
-        {
-          price: price_id,
-          quantity: 1,
-        },
+        pack
+          ? {
+              price_data: {
+                currency: 'usd',
+                unit_amount: pack.cents,
+                product_data: { name: pack.name, description: 'PROMOTER OS AI credits. Never expire.' },
+              },
+              quantity: 1,
+            }
+          : { price: price_id, quantity: 1 },
       ],
       mode,
       ...(embedded ? { ui_mode: 'embedded', return_url } : { success_url, cancel_url }),

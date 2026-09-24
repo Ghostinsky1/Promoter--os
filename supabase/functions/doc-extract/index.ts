@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { CREDIT_COST, canAfford, spendCredits, outOfCredits } from '../_shared/credits.ts';
 
 /**
  * PROMOTER OS — read an uploaded settlement.
@@ -168,10 +169,10 @@ lowest priority, never framed as wrongdoing). There is no fraud level.
 
 One pass. No prose, no preamble, no restating the numbers. Reply only through the tool.`;
 
-async function planOf(supabase: Any, organizationId: string): Promise<string> {
+async function planOf(supabase: Any, organizationId: string): Promise<{ tier: string; status: string }> {
   const { data } = await supabase
-    .from('organizations').select('subscription_tier').eq('id', organizationId).maybeSingle();
-  return data?.subscription_tier ?? 'starter';
+    .from('organizations').select('subscription_tier, subscription_status').eq('id', organizationId).maybeSingle();
+  return { tier: data?.subscription_tier ?? 'starter', status: data?.subscription_status ?? '' };
 }
 
 Deno.serve(async (req) => {
@@ -204,10 +205,14 @@ Deno.serve(async (req) => {
     .eq('user_id', user.id).eq('organization_id', imp.organization_id).maybeSingle();
   if (!member) return json({ error: 'That upload belongs to another account.' }, 403);
 
-  const tier = await planOf(supabase, imp.organization_id);
-  if (!ALLOWED_TIERS.has(tier)) {
+  // Pro, Agency Scale, and the trial (Jose: trial users feel the whole thing
+  // with their 20 credits). Starter has chat but not the scanner.
+  const { tier, status } = await planOf(supabase, imp.organization_id);
+  if (!ALLOWED_TIERS.has(tier) && status !== 'trialing') {
     return json({ error: 'Document scanning is on the Pro and Agency Scale plans.', upgrade: true }, 402);
   }
+  const afford = await canAfford(supabase, imp.organization_id, CREDIT_COST.doc_scan);
+  if (!afford.ok) return json(outOfCredits(afford.status, CREDIT_COST.doc_scan), 402);
 
   await supabase.from('document_imports').update({ status: 'extracting' }).eq('id', importId);
 
@@ -295,6 +300,8 @@ Deno.serve(async (req) => {
       error: null,
     }).eq('id', importId);
 
+    const creditsLeft = await spendCredits(supabase, imp.organization_id, CREDIT_COST.doc_scan, 'doc_scan', user.id, imp.offer_id, Number(cost.toFixed(5)));
+
     return json({
       ok: true,
       import_id: importId,
@@ -302,6 +309,7 @@ Deno.serve(async (req) => {
       extracted,
       flags,
       cost_usd: Number(cost.toFixed(5)),
+      credits_left: creditsLeft,
     });
   } catch (e) {
     console.error('doc-extract failed', e);

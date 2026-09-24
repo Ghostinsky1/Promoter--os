@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { CREDIT_COST, canAfford, spendCredits, outOfCredits } from '../_shared/credits.ts';
 
 /**
  * PROMOTER OS — the settlement chat.
@@ -26,7 +27,6 @@ const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const ANTHROPIC_KEY = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
 
 const MODEL = 'claude-sonnet-5';
-const ALLOWED_TIERS = new Set(['pro', 'agency_scale']);
 const PRICE_IN = 2 / 1_000_000;
 const PRICE_OUT = 10 / 1_000_000;
 const HISTORY_LIMIT = 30;
@@ -134,11 +134,6 @@ NEVER
 - Change an amount to make totals match.
 - Write to the settlement on your own judgement.`;
 
-async function planOf(supabase: Any, organizationId: string): Promise<string> {
-  const { data } = await supabase.from('organizations').select('subscription_tier').eq('id', organizationId).maybeSingle();
-  return data?.subscription_tier ?? 'starter';
-}
-
 function toB64(bytes: Uint8Array): string {
   let binary = '';
   const CHUNK = 0x8000;
@@ -186,12 +181,13 @@ Deno.serve(async (req) => {
     .eq('user_id', user.id).eq('organization_id', offer.organization_id).maybeSingle();
   if (!member) return json({ error: 'That show belongs to another account.' }, 403);
 
-  const tier = await planOf(supabase, offer.organization_id);
-  if (!ALLOWED_TIERS.has(tier)) {
-    return json({ error: 'The settlement chat is on the Pro and Agency Scale plans.', upgrade: true }, 402);
-  }
-
   const orgId = offer.organization_id;
+
+  // Credits, not plan tier: every plan (and the trial) can use the chat while
+  // it has credits. A message with files costs 2, text only costs 1.
+  const creditsNeeded = importIds.length > 0 ? CREDIT_COST.chat_with_files : CREDIT_COST.chat_text;
+  const afford = await canAfford(supabase, orgId, creditsNeeded);
+  if (!afford.ok) return json(outOfCredits(afford.status, creditsNeeded), 402);
 
   // Context: show, categories, tiers, what is already on the settlement, the ledger, and history.
   const { data: show } = await supabase.from('shows').select('artist_name, venue_name, event_date').eq('id', offer.show_id).maybeSingle();
@@ -366,5 +362,7 @@ ${JSON.stringify(ledger)}`;
     await supabase.from('document_imports').update({ status: 'extracted', engine: 'anthropic', extracted_at: new Date().toISOString() }).eq('id', a.import_id);
   }
 
-  return json({ ok: true, reply: reply.trim(), ledger, apply, cost_usd: cost });
+  const creditsLeft = await spendCredits(supabase, orgId, creditsNeeded, 'settlement_chat', user.id, offerId, cost);
+
+  return json({ ok: true, reply: reply.trim(), ledger, apply, cost_usd: cost, credits_left: creditsLeft });
 });

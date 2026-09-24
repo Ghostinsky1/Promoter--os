@@ -2,6 +2,7 @@ import React from 'react';
 import { STRIPE_PRODUCTS } from '../stripe-config';
 import { ProductCard } from '../components/subscription/ProductCard';
 import { SubscriptionCard } from '../components/subscription/SubscriptionCard';
+import { CreditsCard } from '../components/subscription/CreditsCard';
 import { CreditCard, Crown, Check, Music, Calendar, DollarSign, TrendingUp } from 'lucide-react';
 
 export function SubscriptionPage() {
@@ -23,6 +24,11 @@ export function SubscriptionPage() {
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6 text-white">Current Subscription</h2>
           <SubscriptionCard />
+        </div>
+
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white">AI Credits</h2>
+          <CreditsCard />
         </div>
 
         <div className="mb-12">

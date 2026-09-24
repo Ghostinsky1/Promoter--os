@@ -110,6 +110,17 @@ async function handleEvent(event: Stripe.Event) {
           return;
         }
         console.info(`Successfully processed one-time payment for session: ${checkout_session_id}`);
+
+        // AI credit pack: add the credits to the organization. Idempotent on the session id.
+        const md = (stripeData as Stripe.Checkout.Session).metadata || {};
+        const credits = Number(md.credits);
+        if (credits > 0 && md.organization_id) {
+          const { error: crErr } = await supabase.rpc('add_ai_credits', {
+            org: md.organization_id, n: credits, session_id: checkout_session_id, cents: amount_total ?? 0,
+          });
+          if (crErr) console.error('add_ai_credits failed', crErr);
+          else console.info(`Added ${credits} AI credits to org ${md.organization_id}`);
+        }
       } catch (error) {
         console.error('Error processing one-time payment:', error);
       }

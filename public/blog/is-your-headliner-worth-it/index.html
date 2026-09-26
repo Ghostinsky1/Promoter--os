@@ -64,7 +64,7 @@
       "@type": "FAQPage",
       "mainEntity": [
         { "@type": "Question", "name": "How do I know if an artist is worth their booking fee?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Divide the artist's fee by your profit per attendee after costs. The result is how many people the artist has to bring who would not have come anyway. If their recent history says they cannot bring that many, the fee is too high for your room." } },
+          "acceptedAnswer": { "@type": "Answer", "text": "Divide the artist's fee by your ticket price. The result is how many tickets the artist has to sell, to people who would not have come anyway, just to cover their fee. If their recent history says they cannot bring that many, the fee is too high for your room." } },
         { "@type": "Question", "name": "What percentage of revenue should an artist fee be?",
           "acceptedAnswer": { "@type": "Answer", "text": "On the settlement in this article the headliner was 7.5% of revenue and all talent was 22% of costs. NIVA found independent venues spend just under a third of expenses on artist and booking fees. Judge the deal at half a house, not a sellout." } },
         { "@type": "Question", "name": "When should a promoter use a flat guarantee versus a split?",
@@ -302,7 +302,7 @@ footer{background:var(--dark);padding:30px 0;font-size:16px;color:#8fa0c0;text-a
   <div class="grid dim"></div>
   <div class="wrap">
     <h2>Did you just fund a vacation?</h2>
-    <p>Huaroco's test takes ten seconds. Divide the artist's fee by what each attendee is worth after costs &mdash; about $20 a head on this night. The answer is how many people the artist has to bring who wouldn't have come anyway.</p>
+    <p>Huaroco's test takes ten seconds. Divide the artist's fee by your ticket price. The answer is how many tickets the artist has to sell &mdash; to people who wouldn't have come anyway &mdash; just to cover their own fee. And that's the kind version: every ticket also has to pay for the room, so the real number is higher.</p>
 
     <div class="calc">
       <div class="f">
@@ -311,13 +311,13 @@ footer{background:var(--dark);padding:30px 0;font-size:16px;color:#8fa0c0;text-a
           <input id="fee" type="number" inputmode="numeric" min="0" step="50" value="5000">
         </div>
         <div>
-          <label for="head">Your profit per head</label>
-          <input id="head" type="number" inputmode="numeric" min="1" step="1" value="20">
+          <label for="head">Your ticket price</label>
+          <input id="head" type="number" inputmode="numeric" min="1" step="1" value="25">
         </div>
       </div>
       <div class="out" aria-live="polite">
-        <span id="need">250</span>
-        <span id="needlab">people he has to bring who weren't coming anyway &mdash; just to cover himself</span>
+        <span id="need">200</span>
+        <span id="needlab">tickets the artist has to sell to people who weren't coming anyway &mdash; just to cover their fee</span>
       </div>
     </div>
 
@@ -409,10 +409,10 @@ footer{background:var(--dark);padding:30px 0;font-size:16px;color:#8fa0c0;text-a
       need=document.getElementById('need'),lab=document.getElementById('needlab');
   function calc(){
     var f=parseFloat(fee.value)||0, h=parseFloat(head.value)||0;
-    if(h<=0){need.textContent='—';lab.textContent='Enter what one person is worth to you after costs.';return;}
+    if(h<=0){need.textContent='—';lab.textContent='Enter your ticket price.';return;}
     var n=Math.ceil(f/h);
     need.textContent=n.toLocaleString();
-    lab.textContent=(n===1?'person':'people')+" he has to bring who weren't coming anyway — just to cover himself";
+    lab.textContent=(n===1?'ticket':'tickets')+" the artist has to sell to people who weren't coming anyway — just to cover their fee";
   }
   fee.addEventListener('input',calc); head.addEventListener('input',calc); calc();
 })();

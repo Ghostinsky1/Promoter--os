@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /offers
+Disallow: /tours
+Disallow: /settings
+Disallow: /subscription
+Disallow: /checkout
+Disallow: /success
+Disallow: /login
+Disallow: /signup
+Disallow: /oauth/
+
+Sitemap: https://promoteros.com/sitemap.xml

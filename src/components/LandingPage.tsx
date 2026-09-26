@@ -1215,6 +1215,8 @@ export function LandingPage() {
                 <li><Link to="/terms" className="hover:text-[#8FD3FF] transition-colors">Terms</Link></li>
                 <li><Link to="/security" className="hover:text-[#8FD3FF] transition-colors">Security</Link></li>
                 <li><Link to="/faq" className="hover:text-[#8FD3FF] transition-colors">FAQ</Link></li>
+                <li><a href="/blog/" className="hover:text-[#8FD3FF] transition-colors">Blog</a></li>
+                <li><a href="/playbook/" className="hover:text-[#8FD3FF] transition-colors">Free playbook</a></li>
               </ul>
             </div>
           </div>

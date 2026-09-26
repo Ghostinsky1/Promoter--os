@@ -1,4 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { downsideAt } from '../_shared/downside.ts';
+import { netGrossOf, dealTermsOf } from '../promtp-mcp/calc.ts';
 
 /**
  * PROMOTER OS — deal score.
@@ -107,17 +109,17 @@ Deno.serve(async (req) => {
 
   const extras = splitExtras(body);
 
-  /** The whole night, computed at a given attendance. */
+  /** The whole night at a given attendance -- the SAME bad-night math as the
+   *  app (src/lib/downside.ts): tax on top, fee per the show's switch, the
+   *  artist paid per the deal type, bar and parking on the promoter's side.
+   *  This used to deduct tax and the fee always and treat every deal as a
+   *  flat guarantee; the Deal Score disagreed with the offer page. */
+  const terms = dealTermsOf(body);
   const at = (attendancePct: number) => {
-    const tickets = Math.floor(onSale * (attendancePct / 100));
-    const gross = revenueFor(tiers, tickets, mix);
-    const afterFacility = Math.max(0, gross - n(body.facility_fee_per_ticket) * tickets);
-    const netGross = afterFacility * (1 - n(body.sales_tax_pct) / 100);
-    const variable =
-      netGross * (n(body.ascap_rate) + n(body.bmi_rate) + n(body.sesac_rate) + n(body.cc_fee_rate)) +
-      tickets * n(body.insurance_per_attendee);
-    const extraRevenue = extras.flat + extras.perHead * tickets;
-    return { tickets, gross, netGross, variable, profit: netGross - variable - fixed - guarantee + extraRevenue };
+    const d = downsideAt(body, attendancePct);
+    const gross = revenueFor(tiers, d.tickets, mix);
+    const netGross = netGrossOf(gross, d.tickets, n(body.sales_tax_pct), terms.facilityFeePerTicket, terms.facilityFeeMode).netGross;
+    return { tickets: d.tickets, gross, netGross, profit: d.profit };
   };
 
   const full = at(100);

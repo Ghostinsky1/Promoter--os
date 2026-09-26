@@ -1,6 +1,7 @@
 import { formatCurrency } from '../../lib/calculations';
 import { SupportAct, TicketTier, Expenses } from '../../types';
 import { SupportActCard } from './SupportActCard';
+import { SortableList } from '../SortableList';
 import { Plus, Music, Info, Hotel, Car, Plane, AlertCircle, DollarSign, Check, Banknote, CalendarCheck, Calendar } from 'lucide-react';
 import { netGrossOf, computeDeal, calculateTotalExpenses, type FacilityFeeMode, type PctBasis, type DealType } from '../../lib/calculations';
 
@@ -871,17 +872,32 @@ export function ArtistDealTab({
           </div>
         ) : (
           <div className="space-y-3">
-            {supportActs.map((act, index) => (
-              <SupportActCard
-                key={index}
-                act={act}
-                index={index}
-                total={supportActs.length}
-                onUpdate={(field, value) => updateSupportAct(index, field, value)}
-                onRemove={() => removeSupportAct(index)}
-                onMove={(dir) => moveSupportAct(index, dir)}
-              />
-            ))}
+            <SortableList
+              ids={supportActs.map((_, i) => `act-${i}`)}
+              onMove={(from, to) => {
+                const next = [...supportActs];
+                const [item] = next.splice(from, 1);
+                next.splice(to, 0, item);
+                setSupportActs(next);
+              }}
+              className="space-y-3"
+              renderItem={(id, handle) => {
+                const index = Number(id.replace('act-', ''));
+                const act = supportActs[index];
+                if (!act) return null;
+                return (
+                  <SupportActCard
+                    act={act}
+                    index={index}
+                    total={supportActs.length}
+                    onUpdate={(field, value) => updateSupportAct(index, field, value)}
+                    onRemove={() => removeSupportAct(index)}
+                    onMove={(dir) => moveSupportAct(index, dir)}
+                    dragHandle={handle}
+                  />
+                );
+              }}
+            />
 
             {totalSupportCost > 0 && (
               <div className="p-4 bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 rounded-2xl">

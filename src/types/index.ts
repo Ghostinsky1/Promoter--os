@@ -83,9 +83,10 @@ export interface Calculations {
   backend?: number;
   artistBackend?: number;
   promoterBackend?: number;
+  /** The three stress points, same everywhere: bad night, soft night, sellout. */
   projections?: {
+    capacity50: ProjectionResult;
     capacity70: ProjectionResult;
-    capacity85: ProjectionResult;
     capacity100: ProjectionResult;
   };
 }

@@ -3,8 +3,7 @@ import { SupportAct } from '../../types';
 import { formatCurrency } from '../../lib/calculations';
 import {
   ChevronDown, ChevronUp, Trash2, ArrowUp, ArrowDown,
-  Music, Star, Users, DollarSign, Hotel, Car, Plane, AlertCircle
-} from 'lucide-react';
+  Music, Star, Users, DollarSign, Hotel, Car, Plane, AlertCircle, GripVertical } from 'lucide-react';
 
 interface SupportActCardProps {
   act: SupportAct;
@@ -13,6 +12,8 @@ interface SupportActCardProps {
   onUpdate: (field: keyof SupportAct, value: any) => void;
   onRemove: () => void;
   onMove: (direction: 'up' | 'down') => void;
+  /** Spread onto the grip so the card can be dragged into a new spot. */
+  dragHandle?: Record<string, any>;
 }
 
 const ROLE_CONFIG = {
@@ -21,7 +22,7 @@ const ROLE_CONFIG = {
   opener: { bg: 'bg-sky-500/20', border: 'border-sky-500/30', text: 'text-sky-400', label: 'OPENER', Icon: Music },
 };
 
-export function SupportActCard({ act, index, total, onUpdate, onRemove, onMove }: SupportActCardProps) {
+export function SupportActCard({ act, index, total, onUpdate, onRemove, onMove, dragHandle }: SupportActCardProps) {
   const [expanded, setExpanded] = useState(false);
   const role = act.role || 'support';
   const config = ROLE_CONFIG[role] || ROLE_CONFIG.support;
@@ -36,6 +37,16 @@ export function SupportActCard({ act, index, total, onUpdate, onRemove, onMove }
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-3 md:gap-4">
+          {dragHandle && (
+            <span
+              {...dragHandle}
+              onClick={(e) => e.stopPropagation()}
+              className="text-gray-600 hover:text-gray-300 cursor-grab active:cursor-grabbing touch-none -ml-1 flex-shrink-0"
+              title="Drag to reorder"
+            >
+              <GripVertical className="h-4 w-4" />
+            </span>
+          )}
           <div className={`w-10 h-10 ${config.bg} rounded-xl flex items-center justify-center flex-shrink-0`}>
             <config.Icon className={`h-5 w-5 ${config.text}`} />
           </div>

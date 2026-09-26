@@ -1,29 +1,10 @@
 // PROMOTER OS — the bad-night test, Deno copy of src/lib/downside.ts.
 // If one changes, change the other in the same commit.
-import { netGrossOf, computeDeal, dealTermsOf, dealTypeOf, totalExpenses } from '../promtp-mcp/calc.ts';
+import { netGrossOf, computeDeal, dealTermsOf, dealTypeOf, totalExpenses, splitExtraRevenue } from '../promtp-mcp/calc.ts';
 
 // deno-lint-ignore no-explicit-any
 type Any = any;
 const num = (v: unknown, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
-const DEFAULT_CAR_OCCUPANCY = 2.5;
-
-function splitExtraRevenue(lines: Any[] = [], enabled = true) {
-  if (!enabled || !Array.isArray(lines)) return { flat: 0, perHead: 0 };
-  let flat = 0, perHead = 0;
-  for (const l of lines) {
-    if (!l) continue;
-    const amount = Number(l.amount) || 0;
-    const share = (Number(l.promoter_pct) ?? 100) / 100;
-    if (!isFinite(amount) || amount === 0) continue;
-    const mine = amount * (isFinite(share) ? Math.max(0, Math.min(1, share)) : 1);
-    if (l.basis === 'per_head') perHead += mine;
-    else if (l.basis === 'per_car') perHead += mine / (Number(l.occupancy) > 0 ? Number(l.occupancy) : DEFAULT_CAR_OCCUPANCY);
-    else if (l.basis === 'per_unit') flat += mine * (Number(l.units) || 0);
-    else flat += mine;
-  }
-  return { flat, perHead };
-}
-
 function revenueFor(offer: Any, tickets: number, mix: 'cheapest_first' | 'blended'): number {
   const tiers = (offer.ticket_tiers || [])
     .map((t: Any) => ({ price: num(t.price), seats: Math.max(0, num(t.allotment) - num(t.comps)) }))

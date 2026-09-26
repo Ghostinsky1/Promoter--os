@@ -223,7 +223,7 @@ export function calculateOffer(
     insurancePerAttendee?: number;
     ccFeeRate?: number;
   },
-  extraRevenue?: { include?: boolean; lines?: ExtraRevenueLine[] },
+  extraRevenue?: { include?: boolean; lines?: ExtraRevenueLine[]; mix?: 'cheapest_first' | 'blended' },
   terms?: {
     facilityFeePerTicket?: number;
     facilityFeeMode?: FacilityFeeMode;
@@ -316,10 +316,15 @@ export function calculateOffer(
 
   const baseExpenses = calculateTotalExpenses(expenses) + supportActsCost + accommodationTotal;
 
+  // Jose (Sep 26): three stress points, fixed, the same everywhere -- 50% (bad
+  // night), 70% (soft night), 100% (sellout). These used to be 70/85/100 here
+  // and 50/70/100 in the Deal Score, and ignored bar revenue.
+  const soft = { mix: extraRevenue?.mix, extraFlat: extra.flat, extraPerHead: extra.perHead };
+  const proj = (pct: number) => calculateProjection(ticketTiers, pct, salesTaxPct, baseExpenses, guarantee, taxWithholdingPct, dealType, artistBackendPct, promoterBackendPct, variableRates, terms, soft);
   const projections = mode === 'estimate' ? {
-    capacity70: calculateProjection(ticketTiers, 0.7, salesTaxPct, baseExpenses, guarantee, taxWithholdingPct, dealType, artistBackendPct, promoterBackendPct, variableRates, terms),
-    capacity85: calculateProjection(ticketTiers, 0.85, salesTaxPct, baseExpenses, guarantee, taxWithholdingPct, dealType, artistBackendPct, promoterBackendPct, variableRates, terms),
-    capacity100: calculateProjection(ticketTiers, 1.0, salesTaxPct, baseExpenses, guarantee, taxWithholdingPct, dealType, artistBackendPct, promoterBackendPct, variableRates, terms),
+    capacity50: proj(0.5),
+    capacity70: proj(0.7),
+    capacity100: proj(1.0),
   } : undefined;
 
   return {
@@ -375,15 +380,28 @@ function calculateProjection(
     artistPctBasis?: PctBasis;
     doorSplitBasis?: PctBasis;
   },
+  /** How a soft night fills the room (see downside.ts) and the bar/parking take. */
+  soft?: { mix?: 'cheapest_first' | 'blended'; extraFlat?: number; extraPerHead?: number },
 ): ProjectionResult {
   const totalSellable = ticketTiers.reduce((sum, tier) => sum + (tier.allotment - tier.comps), 0);
   const projectedTickets = Math.floor(totalSellable * capacityPct);
 
-  const grossPotential = ticketTiers.reduce((sum, tier) => {
-    const tierSellable = tier.allotment - tier.comps;
-    const tierProjected = Math.floor(tierSellable * capacityPct);
-    return sum + (tierProjected * tier.price);
-  }, 0);
+  // Same fill rule as the bad-night test: cheapest-first sells the presale and
+  // never reaches the door price; blended keeps the sellout mix all the way down.
+  let grossPotential = 0;
+  if (capacityPct >= 1) {
+    grossPotential = ticketTiers.reduce((sum, tier) => sum + Math.max(0, tier.allotment - tier.comps) * tier.price, 0);
+  } else if ((soft?.mix ?? 'cheapest_first') === 'blended') {
+    const full = ticketTiers.reduce((sum, tier) => sum + Math.max(0, tier.allotment - tier.comps) * tier.price, 0);
+    grossPotential = totalSellable > 0 ? (full / totalSellable) * projectedTickets : 0;
+  } else {
+    let left = projectedTickets;
+    for (const t of [...ticketTiers].map((t) => ({ price: t.price, seats: Math.max(0, t.allotment - t.comps) })).sort((a, b) => a.price - b.price)) {
+      const take = Math.min(left, t.seats);
+      grossPotential += take * t.price; left -= take;
+      if (left <= 0) break;
+    }
+  }
 
   // Same money model as the full offer, at this attendance.
   const g = netGrossOf(grossPotential, projectedTickets, salesTaxPct, terms?.facilityFeePerTicket ?? 0, terms?.facilityFeeMode ?? 'on_top');
@@ -408,14 +426,16 @@ function calculateProjection(
     artistBackendPct, promoterBackendPct,
   });
 
+  const extraHere = (soft?.extraFlat ?? 0) + (soft?.extraPerHead ?? 0) * projectedTickets;
+  const netProfit = deal.netProfit + extraHere;
   return {
     tickets: projectedTickets,
     grossPotential,
     netGross,
     artistPayout: deal.artistTotalPayout,
-    promoterProfit: deal.promoterProfit,
-    netProfit: deal.netProfit,
-    splitPointHit: dealType === 'promoter_profit' ? deal.profitPool > 0 : deal.netProfit >= 0,
+    promoterProfit: dealType === 'promoter_profit' ? deal.promoterProfit + extraHere : netProfit,
+    netProfit,
+    splitPointHit: dealType === 'promoter_profit' ? deal.profitPool > 0 : netProfit >= 0,
   };
 }
 
@@ -514,7 +534,7 @@ export function calculateFromOffer(offer: any, mode: 'estimate' | 'settlement' =
       insurancePerAttendee: Number(offer?.insurance_per_attendee) || 0,
       ccFeeRate: Number(offer?.cc_fee_rate) || 0,
     },
-    { include: offer?.include_extra_revenue, lines: offer?.extra_revenue || [] },
+    { include: offer?.include_extra_revenue, lines: offer?.extra_revenue || [], mix: offer?.downside_tier_mix === 'blended' ? 'blended' : 'cheapest_first' },
     dealTermsOf(offer),
   );
 }

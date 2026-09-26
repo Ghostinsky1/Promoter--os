@@ -8,10 +8,12 @@ import { splitExtraRevenue, carsFor, DEFAULT_CAR_OCCUPANCY, formatCurrency } fro
  */
 
 const KINDS: { value: ExtraRevenueKind; label: string; icon: typeof Beer; basis: ExtraRevenueLine['basis']; amount: number; pct: number }[] = [
-  { value: 'bar',         label: 'Bar',         icon: Beer,              basis: 'per_head', amount: 12, pct: 20 },
-  { value: 'truck_spot',  label: 'Truck spots', icon: Truck,             basis: 'per_unit', amount: 35, pct: 100 },
-  { value: 'parking',     label: 'Parking',     icon: Car,               basis: 'per_car',  amount: 10, pct: 100 },
-  { value: 'coat_check',  label: 'Coat check',  icon: Shirt,             basis: 'per_head', amount: 3,  pct: 100 },
+  // Amounts start blank on purpose (Jose, Sep 26): the promoter types their own
+  // number. A prefilled "$12 a head" is a guess dressed up as data.
+  { value: 'bar',         label: 'Bar',         icon: Beer,              basis: 'per_head', amount: 0, pct: 100 },
+  { value: 'truck_spot',  label: 'Truck spots', icon: Truck,             basis: 'per_unit', amount: 0, pct: 100 },
+  { value: 'parking',     label: 'Parking',     icon: Car,               basis: 'per_car',  amount: 0, pct: 100 },
+  { value: 'coat_check',  label: 'Coat check',  icon: Shirt,             basis: 'per_head', amount: 0, pct: 100 },
   { value: 'vip',         label: 'VIP tables',  icon: Crown,             basis: 'flat',     amount: 0,  pct: 100 },
   { value: 'sponsorship', label: 'Sponsorship', icon: Megaphone,         basis: 'flat',     amount: 0,  pct: 100 },
   { value: 'merch',       label: 'Merch cut',   icon: ShoppingBag,       basis: 'flat',     amount: 0,  pct: 100 },
@@ -29,10 +31,12 @@ interface Props {
   expectedAttendance: number;
   title?: string;
   subtitle?: string;
+  /** Offer-page density: smaller header, half-house preview on every line. */
+  compact?: boolean;
 }
 
 export function ExtraRevenuePanel({
-  enabled, onToggle, lines, onChange, expectedAttendance,
+  enabled, onToggle, lines, onChange, expectedAttendance, compact = false,
   title = 'Bar & other revenue',
   subtitle = 'Money that isn’t tickets. Leave it off for shows where you don’t take a cut.',
 }: Props) {
@@ -61,21 +65,24 @@ export function ExtraRevenuePanel({
   const total = flat + perHead * Math.max(0, expectedAttendance || 0);
 
   /** What one line is worth at the expected crowd. */
-  const lineValue = (l: ExtraRevenueLine) => {
+  const lineValueAt = (l: ExtraRevenueLine, people: number) => {
     const share = Math.max(0, Math.min(100, Number(l.promoter_pct) ?? 100)) / 100;
     const amt = Number(l.amount) || 0;
     if (l.basis === 'flat') return amt * share;
     if (l.basis === 'per_unit') return (Number(l.units) || 0) * amt * share;
-    if (l.basis === 'per_car') return carsFor(expectedAttendance, l.occupancy) * amt * share;
-    return expectedAttendance * amt * share;
+    if (l.basis === 'per_car') return carsFor(people, l.occupancy) * amt * share;
+    return people * amt * share;
   };
+  const lineValue = (l: ExtraRevenueLine) => lineValueAt(l, expectedAttendance);
+  const half = Math.floor(Math.max(0, expectedAttendance || 0) * 0.5);
+  const totalAtHalf = flat + perHead * half;
 
   return (
     <div className="bg-[#14171E] border border-[#2A3040] rounded-2xl overflow-hidden">
-      <div className="flex items-start justify-between gap-4 p-5 border-b border-[#2A3040]">
+      <div className={`flex items-start justify-between gap-4 border-b border-[#2A3040] ${compact ? 'p-4' : 'p-5'}`}>
         <div className="min-w-0">
-          <h3 className="text-white font-bold text-lg">{title}</h3>
-          <p className="text-gray-400 text-sm mt-0.5">{subtitle}</p>
+          <h3 className={`text-white font-bold ${compact ? 'text-base' : 'text-lg'}`}>{title}</h3>
+          {!compact && <p className="text-gray-400 text-sm mt-0.5">{subtitle}</p>}
         </div>
         <button
           type="button"
@@ -91,11 +98,11 @@ export function ExtraRevenuePanel({
       </div>
 
       {!enabled ? (
-        <p className="px-5 py-6 text-gray-500 text-sm">
-          Off — this show earns from tickets only. Nothing here affects your break-even or profit.
+        <p className={`text-gray-500 text-sm ${compact ? 'px-4 py-3' : 'px-5 py-6'}`}>
+          Off — this show earns from tickets only. Turn it on to add bar, parking, vendor spots or sponsorship.
         </p>
       ) : (
-        <div className="p-5 space-y-3">
+        <div className={`space-y-3 ${compact ? 'p-4' : 'p-5'}`}>
           {rows.length === 0 && (
             <p className="text-gray-500 text-sm">Add a line below. Nothing counts until you do.</p>
           )}
@@ -196,8 +203,9 @@ export function ExtraRevenuePanel({
                 )}
                 {l.basis === 'per_head' && (
                   <p className="text-gray-500 text-xs mt-3">
-                    {formatCurrency(l.amount)} a head across {expectedAttendance.toLocaleString()} people
-                    {l.promoter_pct < 100 ? `, and you keep ${l.promoter_pct}% of it` : ''}.
+                    {formatCurrency(l.amount)} a head{l.promoter_pct < 100 ? `, you keep ${l.promoter_pct}%` : ''}:
+                    {' '}<span className="text-gray-300">{formatCurrency(lineValueAt(l, expectedAttendance))}</span> at a sellout ({expectedAttendance.toLocaleString()}),
+                    {' '}<span className="text-gray-300">{formatCurrency(lineValueAt(l, half))}</span> at half a house ({half.toLocaleString()}).
                   </p>
                 )}
               </div>
@@ -221,9 +229,13 @@ export function ExtraRevenuePanel({
             <div className="bg-[#0B0D12] border border-[#8FD3FF]/30 rounded-xl p-4 mt-2">
               <div className="flex items-center justify-between">
                 <span className="text-gray-300 text-sm">
-                  Your take at {expectedAttendance.toLocaleString()} people
+                  Your take at a sellout ({expectedAttendance.toLocaleString()})
                 </span>
                 <span className="text-[#8FD3FF] text-xl font-bold">{formatCurrency(total)}</span>
+              </div>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-gray-500 text-xs">At half a house ({half.toLocaleString()})</span>
+                <span className="text-gray-300 text-sm font-semibold">{formatCurrency(totalAtHalf)}</span>
               </div>
               <p className="text-gray-500 text-xs mt-2">
                 This is yours — it never goes into the artist's percentage. Per-person and per-car lines

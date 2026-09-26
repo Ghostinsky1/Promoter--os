@@ -199,9 +199,9 @@ export function SummaryTab({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              { label: '70% Capacity', data: calculations.projections.capacity70 },
-              { label: '85% Capacity', data: calculations.projections.capacity85 },
-              { label: '100% Sellout', data: calculations.projections.capacity100 },
+              { label: '50% · Bad night', data: calculations.projections.capacity50 },
+              { label: '70% · Soft night', data: calculations.projections.capacity70 },
+              { label: '100% · Sellout', data: calculations.projections.capacity100 },
             ].map(({ label, data }) => (
               <div
                 key={label}

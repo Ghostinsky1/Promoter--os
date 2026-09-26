@@ -2,13 +2,15 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase, SUPABASE_URL } from '../lib/supabase';
 import { OfferWithShow, CompanySettings, EventArtist } from '../types';
-import { formatCurrency, calculateCategoryTotal, getExpenseBreakdown } from '../lib/calculations';
+import { formatCurrency, calculateCategoryTotal, getExpenseBreakdown, calculateFromOffer } from '../lib/calculations';
 import { getProfitIndicator } from '../lib/profitIndicators';
 import { calculateArtistsSummary } from '../lib/artistCalculations';
 import { CalculationsBreakdown } from './CalculationsBreakdown';
 import { PDFPreview } from './PDFPreview';
 import { EmailOfferModal } from './EmailOfferModal';
 import { EditableNum } from './EditableNum';
+import { ExtraRevenuePanel } from './ExtraRevenuePanel';
+import { SortableList } from './SortableList';
 import { survivalRead, downsideMixOf, type DownsideMix } from '../lib/downside';
 import { marketingAdvice, marketingBenchmark, type MarketingBenchmark } from '../lib/marketingBudget';
 import { CancellationSheet } from './CancellationSheet';
@@ -22,7 +24,7 @@ import { EventTasks } from './EventTasks';
 import { EventNotesPanel } from './EventNotesPanel';
 import { ArtistsDashboard } from './artists/ArtistsDashboard';
 import { generateArtistOfferSheet } from '../lib/generateArtistOfferSheet';
-import { ArrowLeft, Calendar, MapPin, Users, CreditCard as Edit, FileDown, Eye, Mail, BarChart3, Copy, Film, Trash2, Calculator, Sparkles, Save, Undo2, Loader2, Check } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, CreditCard as Edit, FileDown, Eye, Mail, BarChart3, Copy, Film, Trash2, Calculator, Sparkles, Undo2, Loader2, Check, Plus, X, GripVertical } from 'lucide-react';
 
 export function OfferDetails() {
   const { id } = useParams();
@@ -40,6 +42,7 @@ export function OfferDetails() {
   const [showDebug, setShowDebug] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const {
     state,
@@ -60,6 +63,12 @@ export function OfferDetails() {
     setSalesTaxPct,
     setTaxWithholdingPct,
     setDepositPct,
+    addTier,
+    renameTier,
+    removeTier,
+    moveSupportAct,
+    setExtraRevenue,
+    setIncludeExtraRevenue,
   } = useEstimateState(offer);
 
   const {
@@ -135,16 +144,29 @@ export function OfferDetails() {
         .eq('id', offer.id);
       if (error) throw error;
       markClean();
+      setSaveError(null);
       setOffer(prev => prev ? { ...prev, ...payload } as OfferWithShow : prev);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2000);
     } catch (error) {
       console.error('Error saving changes:', error);
-      alert('Failed to save changes. Please try again.');
+      setSaveError('Could not save. Check your connection; your edits are still on screen.');
     } finally {
       setSaving(false);
     }
   };
+
+  // Autosave. Jose (Sep 26): "save automatically." The page used to hold
+  // every edit until a Save button at the bottom; switch apps on a phone and
+  // the browser reloads the tab, and the work was gone. Now a change is on
+  // the server a second after it is made.
+  const saveRef = useRef(handleSaveChanges);
+  saveRef.current = handleSaveChanges;
+  useEffect(() => {
+    if (!isDirty || saving) return;
+    const t = setTimeout(() => { saveRef.current(); }, 1200);
+    return () => clearTimeout(t);
+  }, [isDirty, state, saving]);
 
   /** What the dead show actually cost. Replaces the profit it will never make. */
   const saveCancellation = async (c: Cancellation) => {
@@ -321,6 +343,13 @@ export function OfferDetails() {
   const depositPct = state?.depositPct ?? offer.deposit_pct;
   const expenses = liveExpenses ?? offer.expenses;
   const tiers = liveTiers ?? offer.ticket_tiers;
+  // The three stress points, from what is on screen right now (not the last
+  // save), through the same bad-night math as the Deal Score.
+  const liveProjections = useMemo(() => {
+    if (!state || !liveCalc) return offer.calculations?.projections?.capacity50 ? offer.calculations.projections : null;
+    const merged = { ...offer, ...buildUpdatePayload(state, liveCalc) } as OfferWithShow;
+    return calculateFromOffer(merged, 'estimate').projections ?? null;
+  }, [offer, state, liveCalc]);
   const tierStates = state?.ticketTiers ?? offer.ticket_tiers.map((t, i) => ({
     id: `tier-${i}`, type: t.type, allotment: t.allotment, comps: t.comps, price: t.price,
   }));
@@ -461,8 +490,10 @@ export function OfferDetails() {
           />
         </div>
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Main Grid. items-start: a short card (the cancellation sheet) no
+            longer stretches to the height of its tall neighbour and shows a
+            column of nothing. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
           {/* Artist Deal */}
           <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
             <h2 className="text-base font-bold text-white mb-3">Artist Deal</h2>
@@ -503,9 +534,20 @@ export function OfferDetails() {
               {tierStates.map((ts) => {
                 const sellable = ts.allotment - ts.comps;
                 return (
-                  <div key={ts.id} className="flex justify-between items-center pb-2 border-b border-gray-800">
-                    <div>
-                      <div className="font-medium text-white text-sm">{ts.type}</div>
+                  <div key={ts.id} className="flex justify-between items-center pb-2 border-b border-gray-800 group">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1">
+                        <input
+                          defaultValue={ts.type}
+                          onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== ts.type) renameTier(ts.id, v); }}
+                          className="font-medium text-white text-sm bg-transparent border-b border-transparent hover:border-gray-700 focus:border-[#8FD3FF] focus:outline-none w-32"
+                        />
+                        {tierStates.length > 1 && (
+                          <button onClick={() => removeTier(ts.id)} className="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" title="Remove tier">
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                       <div className="text-xs text-gray-400 flex items-center gap-1">
                         <EditableNum value={ts.allotment} onChange={(v) => updateTier(ts.id, { allotment: v })} width="w-14" />
                         <span className="text-gray-500">-</span>
@@ -520,6 +562,13 @@ export function OfferDetails() {
                   </div>
                 );
               })}
+              <button
+                onClick={() => addTier()}
+                className="w-full text-left text-xs text-[#8FD3FF] hover:text-white py-1.5 flex items-center gap-1"
+                style={{ textTransform: 'none', letterSpacing: 0 }}
+              >
+                <Plus className="w-3.5 h-3.5" /> Add a tier
+              </button>
               <div className="flex justify-between items-center pt-1">
                 <span className="text-xs text-gray-400 inline-flex items-center gap-1">
                   Sales Tax <EditableNum value={salesTaxPct} onChange={setSalesTaxPct} suffix="%" width="w-14" />
@@ -595,13 +644,24 @@ export function OfferDetails() {
                     <span className="font-semibold text-sm text-cyan-400">Support Acts</span>
                     <span className="font-bold text-white text-sm">{formatCurrency(supportActStates.reduce((sum, act) => sum + (act.guarantee || 0), 0))}</span>
                   </div>
-                  <div className="pl-3 space-y-1.5 border-l-2 border-gray-800 ml-2">
-                    {supportActStates.map((act) => (
-                      <div key={act.id} className="flex justify-between items-center text-xs">
-                        <span className="text-gray-400">{act.name} ({act.type})</span>
-                        <EditableNum value={act.guarantee} onChange={(v) => updateSupportAct(act.id, v)} prefix="$" width="w-20" color="text-gray-300" />
-                      </div>
-                    ))}
+                  <div className="pl-3 border-l-2 border-gray-800 ml-2">
+                    <SortableList
+                      ids={supportActStates.map((a) => a.id)}
+                      onMove={moveSupportAct}
+                      className="space-y-1.5"
+                      renderItem={(id, handle) => {
+                        const act = supportActStates.find((a) => a.id === id)!;
+                        return (
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="flex items-center gap-1.5 text-gray-400 min-w-0">
+                              <span {...handle} className="text-gray-600 hover:text-gray-300 cursor-grab active:cursor-grabbing touch-none" title="Drag to reorder"><GripVertical className="w-3.5 h-3.5" /></span>
+                              <span className="truncate">{act.name} ({act.type})</span>
+                            </span>
+                            <EditableNum value={act.guarantee} onChange={(v) => updateSupportAct(act.id, v)} prefix="$" width="w-20" color="text-gray-300" />
+                          </div>
+                        );
+                      }}
+                    />
                   </div>
                 </div>
               )}
@@ -684,6 +744,19 @@ export function OfferDetails() {
 
           {mktBenchmark && offer.status !== 'cancelled' && (
             <MarketingPanel offer={offer} benchmark={mktBenchmark} />
+          )}
+
+          {/* Bar, parking, vendor spots. Was only reachable inside the wizard;
+              the offer page never showed it, so it was as good as missing. */}
+          {state && (
+            <ExtraRevenuePanel
+              enabled={state.includeExtraRevenue}
+              onToggle={setIncludeExtraRevenue}
+              lines={state.extraRevenue}
+              onChange={setExtraRevenue}
+              expectedAttendance={tierStates.reduce((sum, t) => sum + (t.allotment - t.comps), 0)}
+              compact
+            />
           )}
 
           {/* Variable Expenses */}
@@ -801,14 +874,17 @@ export function OfferDetails() {
             depositsDueTotal={depositsDueTotal}
           />
 
-          {offer.mode === 'estimate' && offer.calculations.projections && (
+          {offer.mode === 'estimate' && liveProjections && (
             <div className="md:col-span-2 bg-[#14171E] border border-gray-800 rounded-2xl p-4">
-              <h2 className="text-base font-bold text-white mb-3">Capacity Projections</h2>
+              <div className="flex items-baseline justify-between mb-3">
+                <h2 className="text-base font-bold text-white">The three stress points</h2>
+                <span className="text-[11px] text-gray-500">Same math as the Deal Score. Bar and other revenue included.</span>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {[
-                  { label: '70% Capacity', data: offer.calculations.projections.capacity70, color: 'yellow' },
-                  { label: '85% Capacity', data: offer.calculations.projections.capacity85, color: 'orange' },
-                  { label: '100% Sellout', data: offer.calculations.projections.capacity100, color: 'green' },
+                  { label: '50% · Bad night', data: liveProjections.capacity50, color: 'yellow' },
+                  { label: '70% · Soft night', data: liveProjections.capacity70, color: 'orange' },
+                  { label: '100% · Sellout', data: liveProjections.capacity100, color: 'green' },
                 ].map(({ label, data, color }) => (
                   <div key={label} className={`border rounded-xl p-3 ${color === 'green' ? 'bg-green-900/10 border-green-800/30' : color === 'orange' ? 'bg-orange-900/10 border-orange-800/30' : 'bg-yellow-900/10 border-yellow-800/30'}`}>
                     <div className="font-bold text-white mb-3 text-sm text-center">{label}</div>
@@ -898,42 +974,18 @@ export function OfferDetails() {
         </div>
       </div>
 
-      {/* Floating Save Bar */}
-      <div className={`fixed bottom-0 left-0 right-0 z-50 transition-all duration-300 ease-out ${isDirty ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
-        <div className="bg-[#14171E]/95 backdrop-blur-lg border-t border-[#8FD3FF]/20 shadow-[0_-4px_30px_rgba(0,0,0,0.5)]">
-          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-2 h-2 rounded-full bg-[#8FD3FF] animate-pulse flex-shrink-0" />
-              <span className="text-sm text-gray-300 truncate">Unsaved changes</span>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <button
-                onClick={resetToOriginal}
-                disabled={saving}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-[#22262F] border border-gray-700 transition-all flex items-center gap-2 disabled:opacity-50"
-              >
-                <Undo2 className="w-3.5 h-3.5" />
-                Discard
-              </button>
-              <button
-                onClick={handleSaveChanges}
-                disabled={saving}
-                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
-                  saveSuccess
-                    ? 'bg-green-500 text-white'
-                    : 'bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D]'
-                } disabled:opacity-70`}
-              >
-                {saving ? (
-                  <><Loader2 className="w-3.5 h-3.5 animate-spin" />Saving...</>
-                ) : saveSuccess ? (
-                  <><Check className="w-3.5 h-3.5" />Saved</>
-                ) : (
-                  <><Save className="w-3.5 h-3.5" />Save Changes</>
-                )}
-              </button>
-            </div>
-          </div>
+      {/* Save status. Autosave does the work; this only says so. */}
+      <div className={`fixed left-4 md:left-auto md:right-6 z-40 transition-all duration-300 bottom-[172px] md:bottom-24 ${isDirty || saving || saveSuccess || saveError ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`rounded-full border px-3 py-1.5 text-xs flex items-center gap-2 backdrop-blur ${saveError ? 'bg-red-900/40 border-red-700/60 text-red-200' : 'bg-[#14171E]/95 border-[#2A3040] text-gray-300'}`}>
+          {saveError ? (
+            <>{saveError} <button onClick={handleSaveChanges} className="text-white underline" style={{ textTransform: 'none', letterSpacing: 0 }}>Retry</button></>
+          ) : saving ? (
+            <><Loader2 className="w-3 h-3 animate-spin" /> Saving…</>
+          ) : saveSuccess ? (
+            <><Check className="w-3 h-3 text-emerald-300" /> Saved</>
+          ) : (
+            <><span className="w-1.5 h-1.5 rounded-full bg-[#8FD3FF] animate-pulse" /> Editing… <button onClick={resetToOriginal} className="text-gray-400 hover:text-white inline-flex items-center gap-1" style={{ textTransform: 'none', letterSpacing: 0 }}><Undo2 className="w-3 h-3" />Undo</button></>
+          )}
         </div>
       </div>
 

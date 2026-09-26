@@ -57,6 +57,27 @@ function variableRates(o: Offer) {
   };
 }
 
+
+const DEFAULT_CAR_OCCUPANCY = 2.5;
+/** Bar, parking, vendor spots, sponsorship: the promoter's share, split into a
+ *  flat part and a per-head part. Mirrors src/lib/calculations.ts. */
+export function splitExtraRevenue(lines: Any[] = [], enabled = true) {
+  if (!enabled || !Array.isArray(lines)) return { flat: 0, perHead: 0 };
+  let flat = 0, perHead = 0;
+  for (const l of lines) {
+    if (!l) continue;
+    const amount = Number(l.amount) || 0;
+    const share = (Number(l.promoter_pct) ?? 100) / 100;
+    if (!isFinite(amount) || amount === 0) continue;
+    const mine = amount * (isFinite(share) ? Math.max(0, Math.min(1, share)) : 1);
+    if (l.basis === "per_head") perHead += mine;
+    else if (l.basis === "per_car") perHead += mine / (Number(l.occupancy) > 0 ? Number(l.occupancy) : DEFAULT_CAR_OCCUPANCY);
+    else if (l.basis === "per_unit") flat += mine * (Number(l.units) || 0);
+    else flat += mine;
+  }
+  return { flat, perHead };
+}
+
 function sellable(t: TicketTier, useActual: boolean) {
   return useActual && t.actualSold !== undefined ? n(t.actualSold) : n(t.allotment) - n(t.comps);
 }
@@ -162,20 +183,40 @@ export function calculateOffer(o: Offer, mode: "estimate" | "settlement" = "esti
   const dealTerms = { dealType, guarantee, taxWithholdingPct: wh, artistPercentage: terms.artistPercentage, artistPctBasis: terms.artistPctBasis, doorSplitBasis: terms.doorSplitBasis, artistBackendPct: aPct, promoterBackendPct: pPct };
   const deal = computeDeal(netGross, total, dealTerms);
 
+  // Same fill rule and the same bar/parking take as src/lib/calculations.ts.
+  const extra = splitExtraRevenue(o.extra_revenue, o.include_extra_revenue !== false);
+  const mix = o.downside_tier_mix === "blended" ? "blended" : "cheapest_first";
   const proj = (pct: number) => {
-    const tickets = Math.floor(tiers.reduce((s, t) => s + n(t.allotment) - n(t.comps), 0) * pct);
-    const gp = tiers.reduce((s, t) => s + Math.floor((n(t.allotment) - n(t.comps)) * pct) * n(t.price), 0);
+    const sellable = tiers.reduce((s, t) => s + n(t.allotment) - n(t.comps), 0);
+    const tickets = Math.floor(sellable * pct);
+    let gp = 0;
+    if (pct >= 1) {
+      gp = tiers.reduce((s, t) => s + Math.max(0, n(t.allotment) - n(t.comps)) * n(t.price), 0);
+    } else if (mix === "blended") {
+      const full = tiers.reduce((s, t) => s + Math.max(0, n(t.allotment) - n(t.comps)) * n(t.price), 0);
+      gp = sellable > 0 ? (full / sellable) * tickets : 0;
+    } else {
+      let left = tickets;
+      for (const t of tiers.map((t) => ({ price: n(t.price), seats: Math.max(0, n(t.allotment) - n(t.comps)) })).sort((a, b) => a.price - b.price)) {
+        const take = Math.min(left, t.seats); gp += take * t.price; left -= take; if (left <= 0) break;
+      }
+    }
     const ng = netGrossOf(gp, tickets, salesTaxPct, terms.facilityFeePerTicket, terms.facilityFeeMode).netGross;
     const te = base + ng * (r.ascap + r.bmi + r.sesac + r.cc) + tickets * r.insurance;
     const d = computeDeal(ng, te, dealTerms);
+    const extraHere = extra.flat + extra.perHead * tickets;
+    const netProfit = d.netProfit + extraHere;
     return {
-      tickets, grossPotential: gp, netGross: ng, artistPayout: d.artistTotalPayout, promoterProfit: d.promoterProfit,
-      netProfit: d.netProfit, splitPointHit: dealType === "promoter_profit" ? d.profitPool > 0 : d.netProfit >= 0,
+      tickets, grossPotential: gp, netGross: ng, artistPayout: d.artistTotalPayout,
+      promoterProfit: dealType === "promoter_profit" ? d.promoterProfit + extraHere : netProfit,
+      netProfit, splitPointHit: dealType === "promoter_profit" ? d.profitPool > 0 : netProfit >= 0,
     };
   };
 
   const isPP = dealType === "promoter_profit";
+  const extraRevenueTotal = extra.flat + extra.perHead * totalSellable;
   return {
+    extraRevenueTotal, extraRevenuePerHead: extra.perHead,
     grossPotential, salesTax, netGross,
     totalExpenses: total,
     totalShowCost: total + deal.artistCost,
@@ -185,7 +226,7 @@ export function calculateOffer(o: Offer, mode: "estimate" | "settlement" = "esti
     dealDescription: deal.describe,
     fixedExpensesTotal: base,
     variableExpensesTotal: variable,
-    netProfit: deal.netProfit, artistTotalPayout: deal.artistTotalPayout,
+    netProfit: deal.netProfit + extraRevenueTotal, artistTotalPayout: deal.artistTotalPayout,
     profitPool: isPP ? deal.profitPool : undefined,
     promoterProfit: isPP ? deal.promoterProfit : undefined,
     splitPoint: isPP ? deal.splitPoint : undefined,
@@ -193,7 +234,7 @@ export function calculateOffer(o: Offer, mode: "estimate" | "settlement" = "esti
     artistBackend: deal.artistBackend > 0 ? deal.artistBackend : undefined,
     promoterBackend: isPP ? deal.promoterBackend : undefined,
     projections: mode === "estimate"
-      ? { capacity70: proj(0.7), capacity85: proj(0.85), capacity100: proj(1) }
+      ? { capacity50: proj(0.5), capacity70: proj(0.7), capacity100: proj(1) }
       : undefined,
   };
 }

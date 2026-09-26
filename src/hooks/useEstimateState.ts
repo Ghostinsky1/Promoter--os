@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import type { OfferWithShow, Calculations, TicketTier, Expenses } from '../types';
-import { netGrossOf, computeDeal, dealTermsOf, dealTypeOf, type DealType, type FacilityFeeMode, type PctBasis } from '../lib/calculations';
+import type { OfferWithShow, Calculations, TicketTier, Expenses, ExtraRevenueLine } from '../types';
+import { netGrossOf, computeDeal, dealTermsOf, dealTypeOf, splitExtraRevenue, type DealType, type FacilityFeeMode, type PctBasis } from '../lib/calculations';
 
 export function toNumber(val: string | number): number {
   if (typeof val === 'number') return val;
@@ -56,6 +56,9 @@ export interface EstimateState {
   artistPercentage: number;
   artistPctBasis: PctBasis;
   doorSplitBasis: PctBasis;
+  /** Bar, parking, vendor spots, sponsorship. Not tickets. */
+  includeExtraRevenue: boolean;
+  extraRevenue: ExtraRevenueLine[];
 }
 
 function initEstimateState(offer: OfferWithShow): EstimateState {
@@ -115,6 +118,8 @@ function initEstimateState(offer: OfferWithShow): EstimateState {
     artistBackendPct: offer.artist_backend_pct ?? 85,
     promoterBackendPct: offer.promoter_backend_pct ?? 15,
     ...dealTermsOf(offer),
+    includeExtraRevenue: (offer as any).include_extra_revenue ?? false,
+    extraRevenue: Array.isArray((offer as any).extra_revenue) ? (offer as any).extra_revenue : [],
   };
 }
 
@@ -154,7 +159,14 @@ function computeFromState(s: EstimateState): Calculations {
     promoterBackendPct: s.promoterBackendPct,
   });
 
+  // Bar and the rest, at a sellout. Same as calculateOffer: it lands on the
+  // promoter's side after the deal and never enters the artist's split.
+  const extra = splitExtraRevenue(s.extraRevenue, s.includeExtraRevenue);
+  const extraRevenueTotal = extra.flat + extra.perHead * totalSellable;
+
   return {
+    extraRevenueTotal,
+    extraRevenuePerHead: extra.perHead,
     grossPotential,
     salesTax: g.salesTax,
     netGross,
@@ -166,7 +178,7 @@ function computeFromState(s: EstimateState): Calculations {
     dealDescription: deal.describe,
     fixedExpensesTotal,
     variableExpensesTotal,
-    netProfit: deal.netProfit,
+    netProfit: deal.netProfit + extraRevenueTotal,
     artistTotalPayout: deal.artistTotalPayout,
     profitPool: s.dealType === 'promoter_profit' ? deal.profitPool : undefined,
     promoterProfit: s.dealType === 'promoter_profit' ? deal.promoterProfit : undefined,
@@ -222,6 +234,8 @@ export function buildUpdatePayload(s: EstimateState, calc: Calculations) {
     artist_percentage: s.artistPercentage,
     artist_pct_basis: s.artistPctBasis,
     door_split_basis: s.doorSplitBasis,
+    include_extra_revenue: s.includeExtraRevenue,
+    extra_revenue: s.extraRevenue,
   };
 }
 
@@ -375,6 +389,39 @@ export function useEstimateState(offer: OfferWithShow | null) {
     setState(prev => prev ? { ...prev, ...patch } : prev);
   }, []);
 
+  const addTier = useCallback((type = 'New tier') => {
+    setState(prev => prev ? {
+      ...prev,
+      ticketTiers: [...prev.ticketTiers, { id: `tier-${Date.now()}`, type, allotment: 0, comps: 0, price: 0 }],
+    } : prev);
+  }, []);
+
+  const renameTier = useCallback((id: string, type: string) => {
+    setState(prev => prev ? { ...prev, ticketTiers: prev.ticketTiers.map(t => t.id === id ? { ...t, type } : t) } : prev);
+  }, []);
+
+  const removeTier = useCallback((id: string) => {
+    setState(prev => prev ? { ...prev, ticketTiers: prev.ticketTiers.filter(t => t.id !== id) } : prev);
+  }, []);
+
+  const moveSupportAct = useCallback((from: number, to: number) => {
+    setState(prev => {
+      if (!prev || from === to || from < 0 || to < 0 || from >= prev.supportActs.length || to >= prev.supportActs.length) return prev;
+      const next = [...prev.supportActs];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      return { ...prev, supportActs: next };
+    });
+  }, []);
+
+  const setExtraRevenue = useCallback((lines: ExtraRevenueLine[]) => {
+    setState(prev => prev ? { ...prev, extraRevenue: lines } : prev);
+  }, []);
+
+  const setIncludeExtraRevenue = useCallback((on: boolean) => {
+    setState(prev => prev ? { ...prev, includeExtraRevenue: on } : prev);
+  }, []);
+
   const setDepositPct = useCallback((value: number) => {
     setState(prev => prev ? { ...prev, depositPct: value } : prev);
   }, []);
@@ -399,5 +446,11 @@ export function useEstimateState(offer: OfferWithShow | null) {
     setTaxWithholdingPct,
     setDepositPct,
     setDealTerms,
+    addTier,
+    renameTier,
+    removeTier,
+    moveSupportAct,
+    setExtraRevenue,
+    setIncludeExtraRevenue,
   };
 }

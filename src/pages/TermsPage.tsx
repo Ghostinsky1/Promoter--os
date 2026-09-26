@@ -70,7 +70,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-bold text-white mb-4">Subscription and Payment</h2>
             <h3 className="text-xl font-semibold text-white mb-3">Free Trial</h3>
             <p className="mb-4">
-              New users receive a 7-day free trial. You may cancel at any time during the trial
+              New users receive a 14-day free trial. You may cancel at any time during the trial
               period without being charged.
             </p>
 

@@ -44,12 +44,12 @@ export default function FAQPage() {
     {
       question: 'How does the free trial work?',
       answer:
-        'You get full access to PROMOTER OS for 7 days, completely free. No credit card required to start. You can create unlimited offers, use all features including AI insights, and export professional PDFs. Cancel anytime during the trial with no charges.',
+        'You get full access to PROMOTER OS for 14 days, completely free. No credit card required to start. You can create unlimited offers, use all features including AI insights, and export professional PDFs. Cancel anytime during the trial with no charges.',
     },
     {
       question: 'What happens after the trial ends?',
       answer:
-        'After your 7-day trial, you can choose a plan that fits your needs. If you don\'t select a plan, your account will revert to view-only mode where you can access your existing offers but cannot create new ones. Your data is never deleted.',
+        'After your 14-day trial, you can choose a plan that fits your needs. If you don\'t select a plan, your account will revert to view-only mode where you can access your existing offers but cannot create new ones. Your data is never deleted.',
     },
     {
       question: 'Can I cancel my subscription anytime?',
@@ -94,7 +94,7 @@ export default function FAQPage() {
     {
       question: 'Do you offer refunds?',
       answer:
-        'While our subscriptions are non-refundable, we encourage you to use the 7-day free trial to fully test the platform before subscribing. If you experience issues with the service, contact our support team and we\'ll work to resolve them.',
+        'While our subscriptions are non-refundable, we encourage you to use the 14-day free trial to fully test the platform before subscribing. If you experience issues with the service, contact our support team and we\'ll work to resolve them.',
     },
     {
       question: 'How do tours work in PROMOTER OS?',

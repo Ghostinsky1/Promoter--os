@@ -160,7 +160,7 @@ export function LandingPage() {
             <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-[#A8B2C1]">
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 text-[#8FD3FF]" />
-                <span>7-day free trial</span>
+                <span>14-day free trial</span>
               </div>
               <span className="text-gray-600">•</span>
               <div className="flex items-center gap-1.5">
@@ -1066,7 +1066,7 @@ export function LandingPage() {
               },
               {
                 question: "How does the free trial work?",
-                answer: "You get full access to PROMOTER OS for 7 days, completely free. No credit card required. Try all features including AI insights and professional PDF generation."
+                answer: "You get full access to PROMOTER OS for 14 days, completely free. No credit card required. Try all features including AI insights and professional PDF generation."
               },
               {
                 question: "Can I cancel my subscription anytime?",
@@ -1129,7 +1129,7 @@ export function LandingPage() {
           <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-[#04214D]/70">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4" />
-              <span>7-day free trial</span>
+              <span>14-day free trial</span>
             </div>
             <span className="text-[#04214D]/40">•</span>
             <div className="flex items-center gap-1.5">
@@ -1159,7 +1159,7 @@ export function LandingPage() {
           <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-[#A8B2C1]">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-[#8FD3FF]" />
-              <span>7-day free trial</span>
+              <span>14-day free trial</span>
             </div>
             <span className="text-gray-600">•</span>
             <div className="flex items-center gap-1.5">

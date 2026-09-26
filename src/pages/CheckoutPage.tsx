@@ -68,7 +68,7 @@ export function CheckoutPage() {
               <span className="text-5xl font-bold text-[#8FD3FF]">${product.price.toFixed(0)}</span>
               <span className="text-gray-400">/ month</span>
             </div>
-            <p className="text-sm text-[#8FD3FF] font-semibold mb-6">7-day free trial — you won't be charged today.</p>
+            <p className="text-sm text-[#8FD3FF] font-semibold mb-6">14-day free trial — you won't be charged today.</p>
             <ul className="space-y-3">
               {product.features.map((f) => (
                 <li key={f} className="flex items-start gap-3 text-gray-300 text-sm">

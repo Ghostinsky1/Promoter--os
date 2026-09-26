@@ -229,7 +229,7 @@ export function SignupFormLegacy() {
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="h-5 w-5 text-[#8FD3FF] flex-shrink-0" />
-              <span className="text-sm text-[#A8B2C1]">7-day free trial, no credit card</span>
+              <span className="text-sm text-[#A8B2C1]">14-day free trial, no credit card</span>
             </div>
             <div className="flex items-center gap-3">
               <CheckCircle2 className="h-5 w-5 text-[#8FD3FF] flex-shrink-0" />

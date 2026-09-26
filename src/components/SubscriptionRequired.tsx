@@ -29,7 +29,7 @@ export function SubscriptionRequired() {
     if (isTrialExpired()) {
       return {
         title: 'Trial Expired',
-        description: 'Your 7-day trial has ended. Subscribe now to continue using the platform.',
+        description: 'Your 14-day trial has ended. Subscribe now to continue using the platform.',
         icon: Calendar
       };
     }

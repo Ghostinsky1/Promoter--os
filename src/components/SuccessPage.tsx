@@ -36,7 +36,7 @@ export function SuccessPage() {
         .select('subscription_tier')
         .limit(1)
         .maybeSingle();
-      // 7-day trial, so the money lands later — report the plan's monthly value.
+      // 14-day trial, so the money lands later — report the plan's monthly value.
       const tier = org?.subscription_tier ?? 'starter';
       const value = tier === 'agency_scale' ? 297 : tier === 'pro' ? 99 : 39;
       track('StartTrial', {

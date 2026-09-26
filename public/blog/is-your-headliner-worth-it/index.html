@@ -225,6 +225,31 @@ blockquote cite{display:block;font-family:"Space Grotesk",sans-serif;font-weight
 .btn:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 footer{background:var(--dark);padding:30px 0;font-size:16px;color:#8fa0c0;text-align:center}
 
+/* Phones: more room to breathe. Jose: "everything is cramped and harder to read." */
+@media (max-width:640px){
+  body{font-size:19px;line-height:1.7}
+  .wrap{padding:0 24px}
+  section{padding:44px 0}
+  h1{font-size:clamp(32px,9.2vw,44px);line-height:1.02;letter-spacing:-.5px;margin-top:22px}
+  .dek{font-size:20px;line-height:1.5;margin-top:18px}
+  h2{font-size:clamp(24px,7vw,30px);line-height:1.08;margin:40px 0 16px}
+  p{margin:0 0 22px}
+  .lede{font-size:21px;line-height:1.5}
+  blockquote{font-size:clamp(21px,5.6vw,25px);line-height:1.25;margin:28px 0;padding-left:16px}
+  .ledger{padding:6px 16px}
+  .ledger .row{padding:14px 0;font-size:18px}
+  .ledger .row.tot{font-size:20px}
+  .ledger .row.tot span:last-child{font-size:26px}
+  .swing div{padding:16px 18px}
+  .swing .n{font-size:34px}
+  .calc{padding:20px 18px}
+  .calc input{font-size:24px;padding:12px}
+  #needlab{font-size:18px;line-height:1.45}
+  .method{padding:18px;font-size:17px;line-height:1.55}
+  .src ol{font-size:16px;line-height:1.5}
+  .btn{display:block;font-size:20px;padding:18px 20px;margin:10px 0}
+}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none !important;transition:none !important}
   #poweron{display:none}
@@ -331,7 +356,8 @@ footer{background:var(--dark);padding:30px 0;font-size:16px;color:#8fa0c0;text-a
     <blockquote>Are they going to sell at least their cost in tickets? Or did you just fund a vacation?
       <cite>Jose Huaroco</cite></blockquote>
 
-    <p>His checks before signing: pull the artist's last ten dates. If they were the support act on most of them, they are not a headliner yet. Then estimate their pay &mdash; ticket price, times roughly how many came, times 40%. He treats that as a floor, since it runs low on soft nights.</p>
+    <p>His checks before signing: pull the artist's last ten dates. If they were the support act on most of them, they are not a headliner yet.</p>
+<p>Then put a ceiling on the fee before the agent names one. Under $10,000 in expected ticket sales, the headliner should cost <strong>10 to 15% of the gross</strong> &mdash; on a $5,000 night that is $500 to $750, not $2,000. On his own settlement above the headliner was 7.5%. Once a room clears $10,000, stop paying flat. Guarantee the artist about 10% of expected gross, then pay them 15 to 25% of what is left after costs, whichever is higher. The fee rises only when the crowd does, and a half-empty night no longer eats you.</p>
   </div>
 </section>
 

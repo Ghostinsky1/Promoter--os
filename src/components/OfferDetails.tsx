@@ -326,6 +326,18 @@ export function OfferDetails() {
     }
   };
 
+  // The three stress points, from what is on screen right now (not the last
+  // save), through the same bad-night math as the Deal Score. Declared before
+  // the early returns below: every hook must run on every render, or React
+  // throws "rendered more hooks than during the previous render" (#310) the
+  // moment the offer finishes loading.
+  const liveProjections = useMemo(() => {
+    if (!offer) return null;
+    if (!state || !liveCalc) return offer.calculations?.projections?.capacity50 ? offer.calculations.projections : null;
+    const merged = { ...offer, ...buildUpdatePayload(state, liveCalc) } as OfferWithShow;
+    return calculateFromOffer(merged, 'estimate').projections ?? null;
+  }, [offer, state, liveCalc]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#1140F0] flex items-center justify-center">
@@ -343,13 +355,6 @@ export function OfferDetails() {
   const depositPct = state?.depositPct ?? offer.deposit_pct;
   const expenses = liveExpenses ?? offer.expenses;
   const tiers = liveTiers ?? offer.ticket_tiers;
-  // The three stress points, from what is on screen right now (not the last
-  // save), through the same bad-night math as the Deal Score.
-  const liveProjections = useMemo(() => {
-    if (!state || !liveCalc) return offer.calculations?.projections?.capacity50 ? offer.calculations.projections : null;
-    const merged = { ...offer, ...buildUpdatePayload(state, liveCalc) } as OfferWithShow;
-    return calculateFromOffer(merged, 'estimate').projections ?? null;
-  }, [offer, state, liveCalc]);
   const tierStates = state?.ticketTiers ?? offer.ticket_tiers.map((t, i) => ({
     id: `tier-${i}`, type: t.type, allotment: t.allotment, comps: t.comps, price: t.price,
   }));

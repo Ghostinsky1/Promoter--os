@@ -53,10 +53,13 @@ const KIND_LABEL: Record<LedgerItem['kind'], string> = {
 export function SettlementChat({
   offer,
   organizationId,
+  screen,
   onApply,
 }: {
   offer: OfferWithShow;
   organizationId: string;
+  /** The settlement as it is on screen right now, saved or not, so the chat can see the door numbers. */
+  screen?: any;
   /** Called when the assistant writes. The parent puts the numbers in and saves. */
   onApply: (a: ChatApply) => Promise<void> | void;
 }) {
@@ -138,7 +141,14 @@ export function SettlementChat({
       const res = await fetch(`${SUPABASE_URL}/functions/v1/settlement-chat`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${session?.access_token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ offer_id: offer.id, message, import_ids: importIds }),
+        body: JSON.stringify({
+          offer_id: offer.id, message, import_ids: importIds,
+          screen: screen ? {
+            actual_attendance: screen.actual_attendance, actual_expenses: screen.actual_expenses,
+            actual_revenue_channels: screen.actual_revenue_channels, actual_extra_revenue: screen.actual_extra_revenue,
+            actual_revenue: screen.actual_revenue, actual_total_expenses: screen.actual_total_expenses, actual_profit: screen.actual_profit,
+          } : null,
+        }),
       });
       const payload = await res.json();
       if (!res.ok) {

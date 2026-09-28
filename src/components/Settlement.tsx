@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { OfferWithShow, CompanySettings } from '../types';
@@ -62,6 +62,19 @@ interface Settlement {
   settled_at?: string;
 }
 
+/** Everything that matters for a draft, minus ids and timestamps. */
+function draftKey(s: Settlement): string {
+  const { id, settled_at, ...rest } = s as any;
+  void id; void settled_at;
+  return JSON.stringify(rest);
+}
+function hasAnyNumber(s: Settlement): boolean {
+  if ((s.actual_attendance || []).some((t) => Number(t.actual_sold) > 0)) return true;
+  if (Object.values(s.actual_expenses || {}).some((cat: any) => Object.values(cat || {}).some((v) => Number(v) > 0))) return true;
+  if ((s as any).actual_revenue_channels?.length || (s as any).actual_extra_revenue?.length) return true;
+  return !!(s.notes && s.notes.trim());
+}
+
 export function Settlement() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -71,6 +84,12 @@ export function Settlement() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [companySettings, setCompanySettings] = useState<CompanySettings | undefined>(undefined);
+  // Draft autosave. What the promoter types here used to live only on the
+  // screen until the Save button (which also marks the show settled), so
+  // leaving the page lost it and the chat could not see the door numbers.
+  // Now every edit is written quietly 1.5s later, without marking settled.
+  const lastSavedRef = useRef<string | null>(null);
+  const [draftState, setDraftState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   useEffect(() => {
     if (id) {
@@ -130,6 +149,7 @@ export function Settlement() {
       if (settlementData) {
         // Recalculate with the current offer data to ensure accuracy
         const recalculated = calculateActuals(settlementData, offerWithShow);
+        lastSavedRef.current = draftKey(recalculated);
         setSettlement(recalculated);
       } else {
         const initialAttendance: ActualTicketTier[] = offerWithShow.ticket_tiers.map((tier: any) => ({
@@ -411,6 +431,26 @@ export function Settlement() {
     await persistSettlement(recalculated, { markSettled: false, quiet: true });
   };
 
+  useEffect(() => {
+    if (!settlement || !offer || !organization || loading) return;
+    const key = draftKey(settlement);
+    if (key === lastSavedRef.current) return;
+    // A brand-new, untouched settlement (all zeros) is not worth a row.
+    if (!settlement.id && lastSavedRef.current === null && !hasAnyNumber(settlement)) { lastSavedRef.current = key; return; }
+    const t = window.setTimeout(async () => {
+      try {
+        setDraftState('saving');
+        await persistSettlement(settlement, { markSettled: false, quiet: true });
+        lastSavedRef.current = key;
+        setDraftState('saved');
+      } catch (e) {
+        console.error('settlement draft save failed', e);
+        setDraftState('error');
+      }
+    }, 1500);
+    return () => window.clearTimeout(t);
+  }, [settlement, offer, organization, loading]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const persistSettlement = async (
     s: Settlement,
     opts: { markSettled: boolean; quiet: boolean },
@@ -646,6 +686,11 @@ export function Settlement() {
               <FileDown className="h-4 w-4" />
               Export PDF
             </button>
+            {draftState !== 'idle' && (
+              <span className={`self-center font-label text-[10px] tracking-[0.12em] uppercase ${draftState === 'error' ? 'text-red-300' : 'text-gray-400'}`}>
+                {draftState === 'saving' ? 'Saving draft…' : draftState === 'saved' ? 'Draft saved' : 'Draft not saved'}
+              </span>
+            )}
             <button
               onClick={handleSave}
               disabled={saving}
@@ -819,6 +864,7 @@ export function Settlement() {
               <SettlementChat
                 offer={offer}
                 organizationId={organization.id}
+                screen={settlement}
                 onApply={applyFromChat}
               />
             )}

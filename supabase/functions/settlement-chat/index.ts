@@ -121,7 +121,8 @@ HOW YOU TALK
 - Plain words, short. Like texting a partner who is busy. No jargon, no headers, no bullet walls. Two to four sentences is normal.
 - After reading files, say what you found in one line each ("Got the sound invoice: $850, production.") then ask your questions, one at a time if there are several, most important first.
 - When the paperwork doesn't add up, say "check this" and state the numbers. NEVER say or imply anyone is stealing, cheating, or padding. You see one document; you don't know what was agreed.
-- The list on screen is the source of truth; don't repeat the whole list back in words.
+- The list on screen is the source of truth for NEW items; don't repeat the whole list back in words.
+- The settlement itself is in the context every message: every expense line with its amount, ticket counts per tier and what they made, other revenue, and the app's totals. When the promoter asks "what's my profit", "how did we do", "what did we gross": answer straight from SETTLEMENT TOTALS, in one or two sentences, with the numbers. Never say you cannot see the settlement. If nothing is saved yet, say that plainly and ask for the door numbers and the receipts.
 
 WRITING TO THE SETTLEMENT
 - Only when the promoter says so in this message. Words like "looks good", "apply it", "write it", "put it in", "done", "yes" (to your offer) count. A list that merely looks finished does not.
@@ -191,7 +192,7 @@ Deno.serve(async (req) => {
 
   // Context: show, categories, tiers, what is already on the settlement, the ledger, and history.
   const { data: show } = await supabase.from('shows').select('artist_name, venue_name, event_date').eq('id', offer.show_id).maybeSingle();
-  const { data: settlement } = await supabase.from('settlements').select('actual_expenses, actual_attendance').eq('offer_id', offerId).maybeSingle();
+  const { data: settlement } = await supabase.from('settlements').select('actual_expenses, actual_attendance, actual_revenue_channels, actual_extra_revenue, actual_revenue, actual_total_expenses, actual_profit, settled_at').eq('offer_id', offerId).maybeSingle();
   const { data: ledgerRow } = await supabase.from('settlement_chat_ledgers').select('items').eq('offer_id', offerId).maybeSingle();
   const { data: history } = await supabase
     .from('settlement_chat_messages').select('role, content, attachments')
@@ -199,18 +200,45 @@ Deno.serve(async (req) => {
 
   let ledger: LedgerItem[] = Array.isArray(ledgerRow?.items) ? ledgerRow.items : [];
 
+  // What is on the promoter's screen right now beats what is saved: they may
+  // have just typed the door numbers and not pressed Save.
+  const screen: Any = body?.screen && typeof body.screen === 'object' ? body.screen : null;
+  const live: Any = screen ? { ...(settlement || {}), ...screen } : settlement;
+
   const categories = Object.keys({ ...(offer.expenses || {}), ...((settlement?.actual_expenses as Any) || {}) });
   if (!categories.includes('general')) categories.push('general');
-  const existingLines = Object.entries((settlement?.actual_expenses as Any) || offer.expenses || {})
-    .map(([cat, lines]: [string, Any]) => `${cat}: ${Object.keys(lines || {}).join(', ') || '(none)'}`)
+  // What is on the settlement right now, WITH the numbers. The promoter asks
+  // "what's my profit" here and expects an answer from what is saved.
+  const money = (v: unknown) => '$' + Math.round(Number(v) || 0).toLocaleString('en-US');
+  const savedExpenses: Any = live?.actual_expenses && Object.keys(live.actual_expenses).length ? live.actual_expenses : null;
+  const existingLines = Object.entries((savedExpenses || offer.expenses || {}) as Record<string, Any>)
+    .map(([cat, lines]: [string, Any]) => {
+      const parts = Object.entries(lines || {}).map(([k, v]) => `${k} ${money(v)}${savedExpenses ? '' : ' (estimate)'}`);
+      return `${cat}: ${parts.join(', ') || '(none)'}`;
+    })
     .join('\n');
-  const tiers = (offer.ticket_tiers || []).map((t: Any) => `${t.type} ($${t.price})`).join(', ');
+  const attendance: Any[] = Array.isArray(live?.actual_attendance) ? live!.actual_attendance : [];
+  const tiers = (offer.ticket_tiers || []).map((t: Any) => {
+    const a = attendance.find((x: Any) => x.type === t.type);
+    const sold = a ? Number(a.actual_sold) || 0 : null;
+    return `${t.type} at $${t.price}: ${sold == null ? 'no count recorded yet' : `${sold} sold = ${money(sold * Number(t.price))}`}`;
+  }).join('\n');
+  const channels: Any[] = Array.isArray(live?.actual_revenue_channels) ? live!.actual_revenue_channels : [];
+  const channelLines = channels.map((c: Any) => `${c.label ?? c.name ?? 'channel'}: gross ${money(c.gross)}${c.fees ? `, fees ${money(c.fees)}` : ''}`).join('\n');
+  const extras: Any[] = Array.isArray(live?.actual_extra_revenue) ? live!.actual_extra_revenue : [];
+  const extraLines = extras.map((e: Any) => `${e.label ?? e.name ?? 'extra'}: ${money(e.amount)}`).join('\n');
+  const hasNumbers = !!live && (attendance.some((a: Any) => Number(a.actual_sold) > 0) || Object.values(savedExpenses || {}).some((cat: Any) => Object.values(cat || {}).some((v) => Number(v) > 0)));
+  const totals = hasNumbers
+    ? `SETTLEMENT TOTALS (as on the promoter's screen right now; a draft is saved as they type): ticket revenue ${money(live!.actual_revenue)}, total expenses ${money(live!.actual_total_expenses)} (includes the artist deal and per-ticket fees the app adds), promoter profit ${money(live!.actual_profit)}${live!.settled_at ? `, marked settled ${String(live!.settled_at).slice(0, 10)}` : ''}. Quote these when asked about profit; they are the app's own math on those numbers.`
+    : 'SETTLEMENT TOTALS: nothing saved yet -- no ticket counts or actual expenses have been written, so there is no actual profit to quote. The expense amounts above are the offer ESTIMATES, not what was paid.';
 
   const context = `SHOW: ${show?.artist_name ?? offer.artist_name ?? '?'} at ${show?.venue_name ?? '?'} on ${show?.event_date ?? '?'}
 EXPENSE CATEGORIES ON THIS SHOW: ${categories.join(', ')}
-LINES ALREADY ON THE SETTLEMENT (category: lines):
+EXPENSE LINES ${savedExpenses ? 'ON THE SETTLEMENT (actuals, as saved)' : 'FROM THE OFFER (estimates -- nothing actual saved yet)'}:
 ${existingLines || '(none yet)'}
-TICKET TIERS: ${tiers || '(none)'}
+TICKETS (tier at price: count on the settlement):
+${tiers || '(no tiers)'}
+${channelLines ? `WHERE THE MONEY CAME IN (revenue channels on the settlement):\n${channelLines}\n` : ''}${extraLines ? `OTHER REVENUE ON THE SETTLEMENT (bar, parking, sponsors):\n${extraLines}\n` : ''}${totals}
 ARTIST DEAL: ${offer.deal_type ?? 'flat_fee'}, guarantee $${offer.guarantee ?? 0} (the artist's fee is handled by the app; do NOT add it as an expense unless the promoter says a different amount was actually paid, and then ask first).
 
 WORKING LIST RIGHT NOW (JSON):

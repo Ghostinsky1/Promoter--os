@@ -59,6 +59,8 @@ function variableRates(o: Offer) {
 
 
 const DEFAULT_CAR_OCCUPANCY = 2.5;
+// deno-lint-ignore no-explicit-any
+type Any = any;
 /** Bar, parking, vendor spots, sponsorship: the promoter's share, split into a
  *  flat part and a per-head part. Mirrors src/lib/calculations.ts. */
 export function splitExtraRevenue(lines: Any[] = [], enabled = true) {

@@ -3,8 +3,9 @@ import { supabase, SUPABASE_URL } from './supabase';
 /**
  * PROMOTER OS — the Ask bar's wire format.
  *
- * `fetchBrief` is free and runs on every app open. `sendAsk` costs 1 credit.
- * Both return the brief, because an answer that checked a task off changes it.
+ * `fetchBrief` is free and runs on every app open. `fetchThread` is free.
+ * `sendAsk` costs 1 credit (2 with files). All of them return the brief when
+ * they have one, because an answer that changed something changes it.
  */
 
 export interface NeedsItem {
@@ -47,12 +48,33 @@ export interface CreditStatus {
   period_start: string;
 }
 
+export interface Attachment { import_id: string; file_name: string }
+
 export interface AskMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   changed?: string[];
+  attachments?: Attachment[];
   created_at: string;
+}
+
+export interface DealOnTable {
+  title: string;
+  source: string;
+  deal: Record<string, unknown>;
+  missing: string[];
+  checks: string[];
+  updated_at: string;
+}
+
+export interface AskThread {
+  id: string;
+  title: string;
+  offer_id: string | null;
+  last_message_at?: string;
+  has_deal?: boolean;
+  deal_on_table?: DealOnTable | null;
 }
 
 export class AskError extends Error {
@@ -78,14 +100,54 @@ async function call(body: Record<string, unknown>) {
   return payload;
 }
 
-export async function fetchBrief(): Promise<{ brief: Brief; credits: CreditStatus | null; history: AskMessage[] }> {
+export async function fetchBrief(): Promise<{ brief: Brief; credits: CreditStatus | null; threads: AskThread[] }> {
   const p = await call({});
-  return { brief: p.brief, credits: p.credits ?? null, history: p.history ?? [] };
+  return { brief: p.brief, credits: p.credits ?? null, threads: p.threads ?? [] };
 }
 
-export async function sendAsk(message: string): Promise<{ reply: string; changed: string[]; brief: Brief; creditsLeft: number | null }> {
-  const p = await call({ message });
-  return { reply: p.reply, changed: p.changed ?? [], brief: p.brief, creditsLeft: p.credits_left ?? null };
+export async function fetchThread(threadId: string): Promise<{ thread: AskThread; messages: AskMessage[] }> {
+  const p = await call({ action: 'thread', thread_id: threadId });
+  return { thread: p.thread, messages: p.messages ?? [] };
+}
+
+export const MAX_ASK_FILES = 4;
+export const MAX_ASK_FILE_MB = 12;
+
+/** Put the files in the same bucket and table the scanner uses, and hand back their ids. */
+export async function uploadAskFiles(organizationId: string, files: File[], onProgress?: (label: string) => void): Promise<Attachment[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new AskError('Sign in first.');
+  const out: Attachment[] = [];
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    onProgress?.(files.length > 1 ? `Uploading ${i + 1} of ${files.length}` : 'Uploading');
+    const safe = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${organizationId}/ask/${Date.now()}-${i}-${safe}`;
+    const { error: upErr } = await supabase.storage.from('imports').upload(path, f, { contentType: f.type || 'application/octet-stream', upsert: false });
+    if (upErr) throw new AskError(`Could not upload ${f.name}.`);
+    const { data: row, error: rowErr } = await supabase.from('document_imports').insert({
+      organization_id: organizationId, user_id: user.id, offer_id: null,
+      storage_path: path, file_name: f.name, file_size: f.size, kind: 'ask', status: 'uploaded',
+    }).select('id').single();
+    if (rowErr || !row) throw new AskError(`Could not record ${f.name}.`);
+    out.push({ import_id: row.id, file_name: f.name });
+  }
+  return out;
+}
+
+export async function sendAsk(args: { threadId: string | null; message: string; importIds?: string[]; offerId?: string | null }): Promise<{
+  reply: string; changed: string[]; brief: Brief; creditsLeft: number | null; thread: AskThread; threads: AskThread[];
+}> {
+  const p = await call({ thread_id: args.threadId, message: args.message, import_ids: args.importIds ?? [], offer_id: args.offerId ?? null });
+  return { reply: p.reply, changed: p.changed ?? [], brief: p.brief, creditsLeft: p.credits_left ?? null, thread: p.thread, threads: p.threads ?? [] };
+}
+
+export async function renameThread(threadId: string, title: string) {
+  await supabase.from('ask_threads').update({ title: title.slice(0, 60) }).eq('id', threadId);
+}
+
+export async function deleteThread(threadId: string) {
+  await supabase.from('ask_threads').delete().eq('id', threadId);
 }
 
 /** Start a Stripe checkout for a credit pack. Redirects to Stripe. */

@@ -1,0 +1,12 @@
+{
+  "name": "Promoter OS",
+  "short_name": "Promoter OS",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#1140F0",
+  "background_color": "#14171E",
+  "display": "standalone",
+  "start_url": "/dashboard"
+}

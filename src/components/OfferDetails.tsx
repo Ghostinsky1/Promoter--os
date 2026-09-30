@@ -396,32 +396,32 @@ export function OfferDetails() {
             Back to Offers
           </button>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-            <button onClick={() => navigate(`/offers/${id}/analytics`)} className="bg-[#14171E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#22262F] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
-              <BarChart3 className="h-5 w-5" /><span className="text-xs sm:text-base">Analytics</span>
+          <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 mb-4">
+            <button onClick={() => navigate(`/offers/${id}/analytics`)} className="bg-[#14171E] border border-gray-800 text-white py-2.5 rounded-xl font-semibold hover:bg-[#22262F] hover:border-[#8FD3FF]/50 transition-all flex flex-row items-center justify-center gap-2">
+              <BarChart3 className="h-4 w-4" /><span className="text-xs sm:text-sm">Analytics</span>
             </button>
-            <button onClick={() => navigate(`/offers/${id}/run-of-show`)} className="bg-[#14171E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#22262F] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
-              <Film className="h-5 w-5" /><span className="text-xs sm:text-base">Run of Show</span>
+            <button onClick={() => navigate(`/offers/${id}/run-of-show`)} className="bg-[#14171E] border border-gray-800 text-white py-2.5 rounded-xl font-semibold hover:bg-[#22262F] hover:border-[#8FD3FF]/50 transition-all flex flex-row items-center justify-center gap-2">
+              <Film className="h-4 w-4" /><span className="text-xs sm:text-sm">Run of Show</span>
             </button>
             {(() => {
               const eventDate = parseLocalDate(offer.show.event_date);
               const today = new Date(); today.setHours(0, 0, 0, 0);
               return eventDate && eventDate < today;
             })() && (
-              <button onClick={() => navigate(`/offers/${id}/settlement`)} className="bg-[#14171E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#22262F] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2 relative">
-                <Calculator className="h-5 w-5" />
-                <span className="text-xs sm:text-base">{offer.is_settled ? 'View Settlement' : 'Settle Event'}</span>
+              <button onClick={() => navigate(`/offers/${id}/settlement`)} className="bg-[#14171E] border border-gray-800 text-white py-2.5 rounded-xl font-semibold hover:bg-[#22262F] hover:border-[#8FD3FF]/50 transition-all flex flex-row items-center justify-center gap-2 relative">
+                <Calculator className="h-4 w-4" />
+                <span className="text-xs sm:text-sm">{offer.is_settled ? 'View Settlement' : 'Settle Event'}</span>
                 {offer.is_settled && <span className="absolute -top-1 -right-1 bg-[#8FD3FF] text-[#04214D] text-xs px-2 py-0.5 rounded-full font-bold">✓</span>}
               </button>
             )}
-            <button onClick={handlePreviewPDF} className="bg-[#14171E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#22262F] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
-              <Eye className="h-5 w-5" /><span className="text-xs sm:text-base">Preview</span>
+            <button onClick={handlePreviewPDF} className="bg-[#14171E] border border-gray-800 text-white py-2.5 rounded-xl font-semibold hover:bg-[#22262F] hover:border-[#8FD3FF]/50 transition-all flex flex-row items-center justify-center gap-2">
+              <Eye className="h-4 w-4" /><span className="text-xs sm:text-sm">Preview</span>
             </button>
-            <button onClick={() => navigate(`/offers/${id}/edit`)} className="bg-[#14171E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#22262F] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
-              <Edit className="h-5 w-5" /><span className="text-xs sm:text-base">Edit</span>
+            <button onClick={() => navigate(`/offers/${id}/edit`)} className="bg-[#14171E] border border-gray-800 text-white py-2.5 rounded-xl font-semibold hover:bg-[#22262F] hover:border-[#8FD3FF]/50 transition-all flex flex-row items-center justify-center gap-2">
+              <Edit className="h-4 w-4" /><span className="text-xs sm:text-sm">Edit</span>
             </button>
-            <button onClick={handleSaveAsTemplate} className="bg-[#14171E] border border-gray-800 text-white py-6 rounded-2xl font-semibold hover:bg-[#22262F] transform hover:scale-105 transition-all flex flex-col sm:flex-row items-center justify-center gap-2">
-              <Copy className="h-5 w-5" /><span className="text-xs sm:text-base">Template</span>
+            <button onClick={handleSaveAsTemplate} className="bg-[#14171E] border border-gray-800 text-white py-2.5 rounded-xl font-semibold hover:bg-[#22262F] hover:border-[#8FD3FF]/50 transition-all flex flex-row items-center justify-center gap-2">
+              <Copy className="h-4 w-4" /><span className="text-xs sm:text-sm">Template</span>
             </button>
           </div>
         </div>
@@ -468,7 +468,7 @@ export function OfferDetails() {
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 items-start">
             <div className="bg-[#22262F] rounded-xl p-3">
               <div className="text-xs text-gray-400 mb-1">Net Gross Potential</div>
               <div className="text-lg font-bold text-white">{formatCurrency(calc.netGross)}</div>
@@ -499,20 +499,20 @@ export function OfferDetails() {
 
         {/* One tab at a time. Jose: "too much scrolling, look at all the dead
             space". The strip stays put while you edit: profit + the bad night. */}
-        <div className="sticky top-16 z-30 -mx-3 px-3 py-2 mb-3 bg-[#1140F0]/95 backdrop-blur border-b border-white/10">
+        <div className="sticky top-16 z-30 -mx-3 px-3 py-2 mb-3 bg-[#0B2FB8]/95 backdrop-blur border-b border-[#8FD3FF]/30 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex gap-1 overflow-x-auto -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
+            <div className="flex gap-2 overflow-x-auto -mx-1 px-1 py-1" style={{ scrollbarWidth: 'none' }}>
               {TABS.map((t) => (
                 <button
                   key={t.key}
                   onClick={() => setTab(t.key)}
-                  className={`shrink-0 px-3 py-1.5 rounded-full text-[13px] font-semibold transition-colors ${tab === t.key ? 'bg-[#14171E] text-white border border-[#2A3040]' : 'text-white/75 hover:text-white border border-transparent'}`}
-                  style={{ textTransform: 'none', letterSpacing: 0 }}
+                  className={`crt-tab ${tab === t.key ? 'on' : ''}`}
                 >
-                  {t.label}
-                  {t.key === 'tickets' && <span className="ml-1.5 text-[11px] text-[#8FD3FF] font-normal">{formatCurrency(calc.netGross)}</span>}
-                  {t.key === 'costs' && <span className="ml-1.5 text-[11px] text-[#8FD3FF] font-normal">{formatCurrency(calc.totalExpenses + guarantee)}</span>}
-                  {t.key === 'tasks' && openTaskCount > 0 && <span className="ml-1.5 text-[11px] text-[#8FD3FF] font-normal">{openTaskCount}</span>}
+                  <span className="crt-tab-label">{t.label}</span>
+                  {t.key === 'tickets' && <span className="crt-tab-num">{formatCurrency(calc.netGross)}</span>}
+                  {t.key === 'costs' && <span className="crt-tab-num">{formatCurrency(calc.totalExpenses + guarantee)}</span>}
+                  {t.key === 'tasks' && openTaskCount > 0 && <span className="crt-tab-num">{openTaskCount}</span>}
+                  {tab === t.key && <span className="crt-tab-bar" />}
                 </button>
               ))}
             </div>
@@ -527,7 +527,7 @@ export function OfferDetails() {
         </div>
 
         {tab === 'deal' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
+        <div key="deal" className="crt-panel grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
           <div className="md:col-span-2">
           {/* Multi-Artist CRM Section */}
           <div className="mb-4">
@@ -598,7 +598,7 @@ export function OfferDetails() {
         )}
 
         {tab === 'tickets' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
+        <div key="tickets" className="crt-panel grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
           {/* Ticket Scaling */}
           <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
             <h2 className="text-base font-bold text-white mb-3">Ticket Scaling</h2>
@@ -699,7 +699,7 @@ export function OfferDetails() {
         )}
 
         {tab === 'costs' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
+        <div key="costs" className="crt-panel grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
           {/* Fixed Expenses */}
           <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
             <h2 className="text-base font-bold text-white mb-3">Fixed Expenses Breakdown</h2>
@@ -941,7 +941,7 @@ export function OfferDetails() {
         )}
 
         {tab === 'money' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
+        <div key="money" className="crt-panel grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
           {/* Bar, parking, vendor spots. Was only reachable inside the wizard;
               the offer page never showed it, so it was as good as missing. */}
           {state && (
@@ -969,7 +969,7 @@ export function OfferDetails() {
         )}
 
         {tab === 'tasks' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
+        <div key="tasks" className="crt-panel grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
           <EventTasks
             tasks={tasks}
             onAdd={addTask}

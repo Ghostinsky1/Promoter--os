@@ -11,8 +11,8 @@ export function NeedsYou({ brief, loading, onOpen }: { brief: Brief | null; load
   const rows = brief?.needs_you ?? [];
 
   return (
-    <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-5">
-      <div className="flex items-center justify-between mb-1">
+    <div className="bg-[#14171E] border border-gray-800 rounded-2xl px-4 py-3">
+      <div className="flex items-center justify-between mb-2">
         <span className="font-label text-[11px] tracking-[0.22em] uppercase text-[#8FD3FF]">[ 02 ] Needs you</span>
         {brief && brief.cash.total > 0 && (
           <span className="font-label text-[10px] tracking-[0.16em] uppercase text-gray-500">
@@ -27,20 +27,24 @@ export function NeedsYou({ brief, loading, onOpen }: { brief: Brief | null; load
       {brief && rows.length === 0 && (
         <p className="text-sm text-gray-400 py-2">Nothing needs you right now. Deposits are paid, nothing is overdue, and every upcoming show clears a soft night.</p>
       )}
-      {rows.map((n, i) => (
-        <button
-          key={i}
-          onClick={() => onOpen(n.link)}
-          className="w-full grid grid-cols-[1fr_auto] items-center gap-3 py-2.5 border-t border-[#1F2430] first:border-t-0 text-left"
-          style={{ textTransform: 'none', letterSpacing: 0 }}
-        >
-          <span className="min-w-0">
-            <span className="block text-white font-semibold truncate">{n.title}</span>
-            <span className="block text-xs text-gray-400 truncate">{n.detail}</span>
-          </span>
-          <span className={`font-label text-[10px] tracking-[0.16em] uppercase px-2.5 py-1 rounded-md whitespace-nowrap ${toneCls[n.tone]}`}>{n.tag}</span>
-        </button>
-      ))}
+      {/* Two columns on a wide screen, tag first, one tight line each. Eight
+          rows used to span the full width and leave a field of nothing. */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6">
+        {rows.map((n, i) => (
+          <button
+            key={i}
+            onClick={() => onOpen(n.link)}
+            className="w-full grid grid-cols-[auto_1fr] items-center gap-2.5 py-2 border-t border-[#1F2430] first:border-t-0 lg:[&:nth-child(2)]:border-t-0 text-left hover:bg-white/[0.02] -mx-1 px-1 rounded-md"
+            style={{ textTransform: 'none', letterSpacing: 0 }}
+          >
+            <span className={`font-label text-[9px] tracking-[0.14em] uppercase px-2 py-1 rounded whitespace-nowrap w-[92px] text-center ${toneCls[n.tone]}`}>{n.tag}</span>
+            <span className="min-w-0">
+              <span className="block text-[14px] text-white font-semibold truncate leading-tight">{n.title}</span>
+              <span className="block text-[11px] text-gray-400 truncate leading-tight">{n.detail}</span>
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

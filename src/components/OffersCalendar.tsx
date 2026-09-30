@@ -1,284 +1,172 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Calendar, MapPin, DollarSign, FileText, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Plus } from 'lucide-react';
 import { OfferWithShow, OfferStatus } from '../types';
 import { formatCurrency } from '../lib/calculations';
 import { parseLocalDate } from '../lib/dateHelpers';
+
+/**
+ * PROMOTER OS — the offers calendar, in the CRT ad style. A tight grid of
+ * little dark screens (scanlines, sky glow on today and on nights with a
+ * show), brand colors only for the show chips, and the grid flickers in
+ * like a TV picture when the month changes. Half the height it was.
+ */
 
 interface OffersCalendarProps {
   offers: OfferWithShow[];
 }
 
-const STATUS_COLORS: Record<OfferStatus, string> = {
-  planning: 'from-blue-500 to-cyan-500',
-  offer_sent: 'from-purple-500 to-pink-500',
-  confirmed: 'from-green-500 to-emerald-500',
-  active: 'from-orange-500 to-amber-500',
-  settled: 'from-teal-500 to-cyan-500',
-  cancelled: 'from-red-500 to-rose-500'
+// Brand palette only, no rainbow gradients.
+const CHIP: Record<OfferStatus, string> = {
+  planning: 'bg-[#1140F0] text-white',
+  offer_sent: 'bg-[#5A8CFF] text-[#0E1F5C]',
+  confirmed: 'bg-[#8FD3FF] text-[#0E1F5C]',
+  active: 'bg-[#F2B640] text-[#14171E]',
+  settled: 'bg-[#0E1F5C] text-[#8FD3FF] border border-[#8FD3FF]/40',
+  cancelled: 'bg-[#F0605A]/40 text-white line-through',
 };
 
-const STATUS_BADGES: Record<OfferStatus, { label: string; color: string }> = {
-  planning: { label: 'Planning', color: 'bg-blue-500/20 text-blue-400 border border-blue-500/30' },
-  offer_sent: { label: 'Offer Sent', color: 'bg-purple-500/20 text-purple-400 border border-purple-500/30' },
-  confirmed: { label: 'Confirmed', color: 'bg-green-500/20 text-green-400 border border-green-500/30' },
-  active: { label: 'Active', color: 'bg-orange-500/20 text-orange-400 border border-orange-500/30' },
-  settled: { label: 'Settled', color: 'bg-teal-500/20 text-teal-400 border border-teal-500/30' },
-  cancelled: { label: 'Cancelled', color: 'bg-red-500/20 text-red-400 border border-red-500/30' }
+const STATUS_LABEL: Record<OfferStatus, string> = {
+  planning: 'Planning', offer_sent: 'Offer sent', confirmed: 'Confirmed', active: 'Active', settled: 'Settled', cancelled: 'Cancelled',
 };
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export function OffersCalendar({ offers }: OffersCalendarProps) {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startingDayOfWeek = new Date(year, month, 1).getDay();
+  const cells = startingDayOfWeek + daysInMonth;
+  const trailing = (7 - (cells % 7)) % 7;
 
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-
-    return { daysInMonth, startingDayOfWeek, year, month };
+  const inMonth = (o: OfferWithShow) => {
+    const d = parseLocalDate(o.show.event_date);
+    return !!d && d.getFullYear() === year && d.getMonth() === month ? d : null;
   };
+  const byDay = new Map<number, OfferWithShow[]>();
+  for (const o of offers) {
+    const d = inMonth(o);
+    if (!d) continue;
+    byDay.set(d.getDate(), [...(byDay.get(d.getDate()) || []), o]);
+  }
+  const monthOffers = offers.filter(inMonth).sort((a, b) => (parseLocalDate(a.show.event_date)?.getTime() ?? 0) - (parseLocalDate(b.show.event_date)?.getTime() ?? 0));
 
-  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate);
+  const todayDate = new Date();
+  const isThisMonth = todayDate.getFullYear() === year && todayDate.getMonth() === month;
 
-  const getOffersForDay = (day: number) => {
-    return offers.filter(offer => {
-      const offerDate = parseLocalDate(offer.show.event_date);
-      if (!offerDate) return false;
-      return (
-        offerDate.getFullYear() === year &&
-        offerDate.getMonth() === month &&
-        offerDate.getDate() === day
-      );
-    });
-  };
-
-  const getOffersInMonth = () => {
-    return offers.filter(offer => {
-      const offerDate = parseLocalDate(offer.show.event_date);
-      if (!offerDate) return false;
-      return (
-        offerDate.getFullYear() === year &&
-        offerDate.getMonth() === month
-      );
-    });
-  };
-
-  const previousMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
-  };
-
-  const nextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
-  };
-
-  const today = () => {
-    setCurrentDate(new Date());
-  };
-
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-  const monthOffers = getOffersInMonth();
+  const nav = (delta: number) => setCurrentDate(new Date(year, month + delta, 1));
 
   return (
-    <div className="space-y-6">
-      <div className="bg-[#14171E] rounded-3xl shadow-sm border border-gray-800 overflow-hidden">
-        <div className="bg-gradient-to-r from-[#14171E] to-[#22262F] text-white p-6 border-b border-gray-800">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-white">
-              {monthNames[month]} {year}
-            </h2>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={today}
-                className="bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] px-4 py-2 rounded-xl font-medium transition-colors"
-              >
+    <div className="space-y-4">
+      <div className="bg-[#14171E] rounded-2xl border border-[#2A3040] overflow-hidden">
+        {/* Header: month, today, arrows. Tight. */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#2A3040]">
+          <h2 className="font-display text-xl sm:text-2xl text-white uppercase tracking-wide">
+            {MONTHS[month]} <span className="text-[#8FD3FF]">{year}</span>
+          </h2>
+          <div className="flex items-center gap-2">
+            {!isThisMonth && (
+              <button onClick={() => setCurrentDate(new Date())} className="crt-tab" style={{ padding: '6px 12px' }}>
                 Today
               </button>
-
-              <div className="flex items-center gap-1 bg-[#0B0D12] rounded-xl p-1 border border-gray-700">
-                <button
-                  onClick={previousMonth}
-                  className="text-gray-400 hover:text-white hover:bg-[#22262F] p-2 rounded-lg transition-colors"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={nextMonth}
-                  className="text-gray-400 hover:text-white hover:bg-[#22262F] p-2 rounded-lg transition-colors"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-              </div>
+            )}
+            <div className="flex items-center bg-[#0B0D12] rounded-lg border border-[#2A3040]">
+              <button onClick={() => nav(-1)} className="text-gray-400 hover:text-white p-1.5" aria-label="Previous month"><ChevronLeft className="h-4 w-4" /></button>
+              <button onClick={() => nav(1)} className="text-gray-400 hover:text-white p-1.5" aria-label="Next month"><ChevronRight className="h-4 w-4" /></button>
             </div>
-          </div>
-
-          <div className="grid grid-cols-7 gap-2">
-            {dayNames.map(day => (
-              <div key={day} className="text-center font-semibold py-2 text-gray-400">
-                {day}
-              </div>
-            ))}
           </div>
         </div>
 
-        <div className="p-6 bg-[#1140F0]">
-          <div className="grid grid-cols-7 gap-3">
-            {Array.from({ length: startingDayOfWeek }).map((_, index) => (
-              <div key={`empty-${index}`} className="aspect-square" />
-            ))}
+        {/* Day names */}
+        <div className="grid grid-cols-7 px-2 pt-2">
+          {DAYS.map((d) => (
+            <div key={d} className="text-center font-label text-[10px] tracking-[0.16em] uppercase text-gray-500 py-1">{d}</div>
+          ))}
+        </div>
 
-            {Array.from({ length: daysInMonth }).map((_, index) => {
-              const day = index + 1;
-              const dayOffers = getOffersForDay(day);
-              const todayDate = new Date();
-              const isToday =
-                todayDate.getFullYear() === year &&
-                todayDate.getMonth() === month &&
-                todayDate.getDate() === day;
-
-              return (
-                <div
-                  key={day}
-                  className={`aspect-square border-2 rounded-2xl p-2 transition-all ${
-                    isToday
-                      ? 'bg-[#8FD3FF]/10 border-[#8FD3FF] shadow-lg ring-2 ring-[#8FD3FF]/30'
-                      : dayOffers.length > 0
-                      ? 'bg-[#14171E] border-gray-700 hover:border-[#8FD3FF]/50 hover:shadow-md cursor-pointer'
-                      : 'bg-[#0B0D12] border-gray-800'
-                  }`}
-                >
-                  <div className="flex flex-col h-full">
-                    <div className={`text-sm font-bold mb-1 ${
-                      isToday
-                        ? 'text-[#8FD3FF]'
-                        : dayOffers.length > 0
-                        ? 'text-white'
-                        : 'text-gray-600'
-                    }`}>
-                      {day}
-                    </div>
-
-                    <div className="flex-1 flex flex-col gap-1 overflow-hidden">
-                      {dayOffers.slice(0, 2).map((offer, i) => {
-                        const status = (offer.status || 'planning') as OfferStatus;
-                        const isCancelled = status === 'cancelled';
-                        return (
-                          <div
-                            key={i}
-                            className={`text-xs px-2 py-1 rounded-lg bg-gradient-to-r ${STATUS_COLORS[status]} text-white truncate font-semibold cursor-pointer hover:scale-105 transition-transform ${
-                              isCancelled ? 'opacity-40' : ''
-                            }`}
-                            onClick={() => navigate(`/offers/${offer.id}`)}
-                            title={`${offer.show.artist_name} at ${offer.show.venue_name}${isCancelled ? ' (CANCELLED)' : ''}`}
-                          >
-                            {offer.show.artist_name}
-                          </div>
-                        );
-                      })}
-                      {dayOffers.length > 2 && (
-                        <div className="text-xs text-[#8FD3FF] font-bold px-2">
-                          +{dayOffers.length - 2} more
-                        </div>
-                      )}
-                    </div>
-                  </div>
+        {/* The grid. key=month so it flickers in on every switch. */}
+        <div key={`${year}-${month}`} className="crt-panel grid grid-cols-7 gap-1 p-2">
+          {Array.from({ length: startingDayOfWeek }).map((_, i) => (
+            <div key={`lead-${i}`} className="crt-cell dim" />
+          ))}
+          {Array.from({ length: daysInMonth }).map((_, i) => {
+            const day = i + 1;
+            const dayOffers = byDay.get(day) || [];
+            const isToday = isThisMonth && todayDate.getDate() === day;
+            const isPast = new Date(year, month, day) < new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate());
+            return (
+              <div key={day} className={`crt-cell ${isToday ? 'today' : ''} ${dayOffers.length ? 'lit' : ''} ${isPast && !dayOffers.length ? 'dim' : ''}`}>
+                <div className={`crt-day ${isToday ? 'text-[#8FD3FF]' : dayOffers.length ? 'text-white' : 'text-gray-500'}`}>{day}</div>
+                <div className="flex flex-col gap-0.5 mt-0.5 min-w-0">
+                  {dayOffers.slice(0, 3).map((o) => {
+                    const status = (o.status || 'planning') as OfferStatus;
+                    return (
+                      <button
+                        key={o.id}
+                        onClick={() => navigate(`/offers/${o.id}`)}
+                        className={`text-left text-[11px] leading-tight px-1.5 py-0.5 rounded font-semibold truncate ${CHIP[status]}`}
+                        style={{ textTransform: 'none', letterSpacing: 0 }}
+                        title={`${o.show.artist_name} at ${o.show.venue_name} · ${STATUS_LABEL[status]}`}
+                      >
+                        {o.show.event_name || o.show.artist_name}
+                      </button>
+                    );
+                  })}
+                  {dayOffers.length > 3 && <div className="text-[10px] text-[#8FD3FF] font-semibold px-1">+{dayOffers.length - 3} more</div>}
                 </div>
+              </div>
+            );
+          })}
+          {Array.from({ length: trailing }).map((_, i) => (
+            <div key={`trail-${i}`} className="crt-cell dim" />
+          ))}
+        </div>
+      </div>
+
+      {/* This month, one line each. */}
+      {monthOffers.length > 0 ? (
+        <div className="bg-[#14171E] rounded-2xl border border-[#2A3040] overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#2A3040]">
+            <h3 className="font-label text-[11px] tracking-[0.16em] uppercase text-[#8FD3FF]">This month · {monthOffers.length} show{monthOffers.length === 1 ? '' : 's'}</h3>
+          </div>
+          <div className="divide-y divide-[#2A3040]">
+            {monthOffers.map((o) => {
+              const status = (o.status || 'planning') as OfferStatus;
+              const d = parseLocalDate(o.show.event_date);
+              const profit = o.calculations?.netProfit ?? 0;
+              return (
+                <button
+                  key={o.id}
+                  onClick={() => navigate(`/offers/${o.id}`)}
+                  className={`w-full grid grid-cols-[52px_1fr_auto] sm:grid-cols-[64px_1fr_120px_110px] items-center gap-3 px-4 py-2.5 text-left hover:bg-[#1A1E27] transition-colors ${status === 'cancelled' ? 'opacity-50' : ''}`}
+                  style={{ textTransform: 'none', letterSpacing: 0 }}
+                >
+                  <div className="font-label text-[11px] tracking-[0.1em] uppercase text-gray-400 leading-tight">
+                    {d ? d.toLocaleDateString('en-US', { weekday: 'short' }) : ''}<br />
+                    <span className="text-white text-base font-bold tracking-normal">{d ? d.getDate() : '?'}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[15px] text-white font-semibold truncate">{o.show.event_name || o.show.artist_name}</div>
+                    <div className="text-[12px] text-gray-400 truncate">{o.show.event_name ? `${o.show.artist_name} · ` : ''}{o.show.venue_name}</div>
+                  </div>
+                  <span className={`hidden sm:inline-block justify-self-start text-[11px] px-2 py-0.5 rounded font-semibold ${CHIP[status]}`}>{STATUS_LABEL[status]}</span>
+                  <div className={`text-right font-bold ${profit >= 0 ? 'text-[#8FD3FF]' : 'text-[#F0605A]'}`}>{formatCurrency(profit)}</div>
+                </button>
               );
             })}
           </div>
         </div>
-      </div>
-
-      {monthOffers.length > 0 && (
-        <div className="bg-[#14171E] rounded-3xl shadow-sm border border-gray-800 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-2xl font-bold text-white">
-              Offers This Month ({monthOffers.length})
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {monthOffers
-              .sort((a, b) => {
-                const dateA = parseLocalDate(a.show.event_date);
-                const dateB = parseLocalDate(b.show.event_date);
-                if (!dateA || !dateB) return 0;
-                return dateA.getTime() - dateB.getTime();
-              })
-              .map((offer) => {
-                const status = (offer.status || 'planning') as OfferStatus;
-                const statusBadge = STATUS_BADGES[status];
-                const isCancelled = status === 'cancelled';
-                const offerDate = parseLocalDate(offer.show.event_date);
-                const dateDisplay = offerDate ? offerDate.toLocaleDateString('en-US', {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric'
-                }) : 'Invalid date';
-                return (
-                  <div
-                    key={offer.id}
-                    className={`bg-[#0B0D12] border-2 border-gray-700 hover:border-[#8FD3FF]/50 rounded-2xl p-4 hover:shadow-lg transition-all cursor-pointer border-l-4 border-l-[#8FD3FF] ${
-                      isCancelled ? 'opacity-40 hover:opacity-60' : ''
-                    }`}
-                    onClick={() => navigate(`/offers/${offer.id}`)}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-lg mb-1 truncate text-white">{offer.show.artist_name}</h4>
-                        <div className="flex items-center gap-2 text-sm text-gray-400 mb-1">
-                          <Calendar className="h-4 w-4 flex-shrink-0" />
-                          <span>{dateDisplay}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                          <MapPin className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{offer.show.venue_name}</span>
-                        </div>
-                      </div>
-                      <span className={`px-3 py-1 rounded-xl text-xs font-semibold ${statusBadge.color}`}>
-                        {statusBadge.label}
-                      </span>
-                    </div>
-
-                    <div className="pt-3 border-t border-gray-700 flex items-center justify-between">
-                      <div className="text-sm text-gray-400">Net Profit</div>
-                      <div className={`text-xl font-bold ${
-                        offer.calculations.netProfit >= 0 ? 'text-[#8FD3FF]' : 'text-red-500'
-                      }`}>
-                        {formatCurrency(offer.calculations.netProfit)}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        </div>
-      )}
-
-      {monthOffers.length === 0 && (
-        <div className="bg-[#14171E] rounded-3xl shadow-sm border border-gray-800 p-12 text-center">
-          <div className="w-20 h-20 bg-[#0B0D12] border border-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Calendar className="h-10 w-10 text-gray-600" />
-          </div>
-          <h3 className="text-xl font-bold text-white mb-2">No Offers in {monthNames[month]}</h3>
-          <p className="text-gray-400 mb-6">Create your first offer for this month</p>
-          <button
-            onClick={() => navigate('/offers/create')}
-            className="bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] px-6 py-3 rounded-2xl font-bold hover:shadow-lg transition-all inline-flex items-center gap-2"
-          >
-            <Plus className="h-5 w-5" />
-            Create Offer
+      ) : (
+        <div className="bg-[#14171E] rounded-2xl border border-[#2A3040] p-8 text-center">
+          <Calendar className="h-8 w-8 text-gray-600 mx-auto mb-3" />
+          <h3 className="text-lg font-bold text-white mb-1">Nothing in {MONTHS[month]}</h3>
+          <p className="text-gray-400 text-sm mb-4">No shows on the calendar this month.</p>
+          <button onClick={() => navigate('/offers/create')} className="bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] px-5 py-2.5 rounded-xl font-bold inline-flex items-center gap-2 text-sm">
+            <Plus className="h-4 w-4" /> Create offer
           </button>
         </div>
       )}

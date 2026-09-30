@@ -327,43 +327,31 @@ export function OffersList() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1140F0] p-6">
+    <div className="min-h-screen bg-[#1140F0] p-3 sm:p-5">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="flex flex-row justify-between items-center gap-3 mb-4">
           <div>
-            <h1 className="text-4xl font-bold text-white mb-2">Offers</h1>
-            <p className="text-gray-400">Manage your event offers and track their progress</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">Offers</h1>
+            <p className="text-gray-300/80 text-sm hidden sm:block">Every show, its deal, and where it stands.</p>
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleViewChange('list')}
-              className={`px-3 sm:px-6 py-2 sm:py-3 rounded-2xl font-semibold transition-all flex items-center gap-2 ${
-                viewMode === 'list'
-                  ? 'bg-[#8FD3FF] text-[#04214D]'
-                  : 'bg-[#14171E] border border-gray-800 text-gray-400 hover:text-white hover:bg-[#22262F]'
-              }`}
-            >
-              <LayoutGrid className="h-4 w-4 sm:h-5 sm:w-5" />
+            <button onClick={() => handleViewChange('list')} className={`crt-tab ${viewMode === 'list' ? 'on' : ''}`} style={{ padding: '8px 12px' }}>
+              <LayoutGrid className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">List</span>
+              {viewMode === 'list' && <span className="crt-tab-bar" />}
             </button>
-            <button
-              onClick={() => handleViewChange('calendar')}
-              className={`px-3 sm:px-6 py-2 sm:py-3 rounded-2xl font-semibold transition-all flex items-center gap-2 ${
-                viewMode === 'calendar'
-                  ? 'bg-[#8FD3FF] text-[#04214D]'
-                  : 'bg-[#14171E] border border-gray-800 text-gray-400 hover:text-white hover:bg-[#22262F]'
-              }`}
-            >
-              <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+            <button onClick={() => handleViewChange('calendar')} className={`crt-tab ${viewMode === 'calendar' ? 'on' : ''}`} style={{ padding: '8px 12px' }}>
+              <Calendar className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Calendar</span>
+              {viewMode === 'calendar' && <span className="crt-tab-bar" />}
             </button>
 
             <button
               onClick={() => navigate('/offers/create')}
-              className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] rounded-2xl px-4 sm:px-8 py-2 sm:py-3 font-bold transition-colors flex items-center gap-2 whitespace-nowrap"
+              className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] rounded-xl px-3 sm:px-5 py-2 font-bold transition-colors flex items-center gap-2 whitespace-nowrap text-sm"
             >
-              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Create Offer</span>
               <span className="sm:hidden">Create</span>
             </button>

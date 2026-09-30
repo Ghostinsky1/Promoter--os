@@ -362,30 +362,28 @@ export function OffersList() {
           <OffersCalendar offers={offers} />
         ) : (
           <>
-            <div className="mb-6">
+            <div className="mb-3">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
+                <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-500 w-4 h-4" />
                 <input
                   type="text"
                   placeholder="Search by artist or venue..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-6 bg-[#14171E] border border-gray-800 text-white placeholder:text-gray-500 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF]"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#14171E] border border-gray-800 text-white placeholder:text-gray-500 rounded-xl text-[15px] focus:outline-none focus:border-[#8FD3FF]"
                 />
               </div>
             </div>
 
-            <div className="mb-6 overflow-x-auto">
-              <div className="flex gap-3 pb-2">
+            <div className="mb-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+              <div className="flex gap-1.5 pb-1">
                 <button
                   onClick={() => setSelectedStatus('all')}
-                  className={`flex-shrink-0 px-6 py-2 rounded-full font-bold whitespace-nowrap transition-colors ${
-                    selectedStatus === 'all'
-                      ? 'bg-[#8FD3FF] text-[#04214D]'
-                      : 'bg-[#14171E] border border-gray-800 text-gray-400 hover:text-white hover:bg-[#22262F]'
-                  }`}
+                  className={`crt-tab ${selectedStatus === 'all' ? 'on' : ''}`}
+                  style={{ padding: '7px 12px' }}
                 >
-                  All ({offers.length})
+                  All <span className="crt-tab-num">{offers.length}</span>
+                  {selectedStatus === 'all' && <span className="crt-tab-bar" />}
                 </button>
                 {(Object.keys(STATUS_CONFIG) as OfferStatus[]).map((status) => {
                   const config = STATUS_CONFIG[status];
@@ -396,23 +394,18 @@ export function OffersList() {
                     <button
                       key={status}
                       onClick={() => setSelectedStatus(status)}
-                      className={`flex-shrink-0 px-6 py-2 rounded-full font-semibold whitespace-nowrap transition-colors flex items-center gap-2 ${
-                        selectedStatus === status
-                          ? 'bg-[#8FD3FF] text-[#04214D]'
-                          : 'bg-[#14171E] border border-gray-800 text-gray-400 hover:text-white hover:bg-[#22262F]'
-                      }`}
+                      className={`crt-tab ${selectedStatus === status ? 'on' : ''}`}
+                      style={{ padding: '7px 12px' }}
                     >
-                      <Icon className="w-4 h-4" />
-                      {config.label} ({count})
+                      <Icon className="w-3.5 h-3.5" />
+                      {config.label} <span className="crt-tab-num">{count}</span>
+                      {selectedStatus === status && <span className="crt-tab-bar" />}
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {selectedStatus !== 'all' && (
-              <div className="h-1 bg-[#8FD3FF] rounded-full mb-8"></div>
-            )}
 
             {filteredOffers.length === 0 ? (
               <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-16 text-center">
@@ -440,7 +433,7 @@ export function OffersList() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {filteredOffers.map((offer) => {
                   const today = new Date();
                   today.setHours(0, 0, 0, 0);
@@ -479,126 +472,50 @@ export function OffersList() {
                   return (
                     <div
                       key={offer.id}
-                      className={`relative rounded-3xl p-6 transition-all cursor-pointer group bg-[#14171E] border border-gray-800 hover:border-[#8FD3FF]/50 hover:shadow-lg ${
+                      className={`relative rounded-2xl p-3.5 transition-all cursor-pointer group bg-[#14171E] border border-gray-800 hover:border-[#8FD3FF]/50 ${
                         isCancelled ? 'opacity-40 hover:opacity-60' : ''
                       }`}
                       onClick={() => navigate(`/offers/${offer.id}`)}
                     >
-                      <div className="flex items-start justify-between mb-6 pb-6 border-b border-gray-800">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-[#8FD3FF]/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <Music className="h-6 w-6 text-[#8FD3FF]" />
-                          </div>
-                          <div>
-                            <h3 className="text-white font-bold text-xl mb-1">
-                              {offer.show.artist_name}
-                            </h3>
-                            <div className="flex items-center gap-2 text-sm text-gray-400 mb-1">
-                              <MapPin className="h-3 w-3" />
-                              <span>{offer.show.venue_name}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-400">
-                              <Calendar className="h-3 w-3" />
-                              <span>{formattedDate}</span>
-                            </div>
-                          </div>
+                      {/* Name, where, when, status. One block. */}
+                      <div className="flex items-start justify-between gap-2 mb-2.5">
+                        <div className="min-w-0">
+                          <h3 className="text-white font-bold text-[15px] leading-tight truncate">{offer.show.event_name || offer.show.artist_name}</h3>
+                          <p className="text-[12px] text-gray-400 truncate">
+                            {offer.show.event_name ? `${offer.show.artist_name} · ` : ''}{offer.show.venue_name} · {formattedDate}
+                          </p>
                         </div>
-                        <select
-                          value={currentStatus}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            updateOfferStatus(offer.id, e.target.value as OfferStatus);
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors focus:outline-none ${statusConfig.borderColor} ${statusConfig.bgColor} ${statusConfig.color}`}
-                        >
-                          {(Object.keys(STATUS_CONFIG) as OfferStatus[]).map((status) => (
-                            <option key={status} value={status}>
-                              {STATUS_CONFIG[status].label.toUpperCase()}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <select
+                            value={currentStatus}
+                            onChange={(e) => { e.stopPropagation(); updateOfferStatus(offer.id, e.target.value as OfferStatus); }}
+                            onClick={(e) => e.stopPropagation()}
+                            className={`px-2 py-1 rounded-md text-[10px] font-semibold border focus:outline-none ${statusConfig.borderColor} ${statusConfig.bgColor} ${statusConfig.color}`}
+                          >
+                            {(Object.keys(STATUS_CONFIG) as OfferStatus[]).map((status) => (
+                              <option key={status} value={status}>{STATUS_CONFIG[status].label.toUpperCase()}</option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); duplicateOffer(offer); }}
+                            className="p-1.5 rounded-md text-gray-500 hover:text-white hover:bg-[#22262F]"
+                            title="Duplicate offer"
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="space-y-4">
-                        {isCancelled
-                          ? <CancelledBadge offer={offer as any} />
-                          : <SurvivalBadge survival={survival} />}
+                      {isCancelled ? <CancelledBadge offer={offer as any} /> : <SurvivalBadge survival={survival} />}
 
-                        <div className="bg-[#22262F] rounded-xl p-4 border border-gray-800">
-                          <div className="grid grid-cols-3 gap-4">
-                            <div>
-                              <p className="text-xs text-gray-400 mb-1">Deal Type</p>
-                              <p className="text-sm font-bold text-white capitalize">
-                                {offer.deal_type.replace('_', ' ')}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-400 mb-1">Capacity</p>
-                              <p className="text-sm font-bold text-white">
-                                {offer.show.capacity.toLocaleString()}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-400 mb-1">Avg Ticket</p>
-                              <p className="text-sm font-bold text-white">
-                                {formatCurrency(avgTicketPrice)}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {offer.deal_type === 'flat_fee' && offer.guarantee > 0 && (
-                          <div className="bg-gradient-to-br from-[#8FD3FF]/20 to-[#8FD3FF]/10 rounded-xl p-4 border border-[#8FD3FF]/30">
-                            <p className="text-xs text-[#8FD3FF] font-bold mb-1">GUARANTEE AMOUNT</p>
-                            <p className="text-2xl font-bold text-white">{formatCurrency(offer.guarantee)}</p>
-                          </div>
+                      {/* The deal in one line. */}
+                      <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-gray-400">
+                        <span><span className="text-gray-500">Deal</span> <span className="text-white font-semibold capitalize">{offer.deal_type.replace(/_/g, ' ')}</span></span>
+                        <span><span className="text-gray-500">Cap</span> <span className="text-white font-semibold">{offer.show.capacity.toLocaleString()}</span></span>
+                        <span><span className="text-gray-500">Avg ticket</span> <span className="text-white font-semibold">{formatCurrency(avgTicketPrice)}</span></span>
+                        {artistPayment > 0 && (
+                          <span className="ml-auto"><span className="text-gray-500">Artist</span> <span className="text-[#8FD3FF] font-bold">{formatCurrency(artistPayment)}</span>{hasDeposit && <span className="text-gray-500"> · {offer.deposit_pct}% dep{offer.artist_deposit_status === 'paid' ? ' paid' : ''}</span>}</span>
                         )}
-
-                        <div className="bg-[#22262F] rounded-xl p-4 border border-gray-800">
-                          <p className="text-xs text-gray-400 font-bold mb-3">PAYMENT SCHEDULE</p>
-                          <div className="space-y-2.5">
-                            {hasDeposit && (
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-300">Deposit ({offer.deposit_pct}%)</span>
-                                <div className="text-right">
-                                  <p className="text-sm font-bold text-white">{formatCurrency(depositAmount)}</p>
-                                  {offer.artist_deposit_status === 'paid' && (
-                                    <p className="text-xs text-[#8FD3FF] font-semibold">Paid</p>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-gray-300">Balance Due at Settlement</span>
-                              <span className="text-sm font-bold text-white">{formatCurrency(balanceDue)}</span>
-                            </div>
-                            <div className="h-px bg-gray-700 my-2"></div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-base font-bold text-white">Total Artist Payment</span>
-                              <span className="text-xl font-bold text-[#8FD3FF]">{formatCurrency(artistPayment)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 mt-6">
-                        <button
-                          onClick={() => navigate(`/offers/${offer.id}`)}
-                          className="flex-1 bg-[#22262F] text-white hover:bg-[#2A3040] rounded-2xl py-3 font-semibold transition-colors"
-                        >
-                          View Details
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            duplicateOffer(offer);
-                          }}
-                          className="bg-[#22262F] hover:bg-[#2A3040] rounded-2xl p-3 transition-colors"
-                          title="Duplicate offer"
-                        >
-                          <Copy className="h-5 w-5 text-gray-400" />
-                        </button>
                       </div>
                     </div>
                   );
@@ -626,29 +543,26 @@ function SurvivalBadge({ survival }: { survival: ReturnType<typeof survivalRead>
   }[survival.verdict];
 
   const cell = (label: string, profit: number, tickets: number) => (
-    <div>
-      <p className="text-[10px] text-gray-500 mb-0.5">{label}</p>
-      <p className={`text-sm font-bold ${profit >= 0 ? 'text-white' : 'text-red-400'}`}>
+    <div className="min-w-0">
+      <p className="text-[9px] text-gray-500 leading-none mb-0.5">{label} · {tickets.toLocaleString()} tix</p>
+      <p className={`text-[13px] font-bold leading-tight ${profit >= 0 ? 'text-white' : 'text-red-400'}`}>
         {profit >= 0 ? formatCurrency(profit) : `-${formatCurrency(Math.abs(profit))}`}
       </p>
-      <p className="text-[10px] text-gray-600">{tickets.toLocaleString()} tix</p>
     </div>
   );
 
   return (
-    <div className={`rounded-xl p-4 border ${style.box}`}>
-      <div className="flex items-center justify-between mb-3">
-        <span className={`text-[10px] font-bold tracking-wide ${style.text}`}>{style.label}</span>
-        <span className="text-[10px] text-gray-500">
-          {survival.breakEvenTickets >= 0
-            ? `break-even ${Math.round(survival.breakEvenPct)}%`
-            : 'no break-even'}
+    <div className={`rounded-lg px-3 py-2 border ${style.box}`}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className={`text-[9px] font-bold tracking-wide ${style.text}`}>{style.label}</span>
+        <span className="text-[9px] text-gray-500">
+          {survival.breakEvenTickets >= 0 ? `break-even ${Math.round(survival.breakEvenPct)}%` : 'no break-even'}
         </span>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         {cell('Sellout', survival.atFull.profit, survival.atFull.tickets)}
-        {cell('70% sold', survival.at70.profit, survival.at70.tickets)}
-        {cell('Half house', survival.at50.profit, survival.at50.tickets)}
+        {cell('70%', survival.at70.profit, survival.at70.tickets)}
+        {cell('Half', survival.at50.profit, survival.at50.tickets)}
       </div>
     </div>
   );
@@ -666,7 +580,7 @@ function CancelledBadge({ offer }: { offer: any }) {
 
   if (!c.completed && loss === 0) {
     return (
-      <div className="rounded-xl p-4 border bg-[#22262F] border-gray-700">
+      <div className="rounded-lg px-3 py-2 border bg-[#22262F] border-gray-700">
         <p className="text-[10px] font-bold tracking-wide text-gray-400 mb-1">CANCELLED</p>
         <p className="text-xs text-gray-500">
           Open it and put in what you spent, or this show costs your month nothing on paper.
@@ -676,11 +590,11 @@ function CancelledBadge({ offer }: { offer: any }) {
   }
 
   return (
-    <div className="rounded-xl p-4 border bg-red-900/20 border-red-800/40">
+    <div className="rounded-lg px-3 py-2 border bg-red-900/20 border-red-800/40">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[10px] font-bold tracking-wide text-red-400 mb-1">CANCELLED — COST YOU</p>
-          <p className="text-xl font-bold text-red-400">-{formatCurrency(loss)}</p>
+          <p className="text-base font-bold text-red-400">-{formatCurrency(loss)}</p>
         </div>
         {c.notes && <p className="text-[10px] text-gray-500 max-w-[45%] text-right">{c.notes}</p>}
       </div>

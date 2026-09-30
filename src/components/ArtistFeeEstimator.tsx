@@ -33,7 +33,7 @@ function Field({
 }: { label: string; value: number; onChange: (v: number) => void; prefix?: string; suffix?: string; hint?: string }) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">{label}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">{label}</span>
       <div className="mt-1 flex items-center bg-[#1140F0] border border-white/10 rounded-xl px-3 focus-within:border-[#8FD3FF]/60">
         {prefix && <span className="text-gray-500 mr-1">{prefix}</span>}
         <input
@@ -41,16 +41,16 @@ function Field({
           inputMode="decimal"
           value={Number.isFinite(value) ? value : 0}
           onChange={(e) => onChange(num(e.target.value))}
-          className="w-full bg-transparent py-2.5 text-white outline-none"
+          className="w-full bg-transparent py-1.5 text-sm text-white outline-none"
         />
         {suffix && <span className="text-gray-500 ml-1">{suffix}</span>}
       </div>
-      {hint && <span className="text-[11px] text-gray-500 mt-1 block">{hint}</span>}
+      {hint && <span className="text-[10px] text-gray-500 mt-0.5 block">{hint}</span>}
     </label>
   );
 }
 
-const card = 'bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-3xl p-5 sm:p-6 border border-white/10';
+const card = 'bg-gradient-to-br from-[#14171E] to-[#0B0D12] rounded-2xl p-4 border border-white/10';
 
 export function ArtistFeeEstimator() {
   // ---------- Section 1: your show ----------
@@ -117,29 +117,26 @@ export function ArtistFeeEstimator() {
   const offerVsMarket = reverse.likely > 0 ? show.offer - reverse.likely : 0;
 
   return (
-    <div className="min-h-screen bg-[#1140F0] text-white p-4 sm:p-6">
+    <div className="min-h-screen bg-[#1140F0] text-white p-3 sm:p-5">
       <div className="max-w-7xl mx-auto">
-        <Link to="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-[#8FD3FF] mb-6 transition-colors text-sm group w-fit">
+        <Link to="/dashboard" className="flex items-center gap-2 text-gray-400 hover:text-[#8FD3FF] mb-3 transition-colors text-sm group w-fit">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Back to Dashboard
         </Link>
 
-        <div className="mb-8">
-          <div className="inline-block px-4 py-1.5 bg-[#8FD3FF]/10 border border-[#8FD3FF]/30 rounded-full mb-3">
-            <span className="text-[#8FD3FF] text-xs font-bold uppercase tracking-wider">Artist Fee Estimator</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">What should I offer this artist?</h1>
-          <p className="text-gray-400">Get a fair price for your show, pick how bad you want them, and check what other cities are paying.</p>
+        <div className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <h1 className="text-xl sm:text-2xl font-bold">What should I offer this artist?</h1>
+          <p className="text-gray-300/80 text-sm">A fair price for your show, how bad you want them, and what other cities pay.</p>
         </div>
 
         {/* ===== SECTION 1 ===== */}
-        <section className="grid lg:grid-cols-5 gap-6 mb-10">
+        <section className="grid lg:grid-cols-5 gap-3 mb-4">
           <div className={`${card} lg:col-span-2`}>
-            <div className="flex items-center gap-2 mb-5">
-              <Target className="w-5 h-5 text-[#8FD3FF]" />
-              <h2 className="text-lg font-bold">1. Your show</h2>
+            <div className="flex items-center gap-2 mb-3">
+              <Target className="w-4 h-4 text-[#8FD3FF]" />
+              <h2 className="text-base font-bold">1. Your show</h2>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
               <Field label="Venue capacity" value={cap} onChange={setCap} />
               <Field label="Avg ticket price" value={price} onChange={setPrice} prefix="$" />
               <Field label="Expected sold" value={soldPct} onChange={setSoldPct} suffix="%" />
@@ -153,30 +150,30 @@ export function ArtistFeeEstimator() {
             </div>
           </div>
 
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-3 space-y-3">
             {/* Mode picker */}
             <div className={card}>
-              <h2 className="text-lg font-bold mb-4">2. How bad do you want them?</h2>
-              <div className="grid sm:grid-cols-3 gap-3">
+              <h2 className="text-base font-bold mb-3">2. How bad do you want them?</h2>
+              <div className="grid grid-cols-3 gap-2">
                 {MODES.map((m) => {
                   const active = mode === m.key;
                   return (
                     <button
                       key={m.key}
                       onClick={() => setMode(m.key)}
-                      className={`text-left rounded-2xl p-4 border-2 transition-all ${
+                      className={`text-left rounded-xl p-3 border-2 transition-all ${
                         active ? 'border-[#8FD3FF] bg-[#8FD3FF]/10' : 'border-white/10 hover:border-white/30'
                       }`}
                     >
-                      <div className={`text-sm font-bold ${active ? 'text-[#8FD3FF]' : 'text-white'}`}>{m.label}</div>
-                      <div className="text-2xl font-bold mt-1">{money(show.offers[m.key])}</div>
-                      <div className="text-xs text-gray-400 mt-1">{m.blurb}</div>
-                      <div className="mt-3 flex items-center gap-1 text-xs text-gray-500" onClick={(e) => e.stopPropagation()}>
+                      <div className={`text-xs font-bold ${active ? 'text-[#8FD3FF]' : 'text-white'}`}>{m.label}</div>
+                      <div className="text-xl font-bold mt-0.5">{money(show.offers[m.key])}</div>
+                      <div className="text-[11px] text-gray-400 mt-0.5 leading-tight">{m.blurb}</div>
+                      <div className="mt-2 flex items-center gap-1 text-[11px] text-gray-500" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="number"
                           value={mult[m.key]}
                           onChange={(e) => setMult({ ...mult, [m.key]: num(e.target.value) })}
-                          className="w-14 bg-[#1140F0] border border-white/10 rounded-lg px-2 py-1 text-white"
+                          className="w-12 bg-[#1140F0] border border-white/10 rounded-md px-1.5 py-0.5 text-white text-xs"
                         />
                         % of fair
                       </div>
@@ -187,13 +184,13 @@ export function ArtistFeeEstimator() {
             </div>
 
             {/* Result */}
-            <div className="rounded-3xl p-6 border-2 border-[#8FD3FF] bg-[#8FD3FF]/5">
+            <div className="rounded-2xl p-4 border-2 border-[#8FD3FF] bg-[#8FD3FF]/5">
               <div className="text-xs font-bold uppercase tracking-wider text-[#8FD3FF]">
                 Your offer — {MODES.find((m) => m.key === mode)?.label}
               </div>
-              <div className="text-5xl font-extrabold my-2">{money(show.offer)}</div>
+              <div className="text-3xl font-extrabold my-1">{money(show.offer)}</div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 text-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 text-sm">
                 <div>
                   <div className="text-gray-400">20% rule</div>
                   <div className="font-bold">{money(show.capMethodFee)}</div>
@@ -216,12 +213,12 @@ export function ArtistFeeEstimator() {
                 </div>
               </div>
 
-              <div className="mt-4 text-sm text-gray-300">
+              <div className="mt-3 text-sm text-gray-300">
                 Profit if it sells out: <span className="font-bold text-white">{money(show.profitAtSellout)}</span>
               </div>
 
               {show.limitedByBreakeven && (
-                <div className="mt-4 flex gap-2 text-sm text-yellow-300 bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3">
+                <div className="mt-3 flex gap-2 text-xs text-yellow-300 bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3">
                   <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
                   Your costs are high for this room — fair price is capped at your break-even ({money(show.breakevenCeiling)}), not the 20% rule.
                 </div>
@@ -248,17 +245,17 @@ export function ArtistFeeEstimator() {
         <section className={card}>
           <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
             <div className="flex items-center gap-2">
-              <Search className="w-5 h-5 text-[#8FD3FF]" />
-              <h2 className="text-lg font-bold">3. Reverse engineer: what are other cities paying?</h2>
+              <Search className="w-4 h-4 text-[#8FD3FF]" />
+              <h2 className="text-base font-bold">3. What are other cities paying?</h2>
             </div>
             <input
               placeholder="Artist name"
               value={artist}
               onChange={(e) => setArtist(e.target.value)}
-              className="bg-[#1140F0] border border-white/10 rounded-xl px-3 py-2 text-white w-full sm:w-64"
+              className="bg-[#1140F0] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white w-full sm:w-56"
             />
           </div>
-          <p className="text-sm text-gray-400 mb-5">
+          <p className="text-xs text-gray-400 mb-3">
             Add 4–5 of {artist || "the artist's"} recent shows. Use the ticket price and venue size from the listing, and your best guess on how much sold and what it cost to run.
           </p>
 
@@ -266,35 +263,35 @@ export function ArtistFeeEstimator() {
             <table className="w-full text-sm min-w-[860px]">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wider text-gray-500">
-                  <th className="px-2 py-2">City / venue</th>
-                  <th className="px-2 py-2">Capacity</th>
-                  <th className="px-2 py-2">Ticket $</th>
-                  <th className="px-2 py-2">Est. sold %</th>
-                  <th className="px-2 py-2">Est. costs $</th>
-                  <th className="px-2 py-2 text-right">Sold-out gross</th>
-                  <th className="px-2 py-2 text-right">Likely fee</th>
-                  <th className="px-2 py-2"></th>
+                  <th className="px-2 py-1.5">City / venue</th>
+                  <th className="px-2 py-1.5">Capacity</th>
+                  <th className="px-2 py-1.5">Ticket $</th>
+                  <th className="px-2 py-1.5">Est. sold %</th>
+                  <th className="px-2 py-1.5">Est. costs $</th>
+                  <th className="px-2 py-1.5 text-right">Sold-out gross</th>
+                  <th className="px-2 py-1.5 text-right">Likely fee</th>
+                  <th className="px-2 py-1.5"></th>
                 </tr>
               </thead>
               <tbody>
                 {reverse.rows.map((r, i) => (
                   <tr key={i} className="border-t border-white/5">
-                    <td className="px-2 py-2">
+                    <td className="px-2 py-1">
                       <input value={r.city} onChange={(e) => updateEvent(i, { city: e.target.value })}
                         className="w-full bg-[#1140F0] border border-white/10 rounded-lg px-2 py-1.5" />
                     </td>
                     {(['cap', 'price', 'soldPct', 'expenses'] as const).map((k) => (
-                      <td key={k} className="px-2 py-2">
+                      <td key={k} className="px-2 py-1">
                         <input type="number" value={r[k]} onChange={(e) => updateEvent(i, { [k]: num(e.target.value) })}
                           className="w-24 bg-[#1140F0] border border-white/10 rounded-lg px-2 py-1.5" />
                       </td>
                     ))}
-                    <td className="px-2 py-2 text-right text-gray-300">{money(r.grossAtCap)}</td>
-                    <td className="px-2 py-2 text-right">
+                    <td className="px-2 py-1 text-right text-gray-300">{money(r.grossAtCap)}</td>
+                    <td className="px-2 py-1 text-right">
                       <div className="font-bold">{money(r.likely)}</div>
                       <div className="text-[11px] text-gray-500">{money(r.low)} – {money(r.high)}</div>
                     </td>
-                    <td className="px-2 py-2 text-right">
+                    <td className="px-2 py-1 text-right">
                       <button onClick={() => setEvents(events.filter((_, idx) => idx !== i))}
                         className="text-gray-500 hover:text-red-400" aria-label="Remove">
                         <Trash2 className="w-4 h-4" />
@@ -313,21 +310,21 @@ export function ArtistFeeEstimator() {
             <Plus className="w-4 h-4" /> Add show
           </button>
 
-          <div className="grid sm:grid-cols-3 gap-4 mt-6">
+          <div className="grid grid-cols-3 gap-3 mt-4">
             <div className="rounded-2xl p-4 border border-white/10">
               <div className="text-xs text-gray-400 uppercase tracking-wider">Low end</div>
-              <div className="text-2xl font-bold">{money(reverse.low)}</div>
+              <div className="text-xl font-bold">{money(reverse.low)}</div>
             </div>
             <div className="rounded-2xl p-4 border-2 border-[#8FD3FF] bg-[#8FD3FF]/5">
               <div className="text-xs text-[#8FD3FF] uppercase tracking-wider font-bold">They're likely booking for</div>
-              <div className="text-3xl font-extrabold">{money(reverse.likely)}</div>
+              <div className="text-2xl font-extrabold">{money(reverse.likely)}</div>
             </div>
             <div className="rounded-2xl p-4 border border-white/10">
               <div className="text-xs text-gray-400 uppercase tracking-wider">High end</div>
-              <div className="text-2xl font-bold">{money(reverse.high)}</div>
+              <div className="text-xl font-bold">{money(reverse.high)}</div>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-4">
+          <p className="text-xs text-gray-500 mt-3">
             How it works: each show's fee is estimated at 15% / {capPct}% / 25% of its sold-out gross, but never more than that promoter could pay and still break even. Then the shows are averaged. It's an estimate — confirm with the agent.
           </p>
         </section>

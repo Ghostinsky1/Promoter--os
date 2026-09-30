@@ -26,6 +26,15 @@ import { ArtistsDashboard } from './artists/ArtistsDashboard';
 import { generateArtistOfferSheet } from '../lib/generateArtistOfferSheet';
 import { ArrowLeft, Calendar, MapPin, Users, CreditCard as Edit, FileDown, Eye, Mail, BarChart3, Copy, Film, Trash2, Calculator, Sparkles, Undo2, Loader2, Check, Plus, X, GripVertical } from 'lucide-react';
 
+type TabKey = 'deal' | 'tickets' | 'costs' | 'money' | 'tasks';
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'deal', label: 'Deal' },
+  { key: 'tickets', label: 'Tickets' },
+  { key: 'costs', label: 'Costs' },
+  { key: 'money', label: 'Money in' },
+  { key: 'tasks', label: 'Tasks & notes' },
+];
+
 export function OfferDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -43,6 +52,10 @@ export function OfferDetails() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [tab, setTab] = useState<TabKey>(() => {
+    try { const t = sessionStorage.getItem('offerTab') as TabKey | null; return t && TABS.some((x) => x.key === t) ? t : 'deal'; } catch { return 'deal'; }
+  });
+  useEffect(() => { try { sessionStorage.setItem('offerTab', tab); } catch { /* private mode */ } }, [tab]);
 
   const {
     state,
@@ -338,6 +351,11 @@ export function OfferDetails() {
     return calculateFromOffer(merged, 'estimate').projections ?? null;
   }, [offer, state, liveCalc]);
 
+  const verdict = liveProjections
+    ? (liveProjections.capacity100.netProfit < 0 ? 'UNDERWATER' : liveProjections.capacity50.netProfit >= 0 ? 'SAFE' : liveProjections.capacity70.netProfit >= 0 ? 'TIGHT' : 'FRAGILE')
+    : null;
+  const openTaskCount = (tasks || []).filter((t: { completed?: boolean }) => !t.completed).length;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#1140F0] flex items-center justify-center">
@@ -479,26 +497,55 @@ export function OfferDetails() {
           </div>
         </div>
 
-        {/* Multi-Artist CRM Section */}
-        <div className="mb-4">
-          <ArtistsDashboard
-            artists={eventArtists}
-            artistTasks={artistTasks}
-            onAddArtist={addArtist}
-            onUpdateArtist={updateArtist}
-            onDeleteArtist={deleteArtist}
-            onDuplicateArtist={duplicateArtist}
-            onGenerateSheet={handleGenerateArtistSheet}
-            onAddTask={addArtistTask}
-            onUpdateTask={updateArtistTask}
-            onDeleteTask={deleteArtistTask}
-          />
+        {/* One tab at a time. Jose: "too much scrolling, look at all the dead
+            space". The strip stays put while you edit: profit + the bad night. */}
+        <div className="sticky top-16 z-30 -mx-3 px-3 py-2 mb-3 bg-[#1140F0]/95 backdrop-blur border-b border-white/10">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex gap-1 overflow-x-auto -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
+              {TABS.map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setTab(t.key)}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-[13px] font-semibold transition-colors ${tab === t.key ? 'bg-[#14171E] text-white border border-[#2A3040]' : 'text-white/75 hover:text-white border border-transparent'}`}
+                  style={{ textTransform: 'none', letterSpacing: 0 }}
+                >
+                  {t.label}
+                  {t.key === 'tickets' && <span className="ml-1.5 text-[11px] text-[#8FD3FF] font-normal">{formatCurrency(calc.netGross)}</span>}
+                  {t.key === 'costs' && <span className="ml-1.5 text-[11px] text-[#8FD3FF] font-normal">{formatCurrency(calc.totalExpenses + guarantee)}</span>}
+                  {t.key === 'tasks' && openTaskCount > 0 && <span className="ml-1.5 text-[11px] text-[#8FD3FF] font-normal">{openTaskCount}</span>}
+                </button>
+              ))}
+            </div>
+            <div className="shrink-0 flex items-center gap-2 bg-[#14171E] border border-[#2A3040] rounded-full pl-3 pr-1.5 py-1">
+              <span className="text-[11px] text-gray-400 hidden sm:inline">Net profit</span>
+              <span className={`text-sm font-bold ${calc.netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatCurrency(calc.netProfit)}</span>
+              {verdict && (
+                <span className={`font-label text-[9px] tracking-[0.12em] uppercase px-2 py-1 rounded-full ${verdict === 'SAFE' ? 'bg-green-900/40 text-green-300' : verdict === 'TIGHT' ? 'bg-yellow-900/40 text-yellow-300' : verdict === 'FRAGILE' ? 'bg-orange-900/40 text-orange-300' : 'bg-red-900/40 text-red-300'}`}>{verdict}</span>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Main Grid. items-start: a short card (the cancellation sheet) no
-            longer stretches to the height of its tall neighbour and shows a
-            column of nothing. */}
+        {tab === 'deal' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
+          <div className="md:col-span-2">
+          {/* Multi-Artist CRM Section */}
+          <div className="mb-4">
+            <ArtistsDashboard
+              artists={eventArtists}
+              artistTasks={artistTasks}
+              onAddArtist={addArtist}
+              onUpdateArtist={updateArtist}
+              onDeleteArtist={deleteArtist}
+              onDuplicateArtist={duplicateArtist}
+              onGenerateSheet={handleGenerateArtistSheet}
+              onAddTask={addArtistTask}
+              onUpdateTask={updateArtistTask}
+              onDeleteTask={deleteArtistTask}
+            />
+          </div>
+
+          </div>
           {/* Artist Deal */}
           <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
             <h2 className="text-base font-bold text-white mb-3">Artist Deal</h2>
@@ -532,6 +579,26 @@ export function OfferDetails() {
             </div>
           </div>
 
+          {/* Deposits + Tasks + Notes */}
+          <DepositTracker
+            deposits={deposits}
+            depositsPaidTotal={depositsPaidTotal}
+            depositsDueTotal={depositsDueTotal}
+            artistDepositAmount={depositAmount > 0 ? depositAmount : undefined}
+            artistDepositDueDate={offer.deposit_due_date}
+            onAdd={addDeposit}
+            onUpdate={updateDeposit}
+            onDelete={deleteDeposit}
+          />
+          {offer.status === 'cancelled' && (
+            <CancellationSheet offer={offer} onSave={saveCancellation} />
+          )}
+
+        </div>
+        )}
+
+        {tab === 'tickets' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
           {/* Ticket Scaling */}
           <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
             <h2 className="text-base font-bold text-white mb-3">Ticket Scaling</h2>
@@ -587,6 +654,52 @@ export function OfferDetails() {
             </div>
           </div>
 
+          {mktBenchmark && offer.status !== 'cancelled' && (
+            <MarketingPanel offer={offer} benchmark={mktBenchmark} />
+          )}
+
+          {offer.mode === 'estimate' && liveProjections && (
+            <div className="md:col-span-2 bg-[#14171E] border border-gray-800 rounded-2xl p-4">
+              <div className="flex items-baseline justify-between mb-3">
+                <h2 className="text-base font-bold text-white">The three stress points</h2>
+                <span className="text-[11px] text-gray-500">Same math as the Deal Score. Bar and other revenue included.</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {[
+                  { label: '50% · Bad night', data: liveProjections.capacity50, color: 'yellow' },
+                  { label: '70% · Soft night', data: liveProjections.capacity70, color: 'orange' },
+                  { label: '100% · Sellout', data: liveProjections.capacity100, color: 'green' },
+                ].map(({ label, data, color }) => (
+                  <div key={label} className={`border rounded-xl p-3 ${color === 'green' ? 'bg-green-900/10 border-green-800/30' : color === 'orange' ? 'bg-orange-900/10 border-orange-800/30' : 'bg-yellow-900/10 border-yellow-800/30'}`}>
+                    <div className="font-bold text-white mb-3 text-sm text-center">{label}</div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Tickets</span><span className="font-semibold text-white">{data.tickets}</span></div>
+                      <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Artist</span><span className="font-semibold text-white">{formatCurrency(data.artistPayout)}</span></div>
+                      {offer.deal_type === 'promoter_profit' && (
+                        <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Promoter</span><span className="font-semibold text-white">{formatCurrency(data.promoterProfit)}</span></div>
+                      )}
+                      <div className="border-t border-gray-800 pt-2 flex justify-between items-center">
+                        <span className="text-xs font-bold text-white">Net Profit</span>
+                        <span className={`font-bold text-sm ${data.netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatCurrency(data.netProfit)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-400">Profit %</span>
+                        <span className={`font-bold ${data.netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {data.netGross > 0 ? `${((data.netProfit / data.netGross) * 100).toFixed(1)}%` : '0%'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+        </div>
+        )}
+
+        {tab === 'costs' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
           {/* Fixed Expenses */}
           <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4">
             <h2 className="text-base font-bold text-white mb-3">Fixed Expenses Breakdown</h2>
@@ -743,27 +856,6 @@ export function OfferDetails() {
             </div>
           </div>
 
-          {offer.status === 'cancelled' && (
-            <CancellationSheet offer={offer} onSave={saveCancellation} />
-          )}
-
-          {mktBenchmark && offer.status !== 'cancelled' && (
-            <MarketingPanel offer={offer} benchmark={mktBenchmark} />
-          )}
-
-          {/* Bar, parking, vendor spots. Was only reachable inside the wizard;
-              the offer page never showed it, so it was as good as missing. */}
-          {state && (
-            <ExtraRevenuePanel
-              enabled={state.includeExtraRevenue}
-              onToggle={setIncludeExtraRevenue}
-              lines={state.extraRevenue}
-              onChange={setExtraRevenue}
-              expectedAttendance={tierStates.reduce((sum, t) => sum + (t.allotment - t.comps), 0)}
-              compact
-            />
-          )}
-
           {/* Variable Expenses */}
           <div className="bg-[#14171E] border border-gray-800 rounded-2xl px-4 pt-4 pb-2">
             <h2 className="text-base font-bold text-white mb-3">Variable Expenses</h2>
@@ -845,17 +937,39 @@ export function OfferDetails() {
             </div>
           </div>
 
-          {/* Deposits + Tasks + Notes */}
-          <DepositTracker
-            deposits={deposits}
+        </div>
+        )}
+
+        {tab === 'money' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
+          {/* Bar, parking, vendor spots. Was only reachable inside the wizard;
+              the offer page never showed it, so it was as good as missing. */}
+          {state && (
+            <ExtraRevenuePanel
+              enabled={state.includeExtraRevenue}
+              onToggle={setIncludeExtraRevenue}
+              lines={state.extraRevenue}
+              onChange={setExtraRevenue}
+              expectedAttendance={tierStates.reduce((sum, t) => sum + (t.allotment - t.comps), 0)}
+              compact
+            />
+          )}
+
+          <CalculationsBreakdown
+            ticketTiers={tiers}
+            salesTaxPct={salesTaxPct}
+            calculations={calc}
+            guarantee={guarantee}
+            mode={offer.mode}
             depositsPaidTotal={depositsPaidTotal}
             depositsDueTotal={depositsDueTotal}
-            artistDepositAmount={depositAmount > 0 ? depositAmount : undefined}
-            artistDepositDueDate={offer.deposit_due_date}
-            onAdd={addDeposit}
-            onUpdate={updateDeposit}
-            onDelete={deleteDeposit}
           />
+
+        </div>
+        )}
+
+        {tab === 'tasks' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
           <EventTasks
             tasks={tasks}
             onAdd={addTask}
@@ -868,53 +982,6 @@ export function OfferDetails() {
             onAddPin={addPinnedNote}
             onRemovePin={removePinnedNote}
           />
-
-          <CalculationsBreakdown
-            ticketTiers={tiers}
-            salesTaxPct={salesTaxPct}
-            calculations={calc}
-            guarantee={guarantee}
-            mode={offer.mode}
-            depositsPaidTotal={depositsPaidTotal}
-            depositsDueTotal={depositsDueTotal}
-          />
-
-          {offer.mode === 'estimate' && liveProjections && (
-            <div className="md:col-span-2 bg-[#14171E] border border-gray-800 rounded-2xl p-4">
-              <div className="flex items-baseline justify-between mb-3">
-                <h2 className="text-base font-bold text-white">The three stress points</h2>
-                <span className="text-[11px] text-gray-500">Same math as the Deal Score. Bar and other revenue included.</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {[
-                  { label: '50% · Bad night', data: liveProjections.capacity50, color: 'yellow' },
-                  { label: '70% · Soft night', data: liveProjections.capacity70, color: 'orange' },
-                  { label: '100% · Sellout', data: liveProjections.capacity100, color: 'green' },
-                ].map(({ label, data, color }) => (
-                  <div key={label} className={`border rounded-xl p-3 ${color === 'green' ? 'bg-green-900/10 border-green-800/30' : color === 'orange' ? 'bg-orange-900/10 border-orange-800/30' : 'bg-yellow-900/10 border-yellow-800/30'}`}>
-                    <div className="font-bold text-white mb-3 text-sm text-center">{label}</div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Tickets</span><span className="font-semibold text-white">{data.tickets}</span></div>
-                      <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Artist</span><span className="font-semibold text-white">{formatCurrency(data.artistPayout)}</span></div>
-                      {offer.deal_type === 'promoter_profit' && (
-                        <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Promoter</span><span className="font-semibold text-white">{formatCurrency(data.promoterProfit)}</span></div>
-                      )}
-                      <div className="border-t border-gray-800 pt-2 flex justify-between items-center">
-                        <span className="text-xs font-bold text-white">Net Profit</span>
-                        <span className={`font-bold text-sm ${data.netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatCurrency(data.netProfit)}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-400">Profit %</span>
-                        <span className={`font-bold ${data.netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {data.netGross > 0 ? `${((data.netProfit / data.netGross) * 100).toFixed(1)}%` : '0%'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Next Steps */}
           <div className="md:col-span-2 bg-gradient-to-br from-[#8FD3FF]/10 to-green-500/10 border-2 border-[#8FD3FF]/30 rounded-2xl p-6">
@@ -952,6 +1019,10 @@ export function OfferDetails() {
             </div>
           </div>
 
+        </div>
+        )}
+
+        <div className="mt-4">
           {/* Debug Panel */}
           <div className="md:col-span-2">
             <button onClick={() => setShowDebug(prev => !prev)} className="text-xs text-gray-600 hover:text-gray-400 transition-colors flex items-center gap-1">

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { OfferWithShow, OfferStatus } from '../types';
 import { formatCurrency } from '../lib/calculations';
-import { Search, Calendar, MapPin, Plus, DollarSign, FileText, CheckCircle, Send, Activity, CircleDollarSign, XCircle, LayoutGrid, Copy, Music, TrendingUp } from 'lucide-react';
+import { Search, Calendar, Plus, FileText, CheckCircle, Send, Activity, CircleDollarSign, XCircle, LayoutGrid, Copy, List as ListIcon } from 'lucide-react';
 import { OffersCalendar } from './OffersCalendar';
 import { survivalRead } from '../lib/downside';
 import { readCancellation } from '../lib/cancellation';
@@ -67,12 +67,12 @@ export function OffersList() {
   );
   const unsettledOnly = urlStatus === 'unsettled';
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [viewMode, setViewMode] = useState<'rows' | 'list' | 'calendar'>('rows');
 
   useEffect(() => {
     loadOffers();
     const savedView = localStorage.getItem('offersViewMode');
-    if (savedView === 'list' || savedView === 'calendar') {
+    if (savedView === 'rows' || savedView === 'list' || savedView === 'calendar') {
       setViewMode(savedView);
     }
   }, []);
@@ -313,7 +313,7 @@ export function OffersList() {
     return acc;
   }, {} as Record<string, number>);
 
-  const handleViewChange = (mode: 'list' | 'calendar') => {
+  const handleViewChange = (mode: 'rows' | 'list' | 'calendar') => {
     setViewMode(mode);
     localStorage.setItem('offersViewMode', mode);
   };
@@ -336,9 +336,14 @@ export function OffersList() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button onClick={() => handleViewChange('rows')} className={`crt-tab ${viewMode === 'rows' ? 'on' : ''}`} style={{ padding: '8px 12px' }}>
+              <ListIcon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">List</span>
+              {viewMode === 'rows' && <span className="crt-tab-bar" />}
+            </button>
             <button onClick={() => handleViewChange('list')} className={`crt-tab ${viewMode === 'list' ? 'on' : ''}`} style={{ padding: '8px 12px' }}>
               <LayoutGrid className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">List</span>
+              <span className="hidden sm:inline">Cards</span>
               {viewMode === 'list' && <span className="crt-tab-bar" />}
             </button>
             <button onClick={() => handleViewChange('calendar')} className={`crt-tab ${viewMode === 'calendar' ? 'on' : ''}`} style={{ padding: '8px 12px' }}>
@@ -433,6 +438,60 @@ export function OffersList() {
                 </div>
               </div>
             ) : (
+              viewMode === 'rows' ? (
+              <div className="bg-[#14171E] border border-gray-800 rounded-2xl overflow-hidden">
+                <div className="hidden md:grid grid-cols-[72px_1fr_130px_150px_110px_110px_110px_36px] gap-3 px-4 py-2 border-b border-[#2A3040] font-label text-[9px] tracking-[0.16em] uppercase text-gray-500">
+                  <span>Date</span><span>Show</span><span>Status</span><span>Bad night</span><span className="text-right">Sellout</span><span className="text-right">Half house</span><span className="text-right">Artist</span><span />
+                </div>
+                <div className="divide-y divide-[#1F2430]">
+                  {filteredOffers.map((offer) => {
+                    const d = parseLocalDate(offer.show.event_date);
+                    const status = (offer.status || 'planning') as OfferStatus;
+                    const sc = STATUS_CONFIG[status];
+                    const isCancelled = status === 'cancelled';
+                    const sv = survivalRead(offer as any);
+                    const verdictCls = { SAFE: 'text-green-400', TIGHT: 'text-yellow-400', FRAGILE: 'text-orange-400', UNDERWATER: 'text-red-400' }[sv.verdict];
+                    const verdictLabel = { SAFE: 'Safe', TIGHT: 'Tight', FRAGILE: 'Fragile', UNDERWATER: 'Loses at sellout' }[sv.verdict];
+                    const artist = (offer.calculations as any)?.artistTotalPayout ?? offer.guarantee ?? 0;
+                    const money = (v: number) => (v < 0 ? '-' : '') + formatCurrency(Math.abs(v));
+                    return (
+                      <div
+                        key={offer.id}
+                        onClick={() => navigate(`/offers/${offer.id}`)}
+                        className={`grid grid-cols-[56px_1fr_auto] md:grid-cols-[72px_1fr_130px_150px_110px_110px_110px_36px] gap-x-3 gap-y-1 items-center px-4 py-2 cursor-pointer hover:bg-[#1A1E27] transition-colors ${isCancelled ? 'opacity-50' : ''}`}
+                      >
+                        <div className="font-label text-[10px] tracking-[0.1em] uppercase text-gray-400 leading-tight">
+                          {d ? d.toLocaleDateString('en-US', { month: 'short' }) : ''}<br />
+                          <span className="text-white text-[15px] font-bold tracking-normal">{d ? d.getDate() : '?'}</span>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-[14px] text-white font-semibold truncate leading-tight">{offer.show.event_name || offer.show.artist_name}</div>
+                          <div className="text-[11px] text-gray-400 truncate">{offer.show.event_name ? `${offer.show.artist_name} · ` : ''}{offer.show.venue_name}{d ? ` · ${d.getFullYear()}` : ''}</div>
+                        </div>
+                        <select
+                          value={status}
+                          onChange={(e) => { e.stopPropagation(); updateOfferStatus(offer.id, e.target.value as OfferStatus); }}
+                          onClick={(e) => e.stopPropagation()}
+                          className={`justify-self-end md:justify-self-start px-2 py-1 rounded-md text-[10px] font-semibold border focus:outline-none ${sc.borderColor} ${sc.bgColor} ${sc.color}`}
+                        >
+                          {(Object.keys(STATUS_CONFIG) as OfferStatus[]).map((st) => <option key={st} value={st}>{STATUS_CONFIG[st].label.toUpperCase()}</option>)}
+                        </select>
+                        <div className={`col-span-3 md:col-span-1 text-[11px] font-semibold ${isCancelled ? 'text-gray-500' : verdictCls}`}>
+                          {isCancelled ? 'Cancelled' : verdictLabel}
+                          <span className="md:hidden text-gray-500 font-normal"> · sellout {money(sv.atFull.profit)} · half {money(sv.at50.profit)}</span>
+                        </div>
+                        <div className={`hidden md:block text-right text-[13px] font-bold ${sv.atFull.profit >= 0 ? 'text-white' : 'text-red-400'}`}>{money(sv.atFull.profit)}</div>
+                        <div className={`hidden md:block text-right text-[13px] font-bold ${sv.at50.profit >= 0 ? 'text-white' : 'text-red-400'}`}>{money(sv.at50.profit)}</div>
+                        <div className="hidden md:block text-right text-[13px] font-semibold text-[#8FD3FF]">{artist > 0 ? formatCurrency(artist) : '—'}</div>
+                        <button onClick={(e) => { e.stopPropagation(); duplicateOffer(offer); }} className="hidden md:flex p-1.5 rounded-md text-gray-500 hover:text-white hover:bg-[#22262F] justify-self-end" title="Duplicate offer">
+                          <Copy className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {filteredOffers.map((offer) => {
                   const today = new Date();
@@ -521,6 +580,7 @@ export function OffersList() {
                   );
                 })}
               </div>
+              )
             )}
           </>
         )}

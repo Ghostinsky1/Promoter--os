@@ -78,12 +78,17 @@ async function buildBrief(supabase: Any, orgId: string, firstName: string) {
     const link = `/offers/${o.id}`;
     const name = nameOf(o);
 
+    if (days < 0 && o.status === 'planning') continue; // a sketch that never happened; nothing to settle
     if (days < 0 && !settled) {
       needs.push({ offer_id: o.id, title: name, detail: `Show was ${-days} day${days === -1 ? '' : 's'} ago and is not settled`, tag: 'SETTLE', tone: 'amber', link: `${link}/settlement`, rank: 20 + Math.min(-days, 60) / 60 });
       continue;
     }
     if (days < 0) continue;
 
+    // A planning show is a sketch: its cash is counted (budgeted is budgeted)
+    // and its tasks nag, but it gets no bad-night flag and sits out of
+    // "coming up" until it moves to offer_sent / confirmed / active.
+    const isPlanning = o.status === 'planning';
     const read = survivalRead(o);
     const artistDeposit = num(o.guarantee) * (num(o.deposit_pct) / 100);
     const venueDeposit = num(o.venue_deposit);
@@ -94,7 +99,7 @@ async function buildBrief(supabase: Any, orgId: string, firstName: string) {
     committed += 1; cashTotal += stillToPay;
     cashArtist += artistPaid ? 0 : artistDeposit; cashVenue += venuePaid ? 0 : venueDeposit; cashMarketing += marketing;
 
-    upcoming.push({
+    if (!isPlanning) upcoming.push({
       offer_id: o.id, title: name, venue: o.show?.venue_name || '', date: o.show.event_date, when: niceDate(o.show.event_date), days,
       verdict: read.verdict, profit_full: read.atFull.profit, profit_50: read.at50.profit, link,
     });
@@ -103,6 +108,7 @@ async function buildBrief(supabase: Any, orgId: string, firstName: string) {
       if (artistDeposit > 0 && !artistPaid) needs.push({ offer_id: o.id, title: name, detail: `Artist deposit ${money(artistDeposit)} still marked unpaid`, tag: days === 0 ? 'TODAY' : `${days} DAY${days === 1 ? '' : 'S'}`, tone: 'red', link, rank: days });
       if (venueDeposit > 0 && !venuePaid) needs.push({ offer_id: o.id, title: name, detail: `Venue deposit ${money(venueDeposit)} still marked unpaid`, tag: days === 0 ? 'TODAY' : `${days} DAY${days === 1 ? '' : 'S'}`, tone: 'red', link, rank: days });
     }
+    if (isPlanning) continue;
     if (read.verdict === 'UNDERWATER') needs.push({ offer_id: o.id, title: name, detail: `Even a sellout loses ${money(-read.atFull.profit)}`, tag: 'UNDERWATER', tone: 'red', link, rank: 10 });
     else if (read.verdict === 'FRAGILE') needs.push({ offer_id: o.id, title: name, detail: `At 50% sold it loses ${money(-read.at50.profit)}`, tag: 'FRAGILE', tone: 'amber', link, rank: 15 });
   }
@@ -136,7 +142,7 @@ async function buildBrief(supabase: Any, orgId: string, firstName: string) {
     next30,
     cash: { total: cashTotal, artist: cashArtist, venue: cashVenue, marketing: cashMarketing, shows: committed },
     open_tasks: (tasks || []).map((t: Any) => ({ id: t.id, offer_id: t.offer_id, title: t.title, due_date: t.due_date, priority: t.priority })),
-    offers_index: live.map((o) => ({ id: o.id, name: nameOf(o), artist: o.show?.artist_name || '', venue: o.show?.venue_name || '', date: o.show?.event_date, status: o.status, settled: o.status === 'settled' || settledIds.has(o.id), capacity: num(o.show?.capacity), projected_profit: num(o.calculations?.netProfit), guarantee: num(o.guarantee), deal_type: o.deal_type })),
+    offers_index: live.map((o) => ({ id: o.id, name: nameOf(o), artist: o.show?.artist_name || '', venue: o.show?.venue_name || '', date: o.show?.event_date, status: o.status, counted: o.status !== 'planning', settled: o.status === 'settled' || settledIds.has(o.id), capacity: num(o.show?.capacity), projected_profit: num(o.calculations?.netProfit), guarantee: num(o.guarantee), deal_type: o.deal_type })),
   };
 }
 
@@ -327,7 +333,7 @@ Deno.serve(async (req) => {
   const { offers_index, open_tasks, ...briefForModel } = brief;
   const context = `TODAY: ${new Date().toISOString().slice(0, 10)}
 BRIEF (already shown on screen): ${JSON.stringify(briefForModel)}
-LIVE SHOWS (id, name, venue, date, status, deal): ${JSON.stringify(offers_index)}
+LIVE SHOWS (id, name, venue, date, status, deal; counted=false means status planning: a sketch NOT in totals or projections until it moves to offer_sent/confirmed/active): ${JSON.stringify(offers_index)}
 OPEN TASKS: ${JSON.stringify(open_tasks)}
 ${thread.offer_id ? `THIS THREAD IS ABOUT OFFER: ${thread.offer_id}\n` : ''}${thread.deal_on_table ? `DEAL ON THE TABLE (structured earlier in this thread, NOT saved as an offer): ${JSON.stringify(thread.deal_on_table)}\n` : ''}CREDITS LEFT: ${credits?.total_left ?? '?'}`;
 

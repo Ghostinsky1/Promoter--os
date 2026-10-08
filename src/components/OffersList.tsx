@@ -458,7 +458,7 @@ export function OffersList() {
                       <div
                         key={offer.id}
                         onClick={() => navigate(`/offers/${offer.id}`)}
-                        className={`grid grid-cols-[56px_1fr_auto] md:grid-cols-[72px_1fr_130px_150px_110px_110px_110px_36px] gap-x-3 gap-y-1 items-center px-4 py-2 cursor-pointer hover:bg-[#1A1E27] transition-colors ${isCancelled ? 'opacity-50' : ''}`}
+                        className={`grid grid-cols-[56px_1fr_auto] md:grid-cols-[72px_1fr_130px_150px_110px_110px_110px_36px] gap-x-3 gap-y-1 items-center px-4 py-2 cursor-pointer hover:bg-[#1A1E27] transition-colors ${isCancelled ? 'opacity-50' : status === 'planning' ? 'opacity-60 hover:opacity-100' : ''}`}
                       >
                         <div className="font-label text-[10px] tracking-[0.1em] uppercase text-gray-400 leading-tight">
                           {d ? d.toLocaleDateString('en-US', { month: 'short' }) : ''}<br />
@@ -477,7 +477,7 @@ export function OffersList() {
                           {(Object.keys(STATUS_CONFIG) as OfferStatus[]).map((st) => <option key={st} value={st}>{STATUS_CONFIG[st].label.toUpperCase()}</option>)}
                         </select>
                         <div className={`col-span-3 md:col-span-1 text-[11px] font-semibold ${isCancelled ? 'text-gray-500' : verdictCls}`}>
-                          {isCancelled ? 'Cancelled' : verdictLabel}
+                          {isCancelled ? 'Cancelled' : verdictLabel}{status === 'planning' && <span className="text-gray-500 font-normal"> · not counted</span>}
                           <span className="md:hidden text-gray-500 font-normal"> · sellout {money(sv.atFull.profit)} · half {money(sv.at50.profit)}</span>
                         </div>
                         <div className={`hidden md:block text-right text-[13px] font-bold ${sv.atFull.profit >= 0 ? 'text-white' : 'text-red-400'}`}>{money(sv.atFull.profit)}</div>
@@ -532,7 +532,7 @@ export function OffersList() {
                     <div
                       key={offer.id}
                       className={`relative rounded-2xl p-3.5 transition-all cursor-pointer group bg-[#14171E] border border-gray-800 hover:border-[#8FD3FF]/50 ${
-                        isCancelled ? 'opacity-40 hover:opacity-60' : ''
+                        isCancelled ? 'opacity-40 hover:opacity-60' : currentStatus === 'planning' ? 'opacity-60 hover:opacity-100' : ''
                       }`}
                       onClick={() => navigate(`/offers/${offer.id}`)}
                     >

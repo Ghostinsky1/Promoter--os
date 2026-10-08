@@ -18,7 +18,7 @@ interface OffersCalendarProps {
 
 // Brand palette only, no rainbow gradients.
 const CHIP: Record<OfferStatus, string> = {
-  planning: 'bg-[#1140F0] text-white',
+  planning: 'bg-[#1140F0]/50 text-white/80 border border-dashed border-[#5A8CFF]/60',
   offer_sent: 'bg-[#5A8CFF] text-[#0E1F5C]',
   confirmed: 'bg-[#8FD3FF] text-[#0E1F5C]',
   active: 'bg-[#F2B640] text-[#14171E]',
@@ -27,7 +27,7 @@ const CHIP: Record<OfferStatus, string> = {
 };
 
 const STATUS_LABEL: Record<OfferStatus, string> = {
-  planning: 'Planning', offer_sent: 'Offer sent', confirmed: 'Confirmed', active: 'Active', settled: 'Settled', cancelled: 'Cancelled',
+  planning: 'Planning · not counted', offer_sent: 'Offer sent', confirmed: 'Confirmed', active: 'Active', settled: 'Settled', cancelled: 'Cancelled',
 };
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];

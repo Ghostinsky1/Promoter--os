@@ -14,6 +14,7 @@ import { useAsk } from './ask/AskProvider';
 import { NeedsYou } from './ask/NeedsYou';
 
 interface DashboardStats {
+  planningCount?: number;
   totalProfit: number;
   revenue: number;
   /** Money that actually came in, from settled shows. */
@@ -86,7 +87,12 @@ export function Home() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const activeOffers = offers.filter(o => o.status !== 'cancelled');
+        // Planning is a sketch (Jose, Oct 8): it is not counted in revenue,
+        // profit, projections or the event count until it moves to Offer
+        // sent / Confirmed / Active. Cash on hand below still counts its
+        // deposits and ads, because budgeted money is budgeted money.
+        const activeOffers = offers.filter(o => o.status !== 'cancelled' && o.status !== 'planning');
+        const planningCount = offers.filter(o => o.status === 'planning' && new Date(o.show.event_date) >= today).length;
 
         const totalRevenue = activeOffers.reduce((sum, o) => sum + (o.calculations?.netGross || 0), 0);
 
@@ -192,6 +198,7 @@ export function Home() {
           activeTours: tours?.filter(t => t.status === 'active').length || 0,
           totalShows: activeOffers.length,
           upcomingShows: upcomingOffers.length,
+          planningCount,
           completedShows: settled,
           monthProfit
         });
@@ -289,7 +296,7 @@ export function Home() {
         {/* Four numbers, one row. */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           {[
-            { label: 'Active events', value: `${stats?.activeEvents || 0}`, sub: `${ask.brief?.next30 ?? stats?.upcomingShows ?? 0} in the next 30 days` },
+            { label: 'Active events', value: `${stats?.activeEvents || 0}`, sub: `${ask.brief?.next30 ?? stats?.upcomingShows ?? 0} in the next 30 days${(stats?.planningCount || 0) > 0 ? ` · ${stats?.planningCount} planning, not counted` : ''}` },
             { label: 'Profit this month', value: k(stats?.monthProfit || 0), sub: (stats?.monthCancelledLoss || 0) > 0 ? `after $${Math.round(stats?.monthCancelledLoss || 0).toLocaleString()} cancelled` : null },
             { label: 'Actual revenue', value: k(stats?.actualRevenue || 0), sub: 'from settled shows' },
             { label: 'Projected revenue', value: k(stats?.projectedRevenue || 0), sub: 'upcoming, at a sellout' },

@@ -75,7 +75,7 @@ export function HelpPage() {
           <Mascot mood="happy" size={60} powerOn />
           <div>
             <h1 className="text-2xl font-bold text-white">Help</h1>
-            <p className="text-white/80 text-sm">How Promoter OS works, in plain words. The easy way, the full way, and the math underneath.</p>
+            <p className="text-white/80 text-sm">How Promoter OS works, in plain words. The easy way, the full way, and the math underneath. <button onClick={() => navigate('/help-center')} className="text-[#8FD3FF] underline" style={{ textTransform: 'none', letterSpacing: 0 }}>Search all articles</button></p>
           </div>
         </div>
 
@@ -199,7 +199,10 @@ tax withholding   taken off the artist's payout, not yours`}</Formula>
               <>Move it to Confirmed when the agent says yes. Now it counts.</>,
               <>After the show, settle it the same week while the receipts are fresh.</>,
             ]} />
-            <button onClick={showWelcomeAgain} className="text-sm text-[#8FD3FF] underline" style={{ textTransform: 'none', letterSpacing: 0 }}>Show me the welcome again</button>
+            <div className="flex flex-wrap gap-4">
+              <button onClick={showWelcomeAgain} className="text-sm text-[#8FD3FF] underline" style={{ textTransform: 'none', letterSpacing: 0 }}>Show me the welcome again</button>
+              <button onClick={() => navigate('/help-center')} className="text-sm text-[#8FD3FF] underline" style={{ textTransform: 'none', letterSpacing: 0 }}>All help articles, with search →</button>
+            </div>
           </Card>
         </div>
       </div>

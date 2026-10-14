@@ -40,6 +40,7 @@ import { AskProvider } from './components/ask/AskProvider';
 import { AskDock } from './components/ask/AskDock';
 import { QuickOffer } from './components/QuickOffer';
 import { HelpPage } from './pages/HelpPage';
+import { HelpCenterPage } from './pages/HelpCenterPage';
 
 function AfterLogin() {
   const [params] = useSearchParams();
@@ -96,6 +97,8 @@ function AppRoutes() {
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/security" element={<SecurityPage />} />
       <Route path="/faq" element={<FAQPage />} />
+      <Route path="/help-center" element={<HelpCenterPage />} />
+      <Route path="/help-center/:slug" element={<HelpCenterPage />} />
 
       {/* Protected routes */}
       <Route path="/pricing" element={<Pricing />} />

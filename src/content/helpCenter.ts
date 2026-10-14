@@ -26,6 +26,9 @@ export interface Article {
   summary: string;
   keywords?: string[];
   body: Block[];
+  /** Signed-in only. Visitors see `teaser` and a sign-in card instead of `body`. (Jose, Oct 14: the fee rule is ours.) */
+  members?: boolean;
+  teaser?: Block[];
 }
 
 export const CATEGORIES: { id: string; label: string; blurb: string }[] = [
@@ -332,7 +335,12 @@ tax withholding   taken off the artist's payout, not yours` },
     category: 'math',
     title: 'What a fair artist fee looks like',
     summary: 'The rule the Artist Fee page uses, tested on real settlements.',
-    keywords: ['artist fee', 'how much to pay', 'guarantee', 'estimator', 'ten percent', 'tiered'],
+    keywords: ['artist fee', 'how much to pay', 'guarantee', 'estimator', 'tiered'],
+    members: true,
+    teaser: [
+      { t: 'p', text: 'Most promoters price the headliner by feel: what the agent asked, what they paid last time, what the room "should" do. Promoter OS has a **tested rule** instead — a fee that survives a half-full room, with a floor that protects the bad night and a share that pays the artist more on a good one.' },
+      { t: 'p', text: 'It came out of real settlements, including a $25,000 flat deal that lost money at half capacity and would have been SAFE under the rule. The rule, the numbers behind it, and the Artist Fee page that applies it to your room are inside the app.' },
+    ],
     body: [
       { t: 'p', text: 'The **Artist Fee** page (menu → Artist fee) turns a room and a ticket price into a fee that survives a bad night.' },
       { t: 'bullets', items: [

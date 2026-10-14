@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Search, X, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Search, X, ChevronRight, Lock } from 'lucide-react';
 import { Mascot } from '../components/ask/Mascot';
 import { useAuth } from '../hooks/useAuth';
 import { ARTICLES, CATEGORIES, articleText, type Article, type Block } from '../content/helpCenter';
@@ -74,7 +74,7 @@ function ArticleCard({ a }: { a: Article }) {
     <Link to={`/help-center/${a.slug}`} className="block bg-[#14171E] border border-[#2A3040] hover:border-[#8FD3FF]/60 rounded-2xl px-4 py-3.5 transition-colors group">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[15px] font-semibold text-white leading-snug">{a.title}</div>
+          <div className="text-[15px] font-semibold text-white leading-snug">{a.title}{a.members && <span className="ml-2 inline-flex items-center gap-1 align-middle font-label text-[9px] tracking-[0.14em] uppercase text-[#F2B640]"><Lock className="w-3 h-3" /> members</span>}</div>
           <div className="text-[13px] text-gray-400 mt-0.5 leading-snug">{a.summary}</div>
         </div>
         <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-[#8FD3FF] shrink-0 mt-1" />
@@ -136,7 +136,22 @@ export function HelpCenterPage() {
             <h1 className="font-display text-2xl text-white uppercase tracking-wide leading-tight">{article.title}</h1>
             <p className="text-[15px] text-gray-400">{article.summary}</p>
             <div className="h-px bg-[#2A3040]" />
-            {article.body.map((b, k) => <BlockView key={k} b={b} />)}
+            {article.members && !user ? (
+              <>
+                {(article.teaser || []).map((b, k) => <BlockView key={k} b={b} />)}
+                <div className="mt-2 bg-[#0B0D12] border border-[#F2B640]/50 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <Lock className="w-5 h-5 text-[#F2B640] shrink-0" />
+                  <div className="flex-1">
+                    <div className="text-white font-semibold text-[15px]">The rule itself is for members.</div>
+                    <div className="text-gray-400 text-[13px]">Sign in to read it, or start the free trial — 7 days, no card.</div>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <Link to="/login" className="border border-[#2A3040] hover:border-[#8FD3FF]/60 text-white rounded-xl px-4 py-2 font-semibold text-sm">Sign in</Link>
+                    <Link to="/signup" className="bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-xl px-4 py-2 font-bold text-sm">Start free</Link>
+                  </div>
+                </div>
+              </>
+            ) : article.body.map((b, k) => <BlockView key={k} b={b} />)}
           </article>
 
           <div className="grid grid-cols-2 gap-3 mt-3">

@@ -18,7 +18,7 @@ import type { AskThread } from '../../lib/ask';
  */
 
 const APP_PREFIXES = ['/dashboard', '/offers', '/tours', '/templates', '/settings', '/subscription', '/deal-estimator', '/artist-fee', '/help'];
-const CHIPS = ['What needs me?', 'Cash I need', 'Unsettled shows', 'Coming up', 'Review a deal'];
+const CHIPS = ['What needs me?', 'Cash I need', 'Unsettled shows', 'Coming up', 'Review a deal', 'Add receipts'];
 const ACCEPT = '.pdf,image/png,image/jpeg,image/webp,image/gif';
 
 /** Turn "[Open X](/offers/abc)" into a tappable link. Paths only. */
@@ -99,6 +99,8 @@ export function AskDock() {
   const mood: Mood = ask.sending ? ask.mood : typing ? 'listening' : ask.mood;
   const showChips = !ask.welcome && !ask.thread && ask.messages.length === 0 && !typing && files.length === 0;
   const deal = ask.thread?.deal_on_table;
+  const receipts = ask.thread?.receipts;
+  const [receiptsOpen, setReceiptsOpen] = useState(false);
 
   return (
     <>
@@ -308,12 +310,56 @@ export function AskDock() {
                   </div>
                 )}
 
+                {/* The receipts list for this show. Same list the settlement page sees. Written only when they say so. */}
+                {receipts && receipts.items.length > 0 && (() => {
+                  const waiting = receipts.items.filter((i) => i.status === 'question');
+                  const sum = receipts.items.filter((i) => i.kind === 'expense' && i.status === 'ok').reduce((a, i) => a + (i.amount ?? 0), 0);
+                  return (
+                    <div className="mx-4 sm:mx-5 mb-2 rounded-2xl border border-[#8FD3FF]/40 bg-[#14171E] px-3.5 py-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <button onClick={() => setReceiptsOpen((v) => !v)} className="min-w-0 text-left" style={{ textTransform: 'none', letterSpacing: 0 }}>
+                          <div className="font-label text-[9px] tracking-[0.14em] uppercase text-[#8FD3FF] flex items-center gap-1"><Receipt className="w-3 h-3" /> Receipts · {receipts.show}</div>
+                          <div className="text-[13px] text-white truncate">
+                            {receipts.items.length} on the list · ${Math.round(sum).toLocaleString('en-US')} in expenses
+                            {waiting.length > 0 ? <span className="text-amber-300/90"> · {waiting.length} waiting on you</span> : <span className="text-emerald-300/90"> · ready</span>}
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => ask.send('Write the list into the settlement.')}
+                          disabled={ask.sending || waiting.length > 0}
+                          className="shrink-0 h-9 px-3 rounded-full bg-[#1140F0] text-white text-[13px] font-semibold disabled:opacity-40"
+                          style={{ textTransform: 'none', letterSpacing: 0 }}
+                          title={waiting.length > 0 ? 'Answer the open questions first' : 'Put these numbers into the settlement'}
+                        >
+                          Write it
+                        </button>
+                      </div>
+                      {receiptsOpen && (
+                        <div className="mt-2 border-t border-[#2A3040] pt-2 space-y-1 max-h-48 overflow-y-auto">
+                          {receipts.items.map((i) => (
+                            <div key={i.id} className="flex items-start justify-between gap-2 text-[12px]">
+                              <div className="min-w-0">
+                                <span className={i.status === 'question' ? 'text-amber-300' : 'text-white'}>{i.label}</span>
+                                <span className="text-gray-500"> · {i.kind === 'ticket_count' ? 'tickets' : i.kind === 'revenue_channel' ? 'money in' : i.category}</span>
+                                {i.status === 'question' && i.question && <div className="text-amber-300/80 truncate">{i.question}</div>}
+                                {i.note && <div className="text-gray-400 truncate">{i.note}</div>}
+                              </div>
+                              <span className="shrink-0 text-gray-200">{i.amount == null ? '?' : i.kind === 'ticket_count' ? `${i.amount}` : `$${Math.round(i.amount).toLocaleString('en-US')}`}</span>
+                            </div>
+                          ))}
+                          <button onClick={() => go(`/offers/${receipts.offer_id}/settlement`)} className="text-[12px] text-[#8FD3FF] pt-1" style={{ textTransform: 'none', letterSpacing: 0 }}>Open settlement →</button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {/* Presets fade the moment you start typing. */}
                 <div className={`px-4 sm:px-5 overflow-hidden transition-all duration-200 ${showChips ? 'max-h-24 opacity-100 pb-2' : 'max-h-0 opacity-0'}`}>
                   <div className="flex flex-wrap gap-2">
                     {CHIPS.map((c) => (
-                      <button key={c} onClick={() => (c === 'Review a deal' ? fileRef.current?.click() : ask.send(c))} disabled={ask.sending} className="text-[13px] text-gray-200 bg-[#14171E] border border-[#2A3040] rounded-full px-3 py-1.5 hover:border-[#8FD3FF]/50" style={{ textTransform: 'none', letterSpacing: 0 }}>
-                        {c === 'Review a deal' ? <span className="inline-flex items-center gap-1"><Paperclip className="w-3 h-3" />{c}</span> : c}
+                      <button key={c} onClick={() => (c === 'Review a deal' ? fileRef.current?.click() : c === 'Add receipts' ? (setText('These are receipts for '), fileRef.current?.click()) : ask.send(c))} disabled={ask.sending} className="text-[13px] text-gray-200 bg-[#14171E] border border-[#2A3040] rounded-full px-3 py-1.5 hover:border-[#8FD3FF]/50" style={{ textTransform: 'none', letterSpacing: 0 }}>
+                        {c === 'Review a deal' || c === 'Add receipts' ? <span className="inline-flex items-center gap-1"><Paperclip className="w-3 h-3" />{c}</span> : c}
                       </button>
                     ))}
                   </div>

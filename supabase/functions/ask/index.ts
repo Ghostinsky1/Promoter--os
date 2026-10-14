@@ -3,6 +3,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { CREDIT_COST, canAfford, spendCredits, outOfCredits, creditStatus } from '../_shared/credits.ts';
 import { survivalRead } from '../_shared/downside.ts';
 import { toolMap, loadCtx, UserError } from '../promtp-mcp/tools.ts';
+import { settlementActuals } from '../promtp-mcp/calc.ts';
 
 /**
  * PROMOTER OS — "Ask". The bar in the middle of every screen, and the
@@ -25,6 +26,13 @@ import { toolMap, loadCtx, UserError } from '../promtp-mcp/tools.ts';
  * handle tasks and notes. Writes go through the same code as the Claude
  * connector (promtp-mcp/tools.ts), never raw SQL. Everything in
  * HOW-IT-THINKS.md applies.
+ *
+ * RECEIPTS (Oct 14): drop receipts, payment screenshots or the venue sheet
+ * for a show and the assistant keeps a working list -- the same list the
+ * settlement page's chat uses (settlement_chat_ledgers, one per show), so
+ * both screens see the same items. It writes the list into the settlement
+ * only when the promoter says so, and never marks the show settled; that
+ * still takes the Save button on the settlement page.
  */
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
@@ -52,6 +60,70 @@ function daysFromToday(date: string): number {
 }
 function niceDate(date: string): string {
   return new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+export interface LedgerItem {
+  id: string;
+  label: string;
+  amount: number | null;
+  category: string;
+  source: string;
+  status: 'ok' | 'question';
+  question?: string | null;
+  note?: string | null;
+  kind: 'expense' | 'ticket_count' | 'revenue_channel';
+  fees?: number | null;
+}
+
+/** The working list for one show. Shared with the settlement page's chat. */
+async function loadLedger(supabase: Any, offerId: string): Promise<LedgerItem[]> {
+  const { data } = await supabase.from('settlement_chat_ledgers').select('items').eq('offer_id', offerId).maybeSingle();
+  return Array.isArray(data?.items) ? data.items : [];
+}
+async function saveLedger(supabase: Any, orgId: string, offerId: string, items: LedgerItem[]) {
+  await supabase.from('settlement_chat_ledgers').upsert({ offer_id: offerId, organization_id: orgId, items, updated_at: new Date().toISOString() });
+}
+
+/** What the settlement of one show looks like right now, for the model and for the write. */
+async function loadSettlementState(supabase: Any, orgId: string, offerId: string) {
+  const { data: offer } = await supabase.from('offers').select('*, show:shows(*)').eq('id', offerId).eq('organization_id', orgId).maybeSingle();
+  if (!offer) return null;
+  const { data: settlement } = await supabase.from('settlements').select('*').eq('offer_id', offerId).maybeSingle();
+  const categories = Object.keys({ ...(offer.expenses || {}), ...((settlement?.actual_expenses as Any) || {}) });
+  if (!categories.includes('general')) categories.push('general');
+  const ledger = await loadLedger(supabase, offerId);
+  return { offer, settlement, categories, ledger };
+}
+
+function receiptsContext(st: NonNullable<Awaited<ReturnType<typeof loadSettlementState>>>) {
+  const { offer, settlement, categories, ledger } = st;
+  const saved: Any = settlement?.actual_expenses && Object.keys(settlement.actual_expenses).length ? settlement.actual_expenses : null;
+  const lines = Object.entries((saved || offer.expenses || {}) as Record<string, Any>)
+    .map(([cat, items]: [string, Any]) => `${cat}: ${Object.entries(items || {}).map(([k, v]) => `${k} ${money(num(v))}${saved ? '' : ' (estimate)'}`).join(', ') || '(none)'}`)
+    .join('\n');
+  const attendance: Any[] = Array.isArray(settlement?.actual_attendance) ? settlement.actual_attendance : [];
+  const tiers = (offer.ticket_tiers || []).map((t: Any) => {
+    const a = attendance.find((x: Any) => x.type === t.type);
+    return `${t.type} at $${t.price}: ${a ? `${num(a.actual_sold)} sold` : 'no count yet'}`;
+  }).join('\n');
+  const name = offer.show?.event_name || offer.show?.artist_name || offer.artist_name || 'Show';
+  return `RECEIPTS FOR: ${name} at ${offer.show?.venue_name ?? '?'} on ${offer.show?.event_date ?? '?'} (offer ${offer.id})
+EXPENSE CATEGORIES ON THIS SHOW: ${categories.join(', ')}
+EXPENSE LINES ${saved ? 'ON THE SETTLEMENT (actuals)' : 'FROM THE OFFER (estimates, nothing actual saved yet)'}:
+${lines || '(none)'}
+TICKET TIERS (name at price: count on the settlement):
+${tiers || '(no tiers)'}
+ARTIST DEAL: ${offer.deal_type ?? 'flat_fee'}, guarantee $${offer.guarantee ?? 0} -- the app handles the artist's fee; do NOT add it as an expense unless the promoter says a different amount was actually paid, and ask first.
+WORKING LIST (JSON): ${JSON.stringify(ledger)}`;
+}
+
+/** What the UI shows: the show's working list, if the thread is about a show. */
+async function receiptsFor(supabase: Any, orgId: string, offerId: string | null | undefined) {
+  if (!offerId) return null;
+  const items = await loadLedger(supabase, offerId);
+  if (!items.length) return null;
+  const { data: o } = await supabase.from('offers').select('id, show:shows(event_name, artist_name)').eq('id', offerId).eq('organization_id', orgId).maybeSingle();
+  return { offer_id: offerId, show: o?.show?.event_name || o?.show?.artist_name || 'Show', items };
 }
 
 interface NeedsItem { offer_id: string | null; title: string; detail: string; tag: string; tone: 'red' | 'amber' | 'blue'; link: string; rank: number }
@@ -158,6 +230,42 @@ const CONNECTOR_TOOLS: Record<string, string> = {
 };
 
 const LOCAL_TOOLS = [
+  {
+    name: 'update_receipts',
+    description: 'Put receipts, payments and counts for ONE show on its working list. Send the FULL item for each id you touch; a known id is replaced, a new id is added, ids you do not mention are left alone. Short ids like "sec1". offer_id is the show from LIVE SHOWS (ask if unsure which). Never guesses: an item you are not sure about is status "question" with one question.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        offer_id: { type: 'string' },
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              label: { type: 'string', description: 'Plain name as the promoter would say it: "Security", "Facebook ads", "Sound tech".' },
+              amount: { type: ['number', 'null'], description: 'Exactly as the source states it. Null if the source does not state it.' },
+              category: { type: 'string', description: "One of the show's categories in the context. When none fits, \"general\"." },
+              source: { type: 'string', description: 'The file name, or "typed".' },
+              status: { type: 'string', enum: ['ok', 'question'] },
+              question: { type: ['string', 'null'], description: 'When status is question: the one thing you need to know.' },
+              note: { type: ['string', 'null'], description: 'Only if a human should look: "Check this: ..." Never suggest wrongdoing.' },
+              kind: { type: 'string', enum: ['expense', 'ticket_count', 'revenue_channel'], description: 'ticket_count: tier name in label, count in amount. revenue_channel: gross in amount, fees in fees.' },
+              fees: { type: ['number', 'null'] },
+            },
+            required: ['id', 'label', 'amount', 'category', 'source', 'status', 'kind'],
+          },
+        },
+        remove_ids: { type: 'array', items: { type: 'string' } },
+      },
+      required: ['offer_id', 'items'],
+    },
+  },
+  {
+    name: 'write_receipts',
+    description: 'Write every "ok" item on the show\'s working list into its settlement (expenses, ticket counts, where the money came in). Call it ONLY after the promoter has said to in this same message ("write it", "put it in", "apply it", "looks good, go"). Never because the list looks done. If any item is still a question, say which instead and do not call this. Does not mark the show settled.',
+    input_schema: { type: 'object', properties: { offer_id: { type: 'string' }, confirm: { type: 'boolean', description: 'Must be true.' } }, required: ['offer_id', 'confirm'] },
+  },
   { name: 'complete_task', description: 'Check a task off. Use the task id from the context.', input_schema: { type: 'object', properties: { task_id: { type: 'string' } }, required: ['task_id'] } },
   { name: 'add_task', description: 'Add a task to a show. Keep the title short, in the promoter\'s words.', input_schema: { type: 'object', properties: { offer_id: { type: 'string' }, title: { type: 'string' }, due_date: { type: ['string', 'null'], description: 'YYYY-MM-DD or null' } }, required: ['offer_id', 'title'] } },
   { name: 'add_note', description: 'Pin a short note to a show.', input_schema: { type: 'object', properties: { offer_id: { type: 'string' }, text: { type: 'string' } }, required: ['offer_id', 'text'] } },
@@ -206,7 +314,9 @@ HOW CAN WE MAKE THIS WORK: use calculate_deal to try changes, one or two at a ti
 
 BAD-NIGHT READ: SAFE clears at 50% sold, TIGHT clears at 70%, FRAGILE needs more than 70%, UNDERWATER loses money even sold out. "Cash you need on hand" means deposits not yet paid plus marketing, before the doors open. Artist balances and night-of costs come out of the door and are NOT due now -- say so when asked. When something doesn't add up say "check this" and state the numbers; never suggest anyone is cheating, padding, or acting in bad faith -- it is usually a mistake and the promoter has to work with these people again.
 
-WHAT YOU CAN DO, and only when the promoter asks for it in the same message: create a draft offer (create_offer), change an offer (update_offer), record actual ticket counts and expenses (preview_settlement), check a task off, add a task, pin a note. Before a write, get_offer if you have not read the offer in this thread. After a write, say exactly what changed, in one line each, and link the page. Never change anything the promoter did not ask for. Never save a deal because it looks complete. If you are unsure which show they mean, ask.
+RECEIPTS (closing out a show): when they drop receipts, invoices, Venmo/Zelle/Cash App screenshots, the venue's sheet, or type "paid security $200 cash", you are organizing a show's actuals. First be sure which show: use the thread's offer, or match the file to LIVE SHOWS, or ask. Then pull out each item (what, how much, who was paid) and put it on the working list with update_receipts -- one item per expense, never two receipts merged into one number. Copy, never compute: a receipt with subtotal, tax and total is the TOTAL paid; no stated amount = amount null, status question. Not sure what it was for, which category, or whether it is this show's at all = status question with ONE short question, and no category guess. A payment screenshot with only a name and amount is always a question unless the memo says what it was for. Same amount to the same person twice = keep one item, note "Check this: ... appears twice", ask if it was paid twice. Ticket counts and where the money came in (door cash, presale, bar) are items too (kind ticket_count / revenue_channel; tier names must match the show's tiers). After reading files say what you found, one line each ("Got the sound invoice: $850, production."), then your questions one at a time, most important first. The list is on their screen; do not read it back. Write it into the settlement with write_receipts ONLY when they say so in this message; if items are still questions, say which ones are waiting instead. After writing, say in one line what went in and link [Open settlement](/offers/<id>/settlement). The list stays after a write; more can be added and written again.
+
+WHAT YOU CAN DO, and only when the promoter asks for it in the same message: create a draft offer (create_offer), change an offer (update_offer), record actual ticket counts and expenses (write_receipts after they are on the list; preview_settlement only when they ask to settle and close the show), check a task off, add a task, pin a note. Before a write, get_offer if you have not read the offer in this thread. After a write, say exactly what changed, in one line each, and link the page. Never change anything the promoter did not ask for. Never save a deal because it looks complete. If you are unsure which show they mean, ask.
 
 HOW YOU TALK: plain words, short, like texting a partner who is busy and on their phone. No jargon, no headers, no long bullet walls. Money as $1,200. Name the show. For a structured deal, short labeled lines are right; for everything else, two to five sentences. When a page would help, end with ONE link in this exact form: [Open Sensación](/offers/<id>) or [Open settlement](/offers/<id>/settlement) or [Open tasks](/offers/<id>). Paths only, never a full URL.
 
@@ -269,7 +379,7 @@ Deno.serve(async (req) => {
   if (body?.action === 'thread' && body.thread_id) {
     const { data: t } = await supabase.from('ask_threads').select('*').eq('id', body.thread_id).eq('user_id', user.id).maybeSingle();
     if (!t) return json({ error: 'That chat was not found.' }, 404);
-    return json({ ok: true, thread: { id: t.id, title: t.title, offer_id: t.offer_id, deal_on_table: t.deal_on_table }, messages: await threadMessages(t.id) });
+    return json({ ok: true, thread: { id: t.id, title: t.title, offer_id: t.offer_id, deal_on_table: t.deal_on_table, receipts: await receiptsFor(supabase, orgId, t.offer_id) }, messages: await threadMessages(t.id) });
   }
 
   const message = (body?.message ?? '').toString().trim();
@@ -331,11 +441,12 @@ Deno.serve(async (req) => {
   }));
 
   const { offers_index, open_tasks, ...briefForModel } = brief;
+  const settlementState = thread.offer_id ? await loadSettlementState(supabase, orgId, thread.offer_id) : null;
   const context = `TODAY: ${new Date().toISOString().slice(0, 10)}
 BRIEF (already shown on screen): ${JSON.stringify(briefForModel)}
 LIVE SHOWS (id, name, venue, date, status, deal; counted=false means status planning: a sketch NOT in totals or projections until it moves to offer_sent/confirmed/active): ${JSON.stringify(offers_index)}
 OPEN TASKS: ${JSON.stringify(open_tasks)}
-${thread.offer_id ? `THIS THREAD IS ABOUT OFFER: ${thread.offer_id}\n` : ''}${thread.deal_on_table ? `DEAL ON THE TABLE (structured earlier in this thread, NOT saved as an offer): ${JSON.stringify(thread.deal_on_table)}\n` : ''}CREDITS LEFT: ${credits?.total_left ?? '?'}`;
+${thread.offer_id ? `THIS THREAD IS ABOUT OFFER: ${thread.offer_id}\n` : ''}${settlementState ? receiptsContext(settlementState) + '\n' : ''}${thread.deal_on_table ? `DEAL ON THE TABLE (structured earlier in this thread, NOT saved as an offer): ${JSON.stringify(thread.deal_on_table)}\n` : ''}CREDITS LEFT: ${credits?.total_left ?? '?'}`;
 
   const userContent: Any[] = [{ type: 'text', text: `CONTEXT (refreshed every message):\n${context}` }, ...fileBlocks, { type: 'text', text: message || 'Here is the file. Tell me what it is and lay the deal out.' }];
   const messages: Any[] = [...past, { role: 'user', content: userContent }];
@@ -378,7 +489,88 @@ ${thread.offer_id ? `THIS THREAD IS ABOUT OFFER: ${thread.offer_id}\n` : ''}${th
       for (const tu of uses) {
         let result = 'Done.';
         try {
-          if (tu.name === 'complete_task') {
+          if (tu.name === 'update_receipts') {
+            const offerId = String(tu.input?.offer_id || thread.offer_id || '');
+            const st = offerId ? await loadSettlementState(supabase, orgId, offerId) : null;
+            if (!st) result = 'That show was not found. Pick one from LIVE SHOWS or ask the promoter which show this is.';
+            else {
+              const incoming: LedgerItem[] = Array.isArray(tu.input?.items) ? tu.input.items : [];
+              const removeIds: string[] = Array.isArray(tu.input?.remove_ids) ? tu.input.remove_ids : [];
+              const byId = new Map(st.ledger.map((i) => [i.id, i]));
+              for (const it of incoming) {
+                if (!it?.id) continue;
+                const amount = it.amount == null ? null : Number(it.amount);
+                byId.set(String(it.id), {
+                  id: String(it.id), label: String(it.label || 'Unnamed').slice(0, 80),
+                  amount: Number.isFinite(amount as number) ? amount : null,
+                  category: st.categories.includes(it.category) ? it.category : 'general',
+                  source: String(it.source || 'typed').slice(0, 120),
+                  status: it.status === 'question' || amount == null ? 'question' : 'ok',
+                  question: it.question ?? null, note: it.note ?? null,
+                  kind: it.kind === 'ticket_count' || it.kind === 'revenue_channel' ? it.kind : 'expense',
+                  fees: it.fees == null ? null : Number(it.fees),
+                });
+              }
+              for (const id of removeIds) byId.delete(id);
+              const items = [...byId.values()];
+              await saveLedger(supabase, orgId, offerId, items);
+              if (thread.offer_id !== offerId) { await supabase.from('ask_threads').update({ offer_id: offerId }).eq('id', thread.id); thread.offer_id = offerId; }
+              result = `List now has ${items.length} items, ${items.filter((i) => i.status === 'question').length} waiting on an answer.`;
+            }
+          } else if (tu.name === 'write_receipts') {
+            const offerId = String(tu.input?.offer_id || thread.offer_id || '');
+            const st = offerId ? await loadSettlementState(supabase, orgId, offerId) : null;
+            const pending = st ? st.ledger.filter((i) => i.status === 'question') : [];
+            if (!st) result = 'That show was not found.';
+            else if (!tu.input?.confirm) result = 'Not written: confirm must be true.';
+            else if (pending.length) result = `Not written: ${pending.length} item(s) still need an answer: ${pending.map((p) => p.label).join(', ')}.`;
+            else {
+              const ok = st.ledger.filter((i) => i.status === 'ok');
+              const { offer, settlement } = st;
+              // Same rules as the settlement page's applyFromChat: expenses merge
+              // by label, counts match the tier name, channels replace.
+              const expenses: Any = settlement?.actual_expenses && Object.keys(settlement.actual_expenses).length
+                ? JSON.parse(JSON.stringify(settlement.actual_expenses))
+                : Object.fromEntries(Object.entries(offer.expenses || {}).map(([c, lines]: [string, Any]) => [c, Object.fromEntries(Object.keys(lines || {}).map((k) => [k, 0]))]));
+              let nExp = 0;
+              for (const i of ok.filter((x) => x.kind === 'expense')) {
+                const cat = expenses[i.category] !== undefined ? i.category : 'general';
+                const key = i.label.toLowerCase().trim().replace(/\s+/g, '_');
+                expenses[cat] = { ...(expenses[cat] || {}), [key]: num(i.amount) };
+                nExp++;
+              }
+              const prev: Any[] = Array.isArray(settlement?.actual_attendance) ? settlement.actual_attendance : [];
+              const counts = ok.filter((x) => x.kind === 'ticket_count');
+              const unknown = counts.filter((c) => !(offer.ticket_tiers || []).some((t: Any) => String(t.type).toLowerCase().trim() === c.label.toLowerCase().trim()));
+              if (unknown.length) {
+                result = `Not written: no ticket tier called ${unknown.map((u) => `"${u.label}"`).join(', ')}. This show's tiers are: ${(offer.ticket_tiers || []).map((t: Any) => t.type).join(', ')}. Fix the item label and try again.`;
+              } else {
+                const attendance = (offer.ticket_tiers || []).map((t: Any) => {
+                  const hit = counts.find((c) => c.label.toLowerCase().trim() === String(t.type).toLowerCase().trim());
+                  const was = prev.find((p) => p.type === t.type);
+                  return { type: t.type, price: num(t.price), actual_sold: hit ? num(hit.amount) : num(was?.actual_sold), projected_sold: num(t.allotment) - num(t.comps) };
+                });
+                const channels = ok.filter((x) => x.kind === 'revenue_channel').map((c, i) => ({ id: `rc_chat_${i}`, label: c.label, gross: num(c.amount), fees: num(c.fees) }));
+                const totals = settlementActuals(offer, attendance, expenses);
+                const row: Any = {
+                  offer_id: offerId, organization_id: orgId, user_id: user.id,
+                  actual_attendance: attendance, actual_expenses: expenses, ...totals,
+                  ...(channels.length ? { actual_revenue_channels: channels } : {}),
+                  notes: settlement?.notes ?? '',
+                };
+                const { error } = settlement?.id
+                  ? await supabase.from('settlements').update(row).eq('id', settlement.id)
+                  : await supabase.from('settlements').insert(row);
+                if (error) { console.error('write_receipts', error); result = 'Could not write the settlement. Try again.'; }
+                else {
+                  const name = offer.show?.event_name || offer.show?.artist_name || 'the show';
+                  result = `Written to the ${name} settlement: ${nExp} expenses, ${counts.length} ticket counts, ${channels.length} revenue channels. Not marked settled.`;
+                  changed.push(`Wrote ${nExp} expenses${counts.length ? `, ${counts.length} ticket counts` : ''}${channels.length ? `, ${channels.length} revenue channels` : ''} into the ${name} settlement`);
+                  wrote = true;
+                }
+              }
+            }
+          } else if (tu.name === 'complete_task') {
             const { data, error } = await supabase.from('offer_tasks').update({ completed: true, updated_at: new Date().toISOString() }).eq('id', tu.input.task_id).eq('organization_id', orgId).select('title').maybeSingle();
             if (error || !data) result = 'That task was not found.'; else { result = `Checked off: ${data.title}`; changed.push(result); wrote = true; }
           } else if (tu.name === 'add_task') {
@@ -447,9 +639,10 @@ ${thread.offer_id ? `THIS THREAD IS ABOUT OFFER: ${thread.offer_id}\n` : ''}${th
 
   const { data: t2 } = await supabase.from('ask_threads').select('id, title, offer_id, deal_on_table').eq('id', thread.id).maybeSingle();
   const fresh = wrote ? await buildBrief(supabase, orgId, firstName) : brief;
+  const receipts = await receiptsFor(supabase, orgId, t2?.offer_id || thread.offer_id);
   return json({
     ok: true, reply: reply.trim(), changed, brief: fresh, credits_left: creditsLeft, cost_usd: usd,
-    thread: t2 ? { id: t2.id, title: t2.title, offer_id: t2.offer_id, deal_on_table: t2.deal_on_table } : { id: thread.id, title: thread.title, offer_id: thread.offer_id, deal_on_table: dealOnTable },
+    thread: t2 ? { id: t2.id, title: t2.title, offer_id: t2.offer_id, deal_on_table: t2.deal_on_table, receipts } : { id: thread.id, title: thread.title, offer_id: thread.offer_id, deal_on_table: dealOnTable, receipts },
     threads: await listThreads(),
   });
 });

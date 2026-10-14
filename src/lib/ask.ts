@@ -69,6 +69,22 @@ export interface DealOnTable {
   updated_at: string;
 }
 
+export interface ReceiptItem {
+  id: string;
+  label: string;
+  amount: number | null;
+  category: string;
+  source: string;
+  status: 'ok' | 'question';
+  question?: string | null;
+  note?: string | null;
+  kind: 'expense' | 'ticket_count' | 'revenue_channel';
+  fees?: number | null;
+}
+
+/** The working list of receipts for the show this thread is about. Shared with the settlement page. */
+export interface Receipts { offer_id: string; show: string; items: ReceiptItem[] }
+
 export interface AskThread {
   id: string;
   title: string;
@@ -76,6 +92,7 @@ export interface AskThread {
   last_message_at?: string;
   has_deal?: boolean;
   deal_on_table?: DealOnTable | null;
+  receipts?: Receipts | null;
 }
 
 export class AskError extends Error {

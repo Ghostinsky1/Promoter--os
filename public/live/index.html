@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Before You Send the Deposit — Free Live for Working Promoters | Promoter OS</title>
+<meta name="description" content="Free one-hour live for promoters booking shows now. One real show run from the offer to the settlement before the deposit goes out — artist, venue, ticket ladder, break-even, the bad night, what you walked away with. Live Q&amp;A.">
+<meta property="og:title" content="Before you send the deposit.">
+<meta property="og:description" content="Free live for working promoters. Artist $10,000. Venue $5,000. Tickets $35. Does the show actually make you money? We run it live before the deposit goes out.">
+<meta property="og:image" content="https://promoteros.com/promoter-os-lockup.png">
+<meta property="og:url" content="https://promoteros.com/live/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,700;125,800;125,900&family=Saira+Condensed:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --dark:#14171E; --card:#22262F; --blue:#1140F0; --deep:#0B2FB8;
+  --mid:#5A8CFF; --sky:#8FD3FF; --navy:#0E1F5C;
+  --red:#F0605A; --amber:#F2B640; --white:#fff;
+  --ink:rgba(255,255,255,.72);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;max-width:100%;overflow-x:clip}
+html{scroll-behavior:smooth}
+body{
+  background:var(--dark); color:#fff;
+  font-family:'Saira Condensed',system-ui,sans-serif;
+  font-size:19px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.disp{
+  font-family:'Archivo',system-ui,sans-serif;
+  font-variation-settings:'wdth' 125;
+  font-weight:900; text-transform:uppercase;
+  letter-spacing:-.005em; line-height:.95; margin:0;
+}
+.lab{font-family:'Space Grotesk',monospace;font-weight:700;text-transform:uppercase;letter-spacing:.22em;font-size:11px}
+.sky{color:var(--sky)}
+a{color:inherit}
+
+/* ---------- CRT screen furniture ---------- */
+#crt{position:fixed;inset:0;z-index:60;pointer-events:none}
+#crt::before{
+  content:'';position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(to bottom, rgba(0,0,0,.20) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(to right, rgba(0,0,0,.14) 0 4px, transparent 4px 5px);
+  mix-blend-mode:multiply;opacity:.8;
+}
+#crt::after{
+  content:'';position:absolute;inset:-2px;
+  background:radial-gradient(130% 100% at 28% 16%, rgba(255,255,255,.07) 0%, transparent 48%),
+             radial-gradient(120% 120% at 50% 50%, transparent 52%, rgba(0,0,0,.55) 100%);
+}
+#band{position:fixed;left:0;right:0;height:220px;z-index:61;pointer-events:none;
+  background:linear-gradient(to bottom,transparent,rgba(255,255,255,.055),transparent);
+  animation:roll 7.5s linear infinite}
+@keyframes roll{from{top:-240px}to{top:100%}}
+#noise{position:fixed;inset:0;z-index:62;pointer-events:none;opacity:.045;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='.6'/></svg>");
+  animation:jit .35s steps(3) infinite}
+@keyframes jit{0%{transform:translate(0,0)}33%{transform:translate(-3px,2px)}66%{transform:translate(2px,-3px)}}
+#poweron{position:fixed;inset:0;z-index:90;background:#000;pointer-events:none}
+#poweron i{position:absolute;left:0;right:0;top:50%;height:3px;background:#fff;
+  box-shadow:0 0 40px 10px rgba(255,255,255,.8);transform:translateY(-50%) scaleX(.02)}
+body.on #poweron{animation:po .75s cubic-bezier(.2,.9,.2,1) forwards}
+body.on #poweron i{animation:pol .75s cubic-bezier(.2,.9,.2,1) forwards}
+@keyframes pol{0%{transform:translateY(-50%) scaleX(.02)}22%{transform:translateY(-50%) scaleX(1)}55%{height:100vh}100%{height:100vh;opacity:0}}
+@keyframes po{0%{opacity:1}75%{opacity:1}100%{opacity:0;visibility:hidden}}
+@media (prefers-reduced-motion:reduce){
+  #band,#noise,#poweron{display:none}
+  .rv{opacity:1!important;transform:none!important;filter:none!important}
+}
+
+/* ---------- sections ---------- */
+section{position:relative;padding:clamp(56px,9vw,116px) 20px;overflow:hidden}
+.wrap{max-width:1080px;margin:0 auto;position:relative;z-index:2}
+.s-blue{background:var(--blue)}
+.s-dark{background:var(--dark)}
+.grid-bg::before{content:'';position:absolute;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,.075) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.075) 1px,transparent 1px);
+  background-size:74px 74px}
+.s-dark.grid-bg::before{background-image:linear-gradient(rgba(143,211,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(143,211,255,.05) 1px,transparent 1px)}
+.s-blue .lab{color:#cfe4ff}
+.s-dark .lab{color:var(--sky)}
+.rule{width:96px;height:6px;background:var(--sky);margin:16px 0 26px}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);filter:blur(10px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1),filter .7s}
+.rv.in{opacity:1;transform:none;filter:none}
+.rv.in.glitch{animation:gl .34s steps(2) 1}
+@keyframes gl{
+  0%{transform:translateX(-7px);text-shadow:5px 0 var(--red),-5px 0 var(--sky)}
+  50%{transform:translateX(6px);text-shadow:-4px 0 var(--red),4px 0 var(--sky)}
+  100%{transform:none;text-shadow:none}
+}
+
+/* ---------- pieces ---------- */
+.pill{display:inline-flex;align-items:center;gap:10px;background:var(--dark);color:#fff;
+  border-radius:999px;padding:11px 20px;margin-bottom:22px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--sky)}
+.dot.live{background:var(--red);box-shadow:0 0 0 0 rgba(240,96,90,.7);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(240,96,90,.7)}70%{box-shadow:0 0 0 9px rgba(240,96,90,0)}100%{box-shadow:0 0 0 0 rgba(240,96,90,0)}}
+.win{background:var(--dark);border-radius:20px;padding:0;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+.s-dark .win{background:#0B0D12;border:1px solid #2A3040}
+.win-bar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.win-bar b{font-family:'Space Grotesk';font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-left:6px;color:#fff;min-width:0}
+.win-bar .tag{margin-left:auto;background:var(--card);border-radius:999px;padding:6px 13px;font-family:'Space Grotesk';font-size:10px;letter-spacing:.14em;font-weight:700;color:#cfe0ff}
+.d1{width:9px;height:9px;border-radius:50%;background:var(--red)}
+.d2{width:9px;height:9px;border-radius:50%;background:var(--amber)}
+.d3{width:9px;height:9px;border-radius:50%;background:var(--sky)}
+.win-body{padding:20px}
+.stat{background:var(--card);border-radius:14px;padding:16px 18px}
+.stat small{display:block;color:#9FB0C9;font-size:15px;margin-bottom:2px}
+.stat b{font-family:'Archivo';font-variation-settings:'wdth' 125;font-weight:900;font-size:clamp(21px,4.2vw,30px);line-height:1;white-space:nowrap}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.herogrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:26px;align-items:end;margin-top:clamp(34px,5vw,54px)}
+.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  background:var(--sky);color:#04214D;border:0;border-radius:14px;
+  font-family:'Archivo';font-variation-settings:'wdth' 125;font-weight:900;text-transform:uppercase;
+  font-size:19px;letter-spacing:.01em;padding:19px 30px;cursor:pointer;
+  box-shadow:0 0 0 0 rgba(143,211,255,.6);transition:transform .15s,box-shadow .4s,background .2s;width:100%}
+.btn:hover{background:#B4E2FF;transform:translateY(-2px);box-shadow:0 0 34px rgba(143,211,255,.45)}
+.btn.ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.35)}
+.btn.ghost:hover{background:rgba(255,255,255,.1);box-shadow:none}
+.btn:disabled{opacity:.7;cursor:wait;transform:none}
+.note{border-left:5px solid var(--sky);background:var(--dark);padding:20px 22px;border-radius:0 14px 14px 0}
+.s-dark .note{background:#0B0D12}
+
+/* countdown */
+.cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cd div{background:var(--card);border-radius:12px;padding:12px 6px;text-align:center}
+.cd b{display:block;font-family:'Archivo';font-variation-settings:'wdth' 125;font-weight:900;font-size:clamp(24px,4.6vw,34px);line-height:1;font-variant-numeric:tabular-nums}
+.cd small{display:block;font-family:'Space Grotesk';font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#9FB0C9;margin-top:6px}
+
+/* the walk (timeline) */
+.walk{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.wstep{background:var(--card);border-radius:14px;padding:18px 16px;position:relative}
+.s-dark .wstep{background:#0B0D12;border:1px solid #2A3040}
+.wstep .n{font-family:'Archivo';font-variation-settings:'wdth' 125;font-weight:900;color:var(--sky);font-size:30px;line-height:1}
+.wstep b{display:block;font-size:20px;margin:10px 0 4px;font-weight:600}
+.wstep p{margin:0;color:var(--ink);font-size:17px}
+.wstep.bad{border-color:rgba(240,96,90,.5)}
+.wstep.bad .n{color:var(--red)}
+
+/* the hour */
+.hour{display:grid;grid-template-columns:110px 1fr;background:var(--dark);border-top:1px solid rgba(255,255,255,.07)}
+.hour:first-child{border-top:0}
+.hour span{font-family:'Space Grotesk';font-weight:700;font-size:12px;letter-spacing:.1em;color:var(--sky);padding:16px;align-self:center}
+.hour p{margin:0;padding:16px 16px 16px 0}
+.tbl{border-radius:14px;overflow:hidden}
+
+/* for you / not for you */
+.yn{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.yn .win-body p{margin:0 0 10px;padding-left:28px;position:relative;color:var(--ink)}
+.yn .win-body p::before{content:'';position:absolute;left:0;top:9px;width:14px;height:14px;border-radius:50%;background:var(--sky)}
+.yn .no .win-body p::before{background:var(--red)}
+
+/* what you get */
+.get{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.get .win-body h3{font-size:clamp(22px,3.4vw,28px)}
+.get .win-body p{color:var(--ink);margin:10px 0 0;font-size:17px}
+.price{font-family:'Archivo';font-variation-settings:'wdth' 125;font-weight:900;font-size:40px;color:var(--sky);line-height:1}
+
+.fld{width:100%;background:#0B0D12;border:1px solid #2A3040;border-radius:14px;color:#fff;
+  font-family:'Saira Condensed';font-size:19px;padding:17px 18px;outline:none}
+.fld:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(143,211,255,.18)}
+.fld::placeholder{color:#6C7A90}
+select.fld{appearance:none;-webkit-appearance:none}
+
+@media (max-width:820px){
+  .row3:not(.keep),.row4,.walk,.get,.yn{grid-template-columns:1fr}
+  .row3.keep{gap:8px} .row3.keep .stat{padding:12px 10px} .row3.keep .stat b{font-size:20px}
+  .btn{font-size:17px;padding:17px 20px}
+  .herogrid{grid-template-columns:1fr;align-items:stretch}
+  .win-bar b{font-size:10px;letter-spacing:.12em}
+  .win-bar .tag{margin-left:0}
+  section .wrap[style*="grid-template-columns"]{grid-template-columns:1fr!important}
+  .hour{grid-template-columns:84px 1fr}
+}
+
+/* ---------- icons (pixel-ish line icons, CRT style) ---------- */
+.ico{width:34px;height:34px;flex:0 0 auto;display:inline-block;vertical-align:middle;
+  stroke:var(--sky);fill:none;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter;
+  filter:drop-shadow(0 0 6px rgba(143,211,255,.55))}
+.ico.red{stroke:var(--red);filter:drop-shadow(0 0 6px rgba(240,96,90,.55))}
+.ico.amber{stroke:var(--amber);filter:drop-shadow(0 0 6px rgba(242,182,64,.55))}
+.ico.big{width:44px;height:44px}
+.icobox{width:52px;height:52px;border-radius:12px;background:#0B0D12;border:1px solid #2A3040;
+  display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+  transition:box-shadow .5s,border-color .5s}
+.s-blue .icobox{background:var(--dark)}
+.in .icobox,.lit .icobox{border-color:var(--sky);box-shadow:0 0 0 1px rgba(143,211,255,.25),0 0 22px rgba(143,211,255,.35)}
+.wstep.bad.in .icobox,.wstep.bad.lit .icobox{border-color:var(--red);box-shadow:0 0 0 1px rgba(240,96,90,.25),0 0 22px rgba(240,96,90,.35)}
+
+/* ---------- highlighter (marker sweep on reveal) ---------- */
+.hl{position:relative;display:inline;color:#0B0D12;font-weight:600;
+  background-image:linear-gradient(var(--sky),var(--sky));background-repeat:no-repeat;
+  background-size:0% 92%;background-position:0 56%;padding:0 .14em;margin:0 -.14em;
+  transition:background-size .7s cubic-bezier(.16,1,.3,1) .35s;
+  -webkit-box-decoration-break:clone;box-decoration-break:clone}
+.in .hl,.hl.in{background-size:100% 92%}
+.hl.amber{background-image:linear-gradient(var(--amber),var(--amber))}
+.hl.red{background-image:linear-gradient(var(--red),var(--red));color:#fff}
+.s-blue .hl{color:#04214D}
+
+/* ---------- light up ---------- */
+.glow{text-shadow:0 0 18px rgba(143,211,255,.55),0 0 42px rgba(143,211,255,.25)}
+.in .glow{animation:flick 1.1s steps(1) 1}
+@keyframes flick{0%{opacity:.25}8%{opacity:1}14%{opacity:.35}22%{opacity:1}30%{opacity:.6}36%{opacity:1}100%{opacity:1}}
+.cd b{color:var(--sky);text-shadow:0 0 14px rgba(143,211,255,.55)}
+.cd div{border:1px solid transparent;transition:border-color .4s,box-shadow .4s}
+.cd div.tick{border-color:rgba(143,211,255,.5);box-shadow:0 0 16px rgba(143,211,255,.3)}
+.stat b.lit{color:var(--sky);text-shadow:0 0 16px rgba(143,211,255,.6)}
+.stat{transition:box-shadow .5s,transform .5s}
+.stat.lit{box-shadow:inset 0 0 0 1px rgba(143,211,255,.45),0 0 20px rgba(143,211,255,.25)}
+.btn.pulse{animation:btnp 2.4s ease-in-out infinite}
+@keyframes btnp{0%,100%{box-shadow:0 0 0 0 rgba(143,211,255,.0)}50%{box-shadow:0 0 36px 4px rgba(143,211,255,.5)}}
+.wstep{transition:box-shadow .5s,transform .5s,border-color .5s}
+.wstep.lit{box-shadow:0 0 0 1px rgba(143,211,255,.5),0 0 28px rgba(143,211,255,.28);transform:translateY(-3px)}
+.wstep.bad.lit{box-shadow:0 0 0 1px rgba(240,96,90,.55),0 0 28px rgba(240,96,90,.3)}
+.wstep .n{transition:text-shadow .4s}
+.wstep.lit .n{text-shadow:0 0 16px rgba(143,211,255,.7)}
+.wstep.bad.lit .n{text-shadow:0 0 16px rgba(240,96,90,.7)}
+.hour{transition:background .4s}
+.hour.lit{background:#121826}
+.hour.lit span{text-shadow:0 0 12px rgba(143,211,255,.7)}
+.hour .ico{width:22px;height:22px;margin-right:10px;vertical-align:-5px}
+.yn .win-body p{padding-left:36px}
+.yn .win-body p::before{display:none}
+.yn .win-body p .ico{position:absolute;left:0;top:2px;width:24px;height:24px}
+.win{transition:box-shadow .5s,border-color .5s}
+.win.lit{box-shadow:0 24px 60px rgba(0,0,0,.4),0 0 0 1px rgba(143,211,255,.35),0 0 32px rgba(143,211,255,.18)}
+.scan{position:relative;overflow:hidden}
+.scan::after{content:'';position:absolute;left:-30%;top:0;width:30%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(143,211,255,.14),transparent);transform:skewX(-18deg);opacity:0}
+.scan.in::after{animation:sweep 1.1s cubic-bezier(.16,1,.3,1) .25s 1}
+@keyframes sweep{0%{left:-30%;opacity:1}100%{left:130%;opacity:0}}
+.hero-ico{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 0}
+.hero-ico span{display:inline-flex;align-items:center;gap:8px;background:var(--dark);border-radius:999px;padding:8px 14px 8px 10px;
+  font-family:'Space Grotesk';font-size:11px;letter-spacing:.14em;font-weight:700;text-transform:uppercase;color:#cfe0ff}
+.hero-ico .ico{width:20px;height:20px}
+@media (prefers-reduced-motion:reduce){.in .glow,.btn.pulse,.scan.in::after{animation:none}.hl{transition:none}}
+</style>
+<link rel="icon" href="/favicon.ico?v=3" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=3">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=3">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=3">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#1140F0">
+</head>
+<body>
+<div id="poweron"><i></i></div>
+<div id="band"></div>
+<div id="noise"></div>
+<div id="crt"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-offer" viewBox="0 0 32 32"><path d="M7 4h13l5 5v19H7z M20 4v5h5 M11 15h10 M11 20h10 M11 25h6"/></symbol>
+  <symbol id="i-deposit" viewBox="0 0 32 32"><path d="M4 9h24v15H4z M8 13h3 M21 20h3"/><circle cx="16" cy="16.5" r="4"/><path d="M26 6l3 3-3 3"/></symbol>
+  <symbol id="i-venue" viewBox="0 0 32 32"><path d="M3 28h26 M6 28V11l10-6 10 6v17 M12 28v-8h8v8 M9 16h3 M20 16h3"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 32 32"><path d="M4 10h24v4a3 3 0 0 0 0 6v4H4v-4a3 3 0 0 0 0-6z M12 10v14" stroke-dasharray="3 2"/><path d="M4 10h24v4a3 3 0 0 0 0 6v4H4v-4a3 3 0 0 0 0-6z"/></symbol>
+  <symbol id="i-breakeven" viewBox="0 0 32 32"><path d="M4 28h24 M4 28V6 M6 24l8-8 6 4 8-12 M20 8h8v8"/></symbol>
+  <symbol id="i-bad" viewBox="0 0 32 32"><path d="M4 6l9 11 5-5 10 12 M20 24h8v-8 M4 28h24"/></symbol>
+  <symbol id="i-settle" viewBox="0 0 32 32"><path d="M8 4h16v24H8z M12 10h8 M12 15h8 M12 20h5 M18 22l2 2 4-4"/></symbol>
+  <symbol id="i-cash" viewBox="0 0 32 32"><path d="M16 3v26 M22 9c0-2.5-2.5-4-6-4s-6 1.5-6 4 2.5 3.5 6 4.5 6 2 6 5-2.5 4.5-6 4.5-6-2-6-4.5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><path d="M16 8v8l5 3"/></symbol>
+  <symbol id="i-screen" viewBox="0 0 32 32"><path d="M4 6h24v17H4z M11 28h10 M16 23v5 M9 17l4-5 3 3 6-7"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 32 32"><path d="M4 6h24v15H13l-6 5v-5H4z M9 12h14 M9 16h9"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 32 32"><path d="M4 12h24v6H4z M6 18h20v10H6z M16 12v16 M16 12c-2-7-9-6-7-2s7 2 7 2 c2-7 9-6 7-2s-7 2-7 2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 32 32"><path d="M5 17l7 7L27 8"/></symbol>
+  <symbol id="i-x" viewBox="0 0 32 32"><path d="M7 7l18 18 M25 7L7 25"/></symbol>
+  <symbol id="i-app" viewBox="0 0 32 32"><path d="M5 5h22v22H5z M5 12h22 M12 12v15 M16 18h7 M16 22h5"/></symbol>
+  <symbol id="i-key" viewBox="0 0 32 32"><circle cx="10" cy="16" r="6"/><path d="M16 16h12 M24 16v5 M28 16v4"/></symbol>
+  <symbol id="i-live" viewBox="0 0 32 32"><circle cx="16" cy="16" r="3"/><path d="M9 9a10 10 0 0 0 0 14 M23 9a10 10 0 0 1 0 14 M5 5a16 16 0 0 0 0 22 M27 5a16 16 0 0 1 0 22"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 32 32"><path d="M4 7h24v21H4z M4 13h24 M10 4v6 M22 4v6 M9 19h4 M15 19h4 M21 19h4 M9 24h4 M15 24h4"/></symbol>
+  <symbol id="i-zoom" viewBox="0 0 32 32"><path d="M3 9h18v14H3z M21 13l8-4v14l-8-4"/></symbol>
+</svg>
+
+<!-- ================= HERO ================= -->
+<section class="s-blue grid-bg" style="padding-top:clamp(28px,6vw,52px)">
+  <div class="wrap">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:clamp(38px,7vw,70px)" class="rv">
+      <img src="https://promoteros.com/promoter-os-mark.png" alt="" style="width:44px;height:44px;object-fit:contain">
+      <img src="https://promoteros.com/promoter-os-wordmark.png" alt="Promoter OS" style="height:26px;object-fit:contain">
+    </div>
+
+    <div class="pill rv"><span class="dot live"></span><span class="lab">Free live · promoters booking now</span></div>
+
+    <h1 class="rv glitch" style="font-size:clamp(38px,9.4vw,118px);max-width:11ch">
+      Before you send <span class="sky glow">the deposit.</span>
+    </h1>
+
+    <p class="rv" style="max-width:52ch;font-size:clamp(19px,2.3vw,23px);margin:26px 0 0;color:#dbe7ff">
+      <b style="color:#fff">EP. 01 — Can you afford this artist?</b><br>
+      You've got the artist's price. The venue's price. Your ticket price. Before the deposit
+      goes out, we run one real show from offer to settlement and see if it <span class="hl">actually makes you money.</span>
+      Live, numbers on screen. Bring the deal you're looking at right now.
+    </p>
+    <div class="hero-ico rv">
+      <span><svg class="ico "><use href="#i-live"/></svg>Live on Zoom</span>
+      <span><svg class="ico "><use href="#i-clock"/></svg>1 hour</span>
+      <span><svg class="ico "><use href="#i-chat"/></svg>Your deal in the Q&amp;A</span>
+      <span><svg class="ico "><use href="#i-cash"/></svg>Free</span>
+    </div>
+
+    <div class="rv herogrid">
+      <div class="win scan">
+        <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b id="whenBar">Live · date TBA</b><span class="tag"><svg class="ico "><use href="#i-zoom"/></svg>Zoom · 1 hour</span></div>
+        <div class="win-body">
+          <div class="cd" id="cd">
+            <div><b>--</b><small>Days</small></div>
+            <div><b>--</b><small>Hours</small></div>
+            <div><b>--</b><small>Min</small></div>
+            <div><b>--</b><small>Sec</small></div>
+          </div>
+          <div class="row3 keep" style="margin-top:12px">
+            <div class="stat"><small>Artist</small><b>$10,000</b></div>
+            <div class="stat"><small>Venue</small><b>$5,000</b></div>
+            <div class="stat"><small>Ticket</small><b>$35</b></div>
+          </div>
+          <p style="color:#8FA3BF;font-size:16px;margin:14px 0 0">Does it clear at <span class="hl amber">half a house?</span> <b class="sky">We run it live.</b> Then we run yours.</p>
+        </div>
+      </div>
+      <div>
+        <a class="btn pulse" href="#seat">Save my seat — free ↓</a>
+        <p style="color:#cfe0ff;font-size:16px;margin:12px 0 0;text-align:center">No cost. Live on Zoom. Replay goes to everyone who registers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TWIST ================= -->
+<section class="s-dark grid-bg">
+  <div class="wrap" style="text-align:center">
+    <p class="lab rv">Sold out. Still lost money?</p>
+    <h2 class="rv glitch" style="font-size:clamp(30px,6.4vw,64px);max-width:20ch;margin:14px auto 0">
+      Most shows don't lose money at the door. They lose it <span class="sky glow">in the offer.</span>
+    </h2>
+    <p class="rv" style="max-width:60ch;margin:24px auto 0;color:var(--ink)">
+      You can pack the room and <span class="hl red">still walk out with nothing.</span> It was decided weeks earlier —
+      in the offer you sent, the deposit you wired, the venue costs you didn't see coming, and a
+      ticket ladder that never covered the math. That's the hour: the show, before the money moves.
+    </p>
+  </div>
+</section>
+
+<!-- ================= THE WALK ================= -->
+<section class="s-blue grid-bg">
+  <div class="wrap">
+    <p class="lab rv">One real show, before the deposit</p>
+    <h2 class="rv" style="font-size:clamp(28px,5.6vw,54px);max-width:18ch">One show. Every number. In order.</h2>
+    <div class="rule rv"></div>
+
+    <div class="walk" id="walk"></div>
+
+    <div class="note rv" style="margin-top:26px">
+      <b>You leave with the two numbers that decide whether to send the deposit:</b> <span class="hl">the ticket you
+      break even on,</span> and <span class="hl amber">what a soft night costs you</span> if you don't get there.
+    </div>
+  </div>
+</section>
+
+<!-- ================= THE HOUR ================= -->
+<section class="s-dark grid-bg">
+  <div class="wrap" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,52px);align-items:center">
+    <div>
+      <p class="lab rv">How the hour runs</p>
+      <h2 class="rv" style="font-size:clamp(28px,5.2vw,50px)">Sixty minutes. No fluff.</h2>
+      <div class="rule rv"></div>
+      <p class="rv" style="color:var(--ink)">
+        No mindset slides. A real show built on screen in Promoter OS while you watch, then
+        your questions — drop the numbers on the deal you're sitting on and we run it live.
+      </p>
+      <div class="note rv" style="margin-top:20px">
+        <span class="lab sky">Bring</span><br>
+        <b style="font-size:20px">The deal in your DMs right now: <span class="hl">the artist's price, the venue's price, your ticket price.</span></b><br>
+        <span style="color:var(--ink)">That's enough to know whether to send the deposit.</span>
+      </div>
+    </div>
+    <div class="win rv scan">
+      <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>Run of show</b><span class="tag">60 min</span></div>
+      <div class="tbl">
+        <div class="hour"><span>0–5</span><p><svg class="ico "><use href="#i-screen"/></svg>The question on screen. One show's real numbers.</p></div>
+        <div class="hour"><span>5–40</span><p><svg class="ico "><use href="#i-breakeven"/></svg>Offer → deposit → what the venue really costs → ticket ladder → break-even → the bad night → settlement.</p></div>
+        <div class="hour"><span>40–55</span><p><svg class="ico "><use href="#i-chat"/></svg>Live Q&amp;A. Your deal, your numbers, run live.</p></div>
+        <div class="hour"><span>55–60</span><p><svg class="ico "><use href="#i-gift"/></svg>What you get for showing up. Then we're out.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOR YOU / NOT ================= -->
+<section class="s-blue grid-bg">
+  <div class="wrap">
+    <p class="lab rv">Who this is for</p>
+    <h2 class="rv" style="font-size:clamp(28px,5.6vw,54px);max-width:18ch">For promoters with money on the line.</h2>
+    <div class="rule rv"></div>
+    <div class="yn rv">
+      <div class="win">
+        <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>This is for you if</b></div>
+        <div class="win-body">
+          <p><svg class="ico "><use href="#i-check"/></svg>You're booking shows this quarter and there's a deposit due.</p>
+          <p><svg class="ico "><use href="#i-check"/></svg>You've sold out a room and still didn't clear what you thought.</p>
+          <p><svg class="ico "><use href="#i-check"/></svg>You've got an artist price in your DMs and you're deciding this week.</p>
+          <p><svg class="ico "><use href="#i-check"/></svg>You run club nights, concerts or tours and you want the math done before the offer goes out, not after settlement.</p>
+        </div>
+      </div>
+      <div class="win no">
+        <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>Not for you if</b></div>
+        <div class="win-body">
+          <p><svg class="ico red"><use href="#i-x"/></svg>You've never booked a show. Start with the <a href="https://promoteros.com/playbook/?utm_source=live&amp;utm_medium=landing&amp;utm_content=not_for_you" style="color:#fff">free playbook</a> — the live assumes you've done this before.</p>
+          <p><svg class="ico red"><use href="#i-x"/></svg>You want a "six figures from home" pitch. There isn't one.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WHAT YOU GET ================= -->
+<section class="s-dark grid-bg">
+  <div class="wrap">
+    <p class="lab rv">For showing up live</p>
+    <h2 class="rv glitch" style="font-size:clamp(28px,5.6vw,54px);max-width:18ch">Everyone on the live <span class="sky glow">gets</span></h2>
+    <div class="rule rv"></div>
+    <div class="get rv">
+      <div class="win">
+        <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>01 · Everyone</b><span class="tag">Free</span></div>
+        <div class="win-body">
+          <div class="icobox"><svg class="ico big"><use href="#i-app"/></svg></div>
+          <h3>7 days of Promoter OS</h3>
+          <p>Run your next show in the same tool we use on the live. Break-even, deal types, offer PDFs, deposits, run of show and settlements — in one place.</p>
+        </div>
+      </div>
+      <div class="win">
+        <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>02 · Everyone</b><span class="tag">Invite only</span></div>
+        <div class="win-body">
+          <div class="icobox"><svg class="ico big"><use href="#i-key"/></svg></div>
+          <h3>First access to our ticketing</h3>
+          <p>The ticketing we run our own shows on — <span class="hl">your money straight to you,</span> every ticket sold straight into your settlement. Opening to outside promoters by invite only. People on the live go first.</p>
+        </div>
+      </div>
+      <div class="win">
+        <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>03 · Everyone</b><span class="tag">On the live</span></div>
+        <div class="win-body">
+          <div class="icobox"><svg class="ico big"><use href="#i-screen"/></svg></div>
+          <h3>Your deal, run live</h3>
+          <p>Drop the artist's price, the venue's price and your ticket price in the chat during the Q&amp;A and we run your show on screen — break-even, the bad night, what you'd walk away with.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= REGISTER ================= -->
+<section class="s-blue grid-bg" id="seat">
+  <div class="wrap" style="max-width:620px">
+    <div style="text-align:center">
+      <div class="pill rv"><span class="dot live"></span><span class="lab">Free · live · for promoters booking now</span></div>
+      <h2 class="rv" style="font-size:clamp(30px,6vw,56px)">Save my <span class="sky glow">seat</span></h2>
+      <p class="rv" id="whenLine" style="color:#dbe7ff;margin-top:14px">Date and time coming soon.</p>
+    </div>
+
+    <form id="regForm" class="rv" style="margin-top:28px;display:grid;gap:12px">
+      <input name="first_name" placeholder="First name" autocomplete="given-name" class="fld">
+      <input name="email" type="email" required placeholder="you@yourcompany.com" autocomplete="email" class="fld">
+      <select name="promoter_type" class="fld">
+        <option value="">How many shows a year? (optional)</option>
+        <option value="shows_1_3">1–3</option>
+        <option value="shows_4_12">4–12</option>
+        <option value="shows_13_plus">13 or more</option>
+        <option value="venue">I run a venue</option>
+        <option value="none_yet">None yet</option>
+      </select>
+      <button class="btn pulse" type="submit" id="sub">Save my seat →</button>
+      <p id="err" style="display:none;color:#ffd6d4;font-size:16px;margin:0;text-align:center"></p>
+      <p style="color:#cfe0ff;font-size:15px;text-align:center;margin:4px 0 0">
+        The link and a reminder land in your inbox before we go live. Unsubscribe anytime.
+      </p>
+    </form>
+
+    <div id="done" style="display:none;text-align:center">
+      <div class="win" style="margin-top:8px">
+        <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>Seat saved</b><span class="tag">EP. 01</span></div>
+        <div class="win-body">
+          <h3 style="font-size:clamp(24px,4.6vw,38px)">You're in.</h3>
+          <p style="color:var(--ink);margin:10px 0 20px" id="doneLine">We'll email you the link the day before and again an hour out.</p>
+          <a class="btn" id="ics" href="#" download="before-you-send-the-deposit-ep01.ics"><svg class="ico "><use href="#i-cal"/></svg>Add to calendar ↓</a>
+        </div>
+      </div>
+      <div style="margin-top:22px">
+        <p class="lab" style="color:#cfe4ff">While you wait</p>
+        <p style="color:#dbe7ff;margin:10px 0 16px">
+          The free Booking Playbook covers the seven steps we'll run on the live. Read it first and bring sharper questions about your own deal.
+        </p>
+        <a class="btn ghost" href="https://promoteros.com/playbook/?utm_source=live&utm_medium=landing&utm_campaign=bysd_ep01">Get the playbook →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer style="background:#0B0D12;padding:40px 20px;text-align:center;position:relative;z-index:2">
+  <img src="https://promoteros.com/promoter-os-wordmark.png" alt="Promoter OS" style="height:20px;opacity:.9">
+  <p style="color:#6C7A90;font-size:16px;margin:12px 0 0">For independent promoters booking club nights, concerts and tours.</p>
+  <p style="margin:6px 0 0"><a href="https://promoteros.com" class="lab sky" style="text-decoration:none">PROMOTEROS.COM</a></p>
+</footer>
+
+<script>
+/* ---------- Meta pixel ---------- */
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
+s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','1059089886967514');fbq('track','PageView');
+
+/* ---------- THE EVENT — change these three lines per episode ---------- */
+var EP='EP. 01';
+var EP_TITLE='Before You Send the Deposit — EP. 01: Can you afford this artist?';
+var EVENT_START='2026-10-27T19:00:00-05:00';   // 7:00 PM Central
+var EVENT_MINUTES=60;
+var SOURCE='live_ep01';                         // leads.source — one per episode
+
+/* ---------- date display + countdown ---------- */
+var start=new Date(EVENT_START);
+var fmtDay=new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric',timeZone:'America/Chicago'});
+var fmtTime=new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'});
+var whenText=fmtDay.format(start)+' · '+fmtTime.format(start)+' Central';
+document.getElementById('whenBar').textContent='Live · '+fmtDay.format(start)+' · '+fmtTime.format(start)+' CT';
+document.getElementById('whenLine').textContent=whenText+'. One hour, live on Zoom. Free.';
+document.getElementById('doneLine').textContent=whenText+'. The Zoom link hits your inbox the day before, and again an hour out.';
+
+var cdEls=document.querySelectorAll('#cd b');
+function tick(){
+  var d=start-new Date();
+  if(d<=0){
+    document.getElementById('cd').innerHTML='<div style="grid-column:1/-1"><b class="sky">WE\'RE LIVE</b><small>Check your inbox for the link</small></div>';return;
+  }
+  var s=Math.floor(d/1000);
+  var v=[Math.floor(s/86400),Math.floor(s%86400/3600),Math.floor(s%3600/60),s%60];
+  v.forEach(function(n,i){var t=String(n).padStart(2,'0');if(cdEls[i].textContent!==t){cdEls[i].textContent=t;var box=cdEls[i].parentElement;box.classList.add('tick');setTimeout(function(){box.classList.remove('tick');},350);}});
+  setTimeout(tick,1000);
+}
+tick();
+
+/* ---------- the walk ---------- */
+var WALK=[
+ ['01','The offer','What you send, what it says, and the one line that protects you.','i-offer'],
+ ['02','The deposit','How much, when, and what you never wire without.','i-deposit'],
+ ['03','What the venue really costs','Rent is the small part. Security, production, staff, the stuff on page 3.','i-venue'],
+ ['04','The ticket ladder','Early bird to door. Why the cheap tier sells and the expensive one pays.','i-ticket'],
+ ['05','Break-even','The number of tickets before you make a dollar. The number that decides the show.','i-breakeven'],
+ ['06','When sales suck','Half a house. What it actually costs you, line by line.','i-bad'],
+ ['07','Settlement','The night ends with paperwork. What it looks like done right.','i-settle'],
+ ['08','What you walked away with','Sold out vs. soft. Same show, two very different paydays.','i-cash']
+];
+document.getElementById('walk').innerHTML=WALK.map(function(w){
+  var bad=w[0]==='06';
+  return '<div class="wstep'+(bad?' bad':'')+'"><div class="icobox"><svg class="ico'+(bad?' red':'')+'"><use href="#'+w[3]+'"/></svg></div><div class="n">'+w[0]+'</div><b>'+w[1]+'</b><p>'+w[2]+'</p></div>';
+}).join('');
+
+/* ---------- light-up sequencing ---------- */
+function lightUp(sel,gap,cls){
+  var els=document.querySelectorAll(sel); if(!els.length) return;
+  var parent=els[0].parentElement;
+  var o=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(!e.isIntersecting) return; o.unobserve(e.target);
+    els.forEach(function(el,i){setTimeout(function(){el.classList.add(cls||'lit');},300+i*gap);});
+  })},{threshold:.25});
+  o.observe(parent);
+}
+lightUp('#walk .wstep',140);
+lightUp('.hour',220);
+lightUp('.get .win',200);
+lightUp('.row3.keep .stat',260);
+lightUp('.row3.keep .stat b',260);
+lightUp('.yn .win',250);
+document.querySelectorAll('.hl').forEach(function(h){
+  var o=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');o.unobserve(e.target);}})},{threshold:.6});
+  o.observe(h);
+});
+
+/* ---------- reveal + power on ---------- */
+var io=new IntersectionObserver(function(es){es.forEach(function(e){
+  if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}
+})},{threshold:.15,rootMargin:'0px 0px -6% 0px'});
+document.querySelectorAll('.rv').forEach(function(el,i){el.style.transitionDelay=(i%4)*60+'ms';io.observe(el);});
+requestAnimationFrame(function(){document.body.classList.add('on');});
+
+/* ---------- registration → leads table (capture_lead, same as the playbook) ---------- */
+var SB='https://azenzsggqexyonafxlsf.supabase.co';
+var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6ZW56c2dncWV4eW9uYWZ4bHNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0MTQzMzUsImV4cCI6MjEwNDk5MDMzNX0.TZk9XtaBlGBB8XjJhIbG5athn1Ki5IHjY0x2HfSvWB8';
+var q=new URLSearchParams(location.search);
+document.getElementById('regForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var f=ev.target, btn=document.getElementById('sub'), err=document.getElementById('err');
+  var email=f.email.value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)){err.textContent='That email looks off — check it and try again.';err.style.display='block';return;}
+  err.style.display='none'; btn.disabled=true; btn.textContent='Saving…';
+  fetch(SB+'/rest/v1/rpc/capture_lead',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+KEY},
+    body:JSON.stringify({
+      p_email:email.toLowerCase(),
+      p_first_name:f.first_name.value.trim()||null,
+      p_promoter_type:f.promoter_type.value||null,
+      p_language:'en',
+      p_source:SOURCE,
+      p_utm_source:q.get('utm_source'),p_utm_medium:q.get('utm_medium'),
+      p_utm_campaign:q.get('utm_campaign'),p_utm_content:q.get('utm_content'),
+      p_referrer:document.referrer||null
+    })
+  }).then(function(r){ if(!r.ok) throw new Error(r.status); })
+  .then(function(){
+    try{fbq('track','Lead',{content_name:EP_TITLE});fbq('track','CompleteRegistration',{content_name:EP_TITLE});}catch(e){}
+    document.getElementById('regForm').style.display='none';
+    document.getElementById('done').style.display='block';
+    document.getElementById('ics').href=icsLink();
+  }).catch(function(){
+    err.textContent="That didn't go through. Try again, or email hi@promoteros.com and we'll save you a seat.";
+    err.style.display='block'; btn.disabled=false; btn.textContent='Save my seat →';
+  });
+});
+
+/* ---------- add-to-calendar (.ics built in the browser) ---------- */
+function icsLink(){
+  var p=function(d){return d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');};
+  var end=new Date(start.getTime()+EVENT_MINUTES*60000);
+  var ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Promoter OS//Live//EN','BEGIN:VEVENT',
+    'UID:bysd-'+SOURCE+'@promoteros.com','DTSTAMP:'+p(new Date()),'DTSTART:'+p(start),'DTEND:'+p(end),
+    'SUMMARY:'+EP_TITLE.replace(/,/g,'\\,'),
+    'DESCRIPTION:Free live for working promoters from Promoter OS. The Zoom link arrives by email the day before. https://promoteros.com/live/',
+    'URL:https://promoteros.com/live/','END:VEVENT','END:VCALENDAR'].join('\r\n');
+  return 'data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);
+}
+</script>
+</body>
+</html>

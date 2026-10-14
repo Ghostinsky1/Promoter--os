@@ -935,7 +935,7 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
     y += mode === 'artist_offer' ? 12 : 9;
 
     if (offer.deposit_due_date) {
-      doc.text(`Deposit Due: ${formatDateLong(new Date(offer.deposit_due_date))}`, margin + 20, y);
+      doc.text(`Deposit Due: ${formatDateLong(offer.deposit_due_date)}`, margin + 20, y);
     } else {
       doc.text('Deposit Due: 30 days before event', margin + 20, y);
     }
@@ -959,7 +959,7 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
     } else if (balanceDueTiming === 'upon_signing') {
       balanceDueText += 'Upon contract signing';
     } else if (balanceDueTiming === 'custom' && offer.custom_balance_due_date) {
-      balanceDueText += formatDateLong(new Date(offer.custom_balance_due_date));
+      balanceDueText += formatDateLong(offer.custom_balance_due_date);
     } else {
       balanceDueText += 'At Event Settlement';
     }
@@ -973,7 +973,7 @@ export function generateOfferPDF(offer: OfferWithShow, companySettings?: Company
     y += mode === 'artist_offer' ? 12 : 9;
 
     if (offer.full_payment_due_date) {
-      doc.text(`Payment Due: ${formatDateLong(new Date(offer.full_payment_due_date))}`, margin + 20, y);
+      doc.text(`Payment Due: ${formatDateLong(offer.full_payment_due_date)}`, margin + 20, y);
     } else {
       doc.text('Payment Due: Before event', margin + 20, y);
     }

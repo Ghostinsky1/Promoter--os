@@ -297,7 +297,7 @@ export function OffersList() {
   };
 
   const filteredOffers = offers.filter(offer => {
-    const past = new Date(offer.show.event_date) < new Date(new Date().toDateString());
+    const past = (parseLocalDate(offer.show.event_date) ?? new Date(NaN)) < new Date(new Date().toDateString());
     if (unsettledOnly && !(past && offer.status !== 'settled' && offer.status !== 'cancelled')) return false;
     const matchesStatus = selectedStatus === 'all' || (offer.status || 'planning') === selectedStatus;
     const matchesSearch = !searchQuery ||

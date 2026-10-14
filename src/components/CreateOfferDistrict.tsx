@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { TicketTier, Expenses } from '../types';
 import { calculateOffer, formatCurrency } from '../lib/calculations';
-import { calculateDepositDueDate, getDaysUntil, formatDate } from '../lib/dateHelpers';
+import { calculateDepositDueDate, getDaysUntil, formatDate, parseLocalDate } from '../lib/dateHelpers';
 import { DepositsTab } from './tabs/DepositsTab';
 import { ArrowLeft, Plus, Trash2, X, Check, ChevronDown, Calendar, MapPin, TrendingUp, AlertCircle } from 'lucide-react';
 
@@ -624,7 +624,7 @@ export function CreateOfferDistrict() {
                   <h3 className="text-2xl font-bold">{artistName}</h3>
                   <p className="text-lg text-gray-600">{venueName}</p>
                   <p className="text-sm text-gray-500">
-                    {new Date(eventDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    {(parseLocalDate(eventDate) ?? new Date(eventDate)).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                   </p>
                 </div>
                 <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-semibold">

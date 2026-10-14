@@ -1,3 +1,6 @@
+// YYYY-MM-DD as local midnight, not UTC midnight (which lands a day early in the US).
+const localDay = (d: string) => (/^\d{4}-\d{2}-\d{2}$/.test(d) ? new Date(d + 'T00:00:00') : new Date(d));
+
 import { OfferWithShow } from '../types';
 
 /**
@@ -51,7 +54,7 @@ export function upfrontCostOf(offer: OfferWithShow): UpfrontCost {
 
   const eventDate = offer.show?.event_date ?? '';
   const days = eventDate
-    ? Math.ceil((new Date(eventDate).getTime() - Date.now()) / 86_400_000)
+    ? Math.ceil((localDay(eventDate).getTime() - Date.now()) / 86_400_000)
     : 0;
 
   const total = artistDeposit + venueDeposit + marketing;
@@ -102,7 +105,7 @@ export function cashOnHand(offers: OfferWithShow[]): CashOnHand {
     const d = o?.show?.event_date;
     if (!d) return true;
     // Yesterday's show is not an upcoming cash need.
-    return new Date(d).getTime() >= Date.now() - 86_400_000;
+    return localDay(d).getTime() >= Date.now() - 86_400_000;
   });
 
   const shows = live.map(upfrontCostOf).sort((a, b) => a.daysAway - b.daysAway);

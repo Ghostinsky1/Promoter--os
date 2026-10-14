@@ -6,6 +6,7 @@ import { Tour, TourWithDates } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { formatCurrency } from '../lib/calculations';
 import { FeatureGate } from '../components/FeatureGate';
+import { parseLocalDate } from '../lib/dateHelpers';
 
 export function ToursPage() {
   return (
@@ -319,7 +320,7 @@ function ToursPageContent() {
                     <div className="flex items-center gap-2 text-sm text-gray-400 mt-1">
                       <Calendar className="h-4 w-4" />
                       <span>
-                        {new Date(tour.start_date).toLocaleDateString()} - {new Date(tour.end_date).toLocaleDateString()}
+                        {parseLocalDate(tour.start_date)?.toLocaleDateString()} - {parseLocalDate(tour.end_date)?.toLocaleDateString()}
                       </span>
                     </div>
                   </div>

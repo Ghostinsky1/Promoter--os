@@ -1,3 +1,6 @@
+// YYYY-MM-DD as local midnight, not UTC midnight (which lands a day early in the US).
+const localDay = (d: string) => (/^\d{4}-\d{2}-\d{2}$/.test(d) ? new Date(d + 'T00:00:00') : new Date(d));
+
 import { OfferWithShow } from '../types';
 import { getExpenseBreakdown } from './calculations';
 import { survivalRead, downsideAt } from './downside';
@@ -76,7 +79,7 @@ export function calculateRiskScore(offer: OfferWithShow): number {
   const breakEvenRisk = breakEven.percentage;
 
   const daysUntilEvent = Math.max(0, Math.floor(
-    (new Date(offer.show.event_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+    (localDay(offer.show.event_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
   ));
   const timeRisk = daysUntilEvent < 30 ? ((30 - daysUntilEvent) / 30) * 40 : 0;
 
@@ -90,7 +93,7 @@ export function calculateRiskScore(offer: OfferWithShow): number {
 
 export function getDaysUntilEvent(eventDate: string): number {
   return Math.max(0, Math.floor(
-    (new Date(eventDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+    (localDay(eventDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
   ));
 }
 

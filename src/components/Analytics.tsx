@@ -584,7 +584,7 @@ export function Analytics() {
               </div>
               {offer.deposit_due_date && (
                 <div className="text-xs text-gray-500">
-                  Due: {new Date(offer.deposit_due_date).toLocaleDateString()}
+                  Due: {parseLocalDate(offer.deposit_due_date)?.toLocaleDateString() ?? ''}
                 </div>
               )}
             </div>
@@ -599,7 +599,7 @@ export function Analytics() {
                 </div>
                 {offer.venue_deposit_due_date && (
                   <div className="text-xs text-gray-500">
-                    Due: {new Date(offer.venue_deposit_due_date).toLocaleDateString()}
+                    Due: {parseLocalDate(offer.venue_deposit_due_date)?.toLocaleDateString() ?? ''}
                   </div>
                 )}
               </div>

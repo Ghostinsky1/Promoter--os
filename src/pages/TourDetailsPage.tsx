@@ -281,7 +281,7 @@ export function TourDetailsPage() {
                 <span className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                   <span className="truncate">
-                    {new Date(tour.start_date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })} - {new Date(tour.end_date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}
+                    {parseLocalDate(tour.start_date)?.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })} - {parseLocalDate(tour.end_date)?.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}
                   </span>
                 </span>
                 <div className="relative">

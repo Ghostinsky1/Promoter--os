@@ -8,6 +8,11 @@ import { AIInsights } from './AIInsights';
 import { SubscriptionRequired } from './SubscriptionRequired';
 import { TrialBanner } from './TrialBanner';
 import { cancellationLoss, readCancellation } from '../lib/cancellation';
+import { parseLocalDate } from '../lib/dateHelpers';
+
+// event_date is a plain YYYY-MM-DD. new Date('2026-10-16') is midnight UTC,
+// which is Oct 15 evening in Central time -- every date showed one day early.
+const showDay = (d: string | null | undefined) => parseLocalDate(d) ?? new Date(NaN);
 import { cashOnHand, type CashOnHand } from '../lib/upfrontCost';
 import { CashOnHandPanel } from './CashOnHandPanel';
 import { useAsk } from './ask/AskProvider';
@@ -93,7 +98,7 @@ export function Home() {
         // sent / Confirmed / Active. Cash on hand below still counts its
         // deposits and ads, because budgeted money is budgeted money.
         const activeOffers = offers.filter(o => o.status !== 'cancelled' && o.status !== 'planning');
-        const planningCount = offers.filter(o => o.status === 'planning' && new Date(o.show.event_date) >= today).length;
+        const planningCount = offers.filter(o => o.status === 'planning' && showDay(o.show.event_date) >= today).length;
 
         const totalRevenue = activeOffers.reduce((sum, o) => sum + (o.calculations?.netGross || 0), 0);
 
@@ -103,7 +108,7 @@ export function Home() {
         // dashboard where $29K had actually arrived. Split it into what came
         // in, what is projected, and what is just sitting there.
         const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
-        const isPast = (o: any) => new Date(o.show?.event_date).getTime() < dayStart.getTime();
+        const isPast = (o: any) => showDay(o.show?.event_date).getTime() < dayStart.getTime();
         const actualRevenue = settledRows.reduce((sum, s) => sum + (Number(s.actual_revenue) || 0), 0);
         const projectedRevenue = activeOffers
           .filter(o => o.status !== 'settled' && !isPast(o))
@@ -115,7 +120,7 @@ export function Home() {
         const totalProfit = activeOffers.reduce((sum, o) => sum + (o.calculations?.netProfit || 0), 0);
 
         const activeEvents = activeOffers.filter(o =>
-          new Date(o.show.event_date) >= today
+          showDay(o.show.event_date) >= today
         ).length;
 
         const thisMonth = today.getMonth();
@@ -134,7 +139,7 @@ export function Home() {
         const lossOf = (o: any) =>
           Number(o.cancellation_loss) || cancellationLoss(readCancellation(o));
         const cancelDate = (o: any) =>
-          o.cancelled_at ? new Date(o.cancelled_at) : new Date(o.show.event_date);
+          o.cancelled_at ? new Date(o.cancelled_at) : showDay(o.show.event_date);
 
         const monthCancelledLoss = cancelledOffers
           .filter(o => {
@@ -149,15 +154,15 @@ export function Home() {
 
         const monthProfit = activeOffers
           .filter(o => {
-            const eventDate = new Date(o.show.event_date);
+            const eventDate = showDay(o.show.event_date);
             return eventDate.getMonth() === thisMonth &&
                    eventDate.getFullYear() === thisYear;
           })
           .reduce((sum, o) => sum + (o.calculations?.netProfit || 0), 0) - monthCancelledLoss;
 
         const upcomingOffers = activeOffers
-          .filter(o => new Date(o.show.event_date) >= today)
-          .sort((a, b) => new Date(a.show.event_date).getTime() - new Date(b.show.event_date).getTime());
+          .filter(o => showDay(o.show.event_date) >= today)
+          .sort((a, b) => showDay(a.show.event_date).getTime() - showDay(b.show.event_date).getTime());
 
         const forecastRevenue = upcomingOffers.reduce((sum, o) => sum + (o.calculations?.grossPotential || 0), 0);
 
@@ -165,7 +170,7 @@ export function Home() {
         setSettledShows(settled);
 
         const events: UpcomingEvent[] = upcomingOffers.slice(0, 5).map(o => {
-          const eventDate = new Date(o.show.event_date);
+          const eventDate = showDay(o.show.event_date);
           const daysUntil = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
           return {

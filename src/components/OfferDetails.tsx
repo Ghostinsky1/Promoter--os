@@ -25,6 +25,7 @@ import { EventNotesPanel } from './EventNotesPanel';
 import { ArtistsDashboard } from './artists/ArtistsDashboard';
 import { generateArtistOfferSheet } from '../lib/generateArtistOfferSheet';
 import { ArrowLeft, Calendar, MapPin, Users, CreditCard as Edit, FileDown, Eye, Mail, BarChart3, Copy, Film, Trash2, Calculator, Sparkles, Undo2, Loader2, Check, Plus, X, GripVertical } from 'lucide-react';
+import { HelpLink } from './HelpLink';
 
 type TabKey = 'deal' | 'tickets' | 'costs' | 'money' | 'tasks';
 const TABS: { key: TabKey; label: string }[] = [
@@ -388,13 +389,16 @@ export function OfferDetails() {
     <div className="min-h-screen bg-[#1140F0]">
       <div className={`max-w-7xl mx-auto px-3 py-4 ${isDirty ? 'pb-24' : ''}`}>
         <div className="mb-4">
-          <button
-            onClick={() => navigate('/offers')}
-            className="flex items-center gap-2 text-gray-400 hover:text-white mb-3 text-sm transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Offers
-          </button>
+          <div className="flex items-center justify-between mb-3">
+            <button
+              onClick={() => navigate('/offers')}
+              className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Offers
+            </button>
+            <HelpLink section="offer" />
+          </div>
 
           <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 mb-4">
             <button onClick={() => navigate(`/offers/${id}/analytics`)} className="bg-[#14171E] border border-gray-800 text-white py-2.5 rounded-xl font-semibold hover:bg-[#22262F] hover:border-[#8FD3FF]/50 transition-all flex flex-row items-center justify-center gap-2">

@@ -16,7 +16,7 @@ import type { AskThread } from '../../lib/ask';
  * On phones a four-tab bar sits under it: Home / Ask / Shows / Settle.
  */
 
-const APP_PREFIXES = ['/dashboard', '/offers', '/tours', '/templates', '/settings', '/subscription', '/deal-estimator', '/artist-fee'];
+const APP_PREFIXES = ['/dashboard', '/offers', '/tours', '/templates', '/settings', '/subscription', '/deal-estimator', '/artist-fee', '/help'];
 const CHIPS = ['What needs me?', 'Cash I need', 'Unsettled shows', 'Coming up', 'Review a deal'];
 const ACCEPT = '.pdf,image/png,image/jpeg,image/webp,image/gif';
 
@@ -65,6 +65,7 @@ export function AskDock() {
 
   useEffect(() => { if (ask.open) { endRef.current?.scrollIntoView({ block: 'end' }); setTimeout(() => inputRef.current?.focus(), 150); } }, [ask.open, ask.messages.length, ask.sending, ask.thread?.id]);
   useEffect(() => { ask.setOpen(false); setShowThreads(false); /* close on navigation */ }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (location.search.includes('welcome=1')) ask.showWelcome(); }, [location.search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!inApp) return null;
 
@@ -93,7 +94,7 @@ export function AskDock() {
   const isActive = (p: string) => location.pathname === p || location.pathname.startsWith(p + '/');
   const typing = text.trim().length > 0 && !ask.sending;
   const mood: Mood = ask.sending ? ask.mood : typing ? 'listening' : ask.mood;
-  const showChips = !ask.thread && ask.messages.length === 0 && !typing && files.length === 0;
+  const showChips = !ask.welcome && !ask.thread && ask.messages.length === 0 && !typing && files.length === 0;
   const deal = ask.thread?.deal_on_table;
 
   return (
@@ -184,8 +185,43 @@ export function AskDock() {
               />
             ) : (
               <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-3 space-y-3">
+                {/* First time in, no shows: the little TV says hi. */}
+                {ask.welcome && !ask.thread && (
+                  <div className="crt-panel rounded-2xl border border-[#8FD3FF]/50 bg-[#14171E] p-4 sm:p-5">
+                    <div className="flex items-start gap-3">
+                      <Mascot mood="happy" size={80} powerOn />
+                      <div className="min-w-0">
+                        <p className="text-white font-semibold text-[16px] leading-tight">Hey. I live in here.</p>
+                        <p className="text-[14px] text-gray-300 mt-1">Give me a show and I'll tell you if it survives a bad night. Two ways to start — pick one, or just look around.</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+                      <button
+                        onClick={() => { ask.dismissWelcome(); go('/offers/quick'); }}
+                        className="text-left rounded-xl bg-[#1140F0] hover:bg-[#1a4cff] border border-[#5A8CFF]/50 p-3.5"
+                        style={{ textTransform: 'none', letterSpacing: 0 }}
+                      >
+                        <div className="text-white font-bold text-[15px]">Build my first offer</div>
+                        <div className="text-[12px] text-white/80 mt-0.5">Seven boxes. Artist, room, ticket price, fee, costs. Under a minute.</div>
+                      </button>
+                      <button
+                        onClick={() => { ask.dismissWelcome(); setText('Structure this and tell me if it works.'); fileRef.current?.click(); }}
+                        className="text-left rounded-xl bg-[#0E1F5C] hover:bg-[#13297a] border border-[#5A8CFF]/50 p-3.5"
+                        style={{ textTransform: 'none', letterSpacing: 0 }}
+                      >
+                        <div className="text-white font-bold text-[15px] inline-flex items-center gap-1.5"><Paperclip className="w-4 h-4 text-[#8FD3FF]" /> Upload a cost sheet or settlement</div>
+                        <div className="text-[12px] text-white/80 mt-0.5">A PDF or a photo. I'll read it, lay the deal out, and build the offer from it.</div>
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between mt-3">
+                      <button onClick={() => { ask.dismissWelcome(); ask.setOpen(false); }} className="text-[13px] text-gray-400 hover:text-white" style={{ textTransform: 'none', letterSpacing: 0 }}>Just look around</button>
+                      <button onClick={() => { ask.dismissWelcome(); go('/help'); }} className="text-[13px] text-[#8FD3FF] hover:underline" style={{ textTransform: 'none', letterSpacing: 0 }}>How it all works →</button>
+                    </div>
+                  </div>
+                )}
+
                 {/* New chat: the brief is the first bubble, always. Free. */}
-                {!ask.thread && ask.brief && (
+                {!ask.welcome && !ask.thread && ask.brief && (
                   <div className="max-w-[92%] rounded-2xl rounded-bl-md bg-[#14171E] border border-[#2A3040] px-4 py-3 text-[15px] leading-relaxed text-gray-100">
                     <p className="text-white font-semibold">{ask.brief.greeting}</p>
                     <p>{ask.brief.headline}</p>

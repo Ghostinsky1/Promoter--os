@@ -33,6 +33,7 @@ import {
 import { SettlementImport, type Extracted } from './SettlementImport';
 import { SettlementChat, type ChatApply } from './SettlementChat';
 import { canImportDocuments } from '../lib/subscriptionTiers';
+import { HelpLink } from './HelpLink';
 
 interface ActualTicketTier {
   type: string;
@@ -661,6 +662,7 @@ export function Settlement() {
               } border-0 rounded-full px-4 py-1 text-sm font-semibold`}>
                 {settlement.settled_at ? 'Settled' : 'Draft'}
               </div>
+              <HelpLink section="settlement" />
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-gray-400 text-sm">
               <div className="flex items-center gap-2">

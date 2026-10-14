@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, Target, Search, AlertTriangle, ArrowDownRight } from 'lucide-react';
+import { HelpLink } from './HelpLink';
 
 // ---------- helpers ----------
 const money = (n: number) =>
@@ -127,6 +128,7 @@ export function ArtistFeeEstimator() {
         <div className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
           <h1 className="text-xl sm:text-2xl font-bold">What should I offer this artist?</h1>
           <p className="text-gray-300/80 text-sm">A fair price for your show, how bad you want them, and what other cities pay.</p>
+          <HelpLink section="math" label="The math" />
         </div>
 
         {/* ===== SECTION 1 ===== */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Music2, Plus, User, LogOut, Menu, X, Settings, CreditCard, LayoutDashboard, FileText, Music, Calculator } from 'lucide-react';
+import { Music2, Plus, User, LogOut, Menu, X, Settings, CreditCard, LayoutDashboard, FileText, Music, Calculator, HelpCircle } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
@@ -19,7 +19,8 @@ export function Header() {
     { href: '/tours', label: 'Tours', icon: Music },
     { href: '/artist-fee', label: 'Artist Fee', icon: Calculator },
     { href: '/settings', label: 'Settings', icon: Settings },
-    { href: '/subscription', label: 'Subscription', icon: CreditCard }
+    { href: '/subscription', label: 'Subscription', icon: CreditCard },
+    { href: '/help', label: 'Help', icon: HelpCircle }
   ];
 
   const isActive = (href: string) => {

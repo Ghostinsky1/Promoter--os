@@ -38,6 +38,7 @@ export interface Brief {
   next30: number;
   cash: { total: number; artist: number; venue: number; marketing: number; shows: number };
   open_tasks: { id: string; offer_id: string | null; title: string; due_date: string | null; priority: string }[];
+  offers_index?: { id: string; name: string; status: string; counted?: boolean }[];
 }
 
 export interface CreditStatus {

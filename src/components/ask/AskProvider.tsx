@@ -15,6 +15,10 @@ import type { Mood } from './Mascot';
 
 interface AskState {
   brief: Brief | null;
+  /** First visit with no shows: the little TV says hi and offers the two ways in. */
+  welcome: boolean;
+  showWelcome: () => void;
+  dismissWelcome: () => void;
   credits: CreditStatus | null;
   threads: AskThread[];
   thread: AskThread | null;
@@ -56,6 +60,7 @@ export function AskProvider({ children }: { children: ReactNode }) {
   const [outOfCredits, setOutOfCredits] = useState(false);
   const [mood, setMood] = useState<Mood>('idle');
   const [open, setOpen] = useState(false);
+  const [welcome, setWelcome] = useState(false);
   const loadedFor = useRef<string | null>(null);
   const moodTimer = useRef<number | null>(null);
 
@@ -72,6 +77,10 @@ export function AskProvider({ children }: { children: ReactNode }) {
       const r = await fetchBrief();
       setBrief(r.brief); setCredits(r.credits); setThreads(r.threads);
       setError(null);
+      // No shows yet and never welcomed: open the sheet with the welcome card.
+      let welcomed = false;
+      try { welcomed = localStorage.getItem('pos_welcomed') === '1'; } catch { /* private mode */ }
+      if (!welcomed && (r.brief?.offers_index?.length ?? 0) === 0) { setWelcome(true); setOpen(true); }
     } catch (e: any) {
       setError(e?.message || 'Could not load the brief.');
     } finally {
@@ -146,11 +155,17 @@ export function AskProvider({ children }: { children: ReactNode }) {
     setMessages((m) => (thread?.id === id ? [] : m));
   }, [thread?.id]);
 
+  const showWelcome = useCallback(() => { setWelcome(true); setOpen(true); }, []);
+  const dismissWelcome = useCallback(() => {
+    setWelcome(false);
+    try { localStorage.setItem('pos_welcomed', '1'); } catch { /* private mode */ }
+  }, []);
+
   const setCreditsLeft = useCallback((n: number) => setCredits((c) => (c ? { ...c, total_left: n } : c)), []);
 
   return (
     <Ctx.Provider value={{
-      brief, credits, threads, thread, messages, loading, loadingThread, sending, busy, error, outOfCredits, mood, setMood,
+      brief, welcome, showWelcome, dismissWelcome, credits, threads, thread, messages, loading, loadingThread, sending, busy, error, outOfCredits, mood, setMood,
       open, setOpen, refresh, send, openThread, newThread, renameThread, deleteThread, setCreditsLeft,
     }}>
       {children}

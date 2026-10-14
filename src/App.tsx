@@ -38,6 +38,8 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { initFacebookPixel, trackPageView } from './lib/facebookPixel';
 import { AskProvider } from './components/ask/AskProvider';
 import { AskDock } from './components/ask/AskDock';
+import { QuickOffer } from './components/QuickOffer';
+import { HelpPage } from './pages/HelpPage';
 
 function AfterLogin() {
   const [params] = useSearchParams();
@@ -102,6 +104,7 @@ function AppRoutes() {
       <Route path="/dashboard" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       <Route path="/offers" element={<ProtectedRoute><OffersList /></ProtectedRoute>} />
       <Route path="/offers/create" element={<ProtectedRoute><CreateOffer /></ProtectedRoute>} />
+      <Route path="/offers/quick" element={<ProtectedRoute><QuickOffer /></ProtectedRoute>} />
       <Route path="/offers/create-district" element={<ProtectedRoute><CreateOfferDistrict /></ProtectedRoute>} />
       <Route path="/offers/:id" element={<ProtectedRoute><OfferDetails /></ProtectedRoute>} />
       <Route path="/offers/:id/edit" element={<ProtectedRoute><EditOffer /></ProtectedRoute>} />
@@ -110,6 +113,7 @@ function AppRoutes() {
       <Route path="/offers/:id/settlement" element={<ProtectedRoute><Settlement /></ProtectedRoute>} />
       <Route path="/deal-estimator" element={<ProtectedRoute><DealEstimator /></ProtectedRoute>} />
       <Route path="/artist-fee" element={<ProtectedRoute><ArtistFeeEstimator /></ProtectedRoute>} />
+      <Route path="/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
       <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
       <Route path="/tours" element={<ProtectedRoute><ToursPage /></ProtectedRoute>} />
       <Route path="/tours/create" element={<ProtectedRoute><CreateTourPage /></ProtectedRoute>} />

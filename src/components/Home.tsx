@@ -12,6 +12,7 @@ import { cashOnHand, type CashOnHand } from '../lib/upfrontCost';
 import { CashOnHandPanel } from './CashOnHandPanel';
 import { useAsk } from './ask/AskProvider';
 import { NeedsYou } from './ask/NeedsYou';
+import { HelpLink } from './HelpLink';
 
 interface DashboardStats {
   planningCount?: number;
@@ -273,6 +274,7 @@ export function Home() {
               Welcome back, {firstName}.
             </h1>
             {ask.brief && <p className="text-[#04214D] text-sm mt-1.5">{ask.brief.headline}</p>}
+            <div className="mt-2"><HelpLink section="start" label="How Promoter OS works" /></div>
           </div>
 
           <div className="flex flex-wrap gap-2 items-center">

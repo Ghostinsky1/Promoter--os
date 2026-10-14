@@ -8,6 +8,7 @@ import { OffersCalendar } from './OffersCalendar';
 import { survivalRead } from '../lib/downside';
 import { readCancellation } from '../lib/cancellation';
 import { parseLocalDate } from '../lib/dateHelpers';
+import { HelpLink } from './HelpLink';
 
 const STATUS_CONFIG: Record<OfferStatus, { label: string; icon: any; color: string; bgColor: string; borderColor: string }> = {
   planning: {
@@ -332,7 +333,7 @@ export function OffersList() {
         <div className="flex flex-row justify-between items-center gap-3 mb-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-white">Offers</h1>
-            <p className="text-gray-300/80 text-sm hidden sm:block">Every show, its deal, and where it stands.</p>
+            <p className="text-gray-300/80 text-sm hidden sm:block">Every show, its deal, and where it stands. <HelpLink section="start" label="How it works" /></p>
           </div>
 
           <div className="flex items-center gap-2">

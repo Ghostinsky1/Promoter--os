@@ -17,7 +17,8 @@ export function SignupWithOrganization() {
   const [formData, setFormData] = useState<SignupFormData>({
     organizationName: '',
     fullName: '',
-    email: '',
+    // Emails (playbook, live) link here with ?email= so the person doesn't retype it.
+    email: (() => { try { const e = new URLSearchParams(window.location.search).get('email') || ''; return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(e) ? e.slice(0, 254) : ''; } catch { return ''; } })(),
     password: '',
     confirmPassword: '',
     tier: ''

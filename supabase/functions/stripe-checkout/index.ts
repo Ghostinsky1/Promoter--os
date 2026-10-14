@@ -237,6 +237,27 @@ Deno.serve(async (req) => {
       sessionMetadata.tier = price_id === 'price_1UG3GxGeegvFIqACTTpeqq4n' ? 'pro' : 'starter';
     }
 
+    // Live-workshop deal (Before You Send the Deposit): a registrant starting Pro before the
+    // episode's deal ends gets the episode coupon. Checked by the signed-in email, server side.
+    let discounts: { coupon: string }[] | undefined;
+    if (mode === 'subscription' && user?.email && price_id === 'price_1UG3GxGeegvFIqACTTpeqq4n') {
+      const { data: deal } = await supabase.rpc('live_deal_for_email', { p_email: user.email }).maybeSingle();
+      const d = deal as { episode: string; coupon: string; amount_off_cents: number; ends_at: string } | null;
+      if (d?.coupon && d.amount_off_cents > 0) {
+        try {
+          await stripe.coupons.retrieve(d.coupon);
+        } catch {
+          await stripe.coupons.create({
+            id: d.coupon, amount_off: d.amount_off_cents, currency: 'usd', duration: 'once',
+            name: `Live ${d.episode.toUpperCase()} — Pro first month`,
+            redeem_by: Math.floor(new Date(d.ends_at).getTime() / 1000),
+          });
+        }
+        discounts = [{ coupon: d.coupon }];
+        sessionMetadata.live_deal = d.episode;
+      }
+    }
+
     // Stripe rejects trial_period_days: 0, so the key is left out for "bill today".
     const trialDays = metadata?.trial_period_days !== undefined ? Number(metadata.trial_period_days) : isSignupFlow ? 7 : 0;
     const session = await stripe.checkout.sessions.create({
@@ -255,6 +276,7 @@ Deno.serve(async (req) => {
           : { price: price_id, quantity: 1 },
       ],
       mode,
+      ...(discounts ? { discounts } : {}),
       ...(embedded ? { ui_mode: 'embedded', return_url } : { success_url, cancel_url }),
       metadata: sessionMetadata,
       subscription_data: mode === 'subscription'

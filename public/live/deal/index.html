@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Your live deal | Promoter OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,900&family=Saira+Condensed:wght@400;600&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.ico?v=3" sizes="any">
+<meta name="theme-color" content="#1140F0">
+<style>
+:root{--dark:#14171E;--card:#22262F;--blue:#1140F0;--sky:#8FD3FF;--red:#F0605A;--amber:#F2B640;--ink:rgba(255,255,255,.75)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body{background:var(--blue);color:#fff;font-family:'Saira Condensed',system-ui,sans-serif;font-size:19px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  background-image:linear-gradient(rgba(255,255,255,.075) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.075) 1px,transparent 1px);background-size:74px 74px}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+.wrap{max-width:620px;margin:0 auto;padding:clamp(28px,7vw,64px) 20px}
+.logo{display:flex;align-items:center;gap:12px;margin-bottom:40px}.logo img{height:24px}.logo img:first-child{height:40px;width:40px;object-fit:contain}
+h1{font-family:'Archivo',system-ui;font-variation-settings:'wdth' 125;font-weight:900;text-transform:uppercase;line-height:.95;margin:0;font-size:clamp(36px,8vw,64px)}
+.sky{color:var(--sky);text-shadow:0 0 18px rgba(143,211,255,.55)}
+.lab{font-family:'Space Grotesk',monospace;font-weight:700;text-transform:uppercase;letter-spacing:.22em;font-size:11px;color:#cfe4ff}
+.win{background:var(--dark);border-radius:20px;padding:22px;margin-top:26px;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;text-decoration:none;background:var(--sky);color:#04214D;border-radius:14px;
+  font-family:'Archivo';font-variation-settings:'wdth' 125;font-weight:900;text-transform:uppercase;font-size:18px;padding:18px 22px;margin-top:14px}
+.btn.ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.35)}
+.cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+.cd div{background:var(--card);border-radius:12px;padding:12px 4px;text-align:center}
+.cd b{display:block;font-family:'Archivo';font-variation-settings:'wdth' 125;font-weight:900;font-size:30px;line-height:1;color:var(--sky)}
+.cd small{font-family:'Space Grotesk';font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#9FB0C9}
+p{color:var(--ink)}b{color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo"><img src="/promoter-os-mark.png" alt=""><img src="/promoter-os-wordmark.png" alt="Promoter OS"></div>
+  <p class="lab">For everyone who registered · EP. 01</p>
+  <h1 id="h">First month of Pro <span class="sky">for $39.</span></h1>
+  <div class="win" id="box">
+    <p style="margin:0">Normally $99. Unlimited shows, drop a deal memo or a settlement and it builds the show, 400 AI credits a month, and the same screens from the live.</p>
+    <p id="ends" style="margin:12px 0 0"></p>
+    <p style="margin:12px 0 0"><b>Use the same email you registered with.</b> The $60 comes off automatically when you pick Pro.</p>
+    <a class="btn" id="new" href="/signup">I'm new — start here</a>
+    <a class="btn ghost" href="/login?next=%2Fsubscription">I already have an account</a>
+    <p style="margin:14px 0 0;font-size:16px">New? Sign up, then go to <b>Subscription → Pro</b>.</p>
+  </div>
+</div>
+<script>
+var ENDS=new Date('2026-10-30T19:00:00-05:00');
+var f=new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'});
+var q=new URLSearchParams(location.search), e=q.get('e');
+var keep=['utm_source','utm_medium','utm_campaign','utm_content'].filter(function(k){return q.get(k);}).map(function(k){return k+'='+encodeURIComponent(q.get(k));});
+document.getElementById('new').href='/signup?'+(e?'email='+encodeURIComponent(e)+'&':'')+keep.join('&');
+if(new Date()>=ENDS){
+  document.getElementById('h').innerHTML='This deal <span class="sky">ended.</span>';
+  document.getElementById('box').innerHTML='<p style="margin:0">It ended '+f.format(ENDS)+' CT. Promoter OS is still free for 7 days.</p><a class="btn" href="/signup">Start free</a><a class="btn ghost" href="/live/">Next live episode</a>';
+} else { document.getElementById('ends').innerHTML='Ends <b>'+f.format(ENDS)+' CT</b>.'; }
+</script>
+</body></html>

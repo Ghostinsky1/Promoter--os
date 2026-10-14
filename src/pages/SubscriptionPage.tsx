@@ -3,6 +3,7 @@ import { STRIPE_PRODUCTS } from '../stripe-config';
 import { ProductCard } from '../components/subscription/ProductCard';
 import { SubscriptionCard } from '../components/subscription/SubscriptionCard';
 import { CreditsCard } from '../components/subscription/CreditsCard';
+import { LiveDealBanner } from '../components/subscription/LiveDealBanner';
 import { CreditCard, Crown, Check, Music, Calendar, DollarSign, TrendingUp } from 'lucide-react';
 
 export function SubscriptionPage() {
@@ -21,6 +22,8 @@ export function SubscriptionPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <LiveDealBanner />
+
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6 text-white">Current Subscription</h2>
           <SubscriptionCard />

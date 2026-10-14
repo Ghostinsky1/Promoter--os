@@ -485,7 +485,7 @@ select.fld{appearance:none;-webkit-appearance:none}
         <div class="win-bar"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b>Seat saved</b><span class="tag">EP. 01</span></div>
         <div class="win-body">
           <h3 style="font-size:clamp(24px,4.6vw,38px)">You're in.</h3>
-          <p style="color:var(--ink);margin:10px 0 20px" id="doneLine">We'll email you the link the day before and again an hour out.</p>
+          <p style="color:var(--ink);margin:10px 0 20px" id="doneLine">Check your inbox — your link is on its way.</p>
           <a class="btn" id="ics" href="#" download="before-you-send-the-deposit-ep01.ics"><svg class="ico "><use href="#i-cal"/></svg>Add to calendar ↓</a>
         </div>
       </div>
@@ -527,7 +527,7 @@ var fmtTime=new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit',tim
 var whenText=fmtDay.format(start)+' · '+fmtTime.format(start)+' Central';
 document.getElementById('whenBar').textContent='Live · '+fmtDay.format(start)+' · '+fmtTime.format(start)+' CT';
 document.getElementById('whenLine').textContent=whenText+'. One hour, live on Zoom. Free.';
-document.getElementById('doneLine').textContent=whenText+'. The Zoom link hits your inbox the day before, and again an hour out.';
+document.getElementById('doneLine').textContent=whenText+'. Your link is in your inbox now — and we\'ll remind you the day before and an hour out.';
 
 var cdEls=document.querySelectorAll('#cd b');
 function tick(){
@@ -586,7 +586,7 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){
 document.querySelectorAll('.rv').forEach(function(el,i){el.style.transitionDelay=(i%4)*60+'ms';io.observe(el);});
 requestAnimationFrame(function(){document.body.classList.add('on');});
 
-/* ---------- registration → leads table (capture_lead, same as the playbook) ---------- */
+/* ---------- registration → live-email (lead + registration + confirmation email) ---------- */
 var SB='https://azenzsggqexyonafxlsf.supabase.co';
 var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6ZW56c2dncWV4eW9uYWZ4bHNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0MTQzMzUsImV4cCI6MjEwNDk5MDMzNX0.TZk9XtaBlGBB8XjJhIbG5athn1Ki5IHjY0x2HfSvWB8';
 var q=new URLSearchParams(location.search);
@@ -596,18 +596,18 @@ document.getElementById('regForm').addEventListener('submit',function(ev){
   var email=f.email.value.trim();
   if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)){err.textContent='That email looks off — check it and try again.';err.style.display='block';return;}
   err.style.display='none'; btn.disabled=true; btn.textContent='Saving…';
-  fetch(SB+'/rest/v1/rpc/capture_lead',{
+  // live-email saves the lead, records the registration and sends the confirmation.
+  fetch(SB+'/functions/v1/live-email',{
     method:'POST',
     headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+KEY},
     body:JSON.stringify({
-      p_email:email.toLowerCase(),
-      p_first_name:f.first_name.value.trim()||null,
-      p_promoter_type:f.promoter_type.value||null,
-      p_language:'en',
-      p_source:SOURCE,
-      p_utm_source:q.get('utm_source'),p_utm_medium:q.get('utm_medium'),
-      p_utm_campaign:q.get('utm_campaign'),p_utm_content:q.get('utm_content'),
-      p_referrer:document.referrer||null
+      mode:'welcome', episode:SOURCE.replace('live_',''),
+      email:email.toLowerCase(),
+      first_name:f.first_name.value.trim()||null,
+      promoter_type:f.promoter_type.value||null,
+      utm_source:q.get('utm_source'),utm_medium:q.get('utm_medium'),
+      utm_campaign:q.get('utm_campaign'),utm_content:q.get('utm_content'),
+      referrer:document.referrer||null
     })
   }).then(function(r){ if(!r.ok) throw new Error(r.status); })
   .then(function(){

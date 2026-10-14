@@ -58,6 +58,10 @@ export function AskDock() {
   const [showThreads, setShowThreads] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [renaming, setRenaming] = useState<{ id: string; title: string } | null>(null);
+  const [receiptsOpen, setReceiptsOpen] = useState(false);
+  // Hooks stay above the early return below (React #310 otherwise).
+  const { organization } = useOrganization();
+  const onTrial = organization?.subscription_status === 'trialing';
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -92,15 +96,12 @@ export function AskDock() {
   const onDrop = (e: DragEvent) => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files); };
 
   const creditsLeft = ask.credits?.total_left;
-  const { organization } = useOrganization();
-  const onTrial = organization?.subscription_status === 'trialing';
   const isActive = (p: string) => location.pathname === p || location.pathname.startsWith(p + '/');
   const typing = text.trim().length > 0 && !ask.sending;
   const mood: Mood = ask.sending ? ask.mood : typing ? 'listening' : ask.mood;
   const showChips = !ask.welcome && !ask.thread && ask.messages.length === 0 && !typing && files.length === 0;
   const deal = ask.thread?.deal_on_table;
   const receipts = ask.thread?.receipts;
-  const [receiptsOpen, setReceiptsOpen] = useState(false);
 
   return (
     <>

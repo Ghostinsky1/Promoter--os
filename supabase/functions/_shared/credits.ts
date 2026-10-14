@@ -60,7 +60,9 @@ export function outOfCredits(status: CreditStatus | null, needed: number) {
   return {
     error: status && status.total_left > 0
       ? `This needs ${needed} credits and you have ${status.total_left} left.`
-      : 'You are out of AI credits for this month.',
+      : status && status.monthly_allowance === 0
+        ? 'Your free trial credits are used up. Start a plan to keep going.'
+        : 'You are out of AI credits for this month.',
     credits: true,
     credits_left: status?.total_left ?? 0,
     credits_needed: needed,

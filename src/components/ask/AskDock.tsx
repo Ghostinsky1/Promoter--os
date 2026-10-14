@@ -5,6 +5,7 @@ import {
   MessagesSquare, Plus, Trash2, ChevronLeft, Pencil, AlertCircle,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useOrganization } from '../../hooks/useOrganization';
 import { useAsk } from './AskProvider';
 import { Mascot, type Mood } from './Mascot';
 import type { AskThread } from '../../lib/ask';
@@ -91,6 +92,8 @@ export function AskDock() {
   const onDrop = (e: DragEvent) => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files); };
 
   const creditsLeft = ask.credits?.total_left;
+  const { organization } = useOrganization();
+  const onTrial = organization?.subscription_status === 'trialing';
   const isActive = (p: string) => location.pathname === p || location.pathname.startsWith(p + '/');
   const typing = text.trim().length > 0 && !ask.sending;
   const mood: Mood = ask.sending ? ask.mood : typing ? 'listening' : ask.mood;
@@ -271,7 +274,7 @@ export function AskDock() {
                     <span>
                       {ask.error}
                       {ask.outOfCredits && (
-                        <button onClick={() => go('/subscription#credits')} className="ml-2 inline-flex items-center gap-1 text-[#8FD3FF] font-semibold" style={{ textTransform: 'none', letterSpacing: 0 }}><Zap className="w-3 h-3" /> Get more credits</button>
+                        <button onClick={() => go(onTrial ? '/subscription#plans' : '/subscription#credits')} className="ml-2 inline-flex items-center gap-1 text-[#8FD3FF] font-semibold" style={{ textTransform: 'none', letterSpacing: 0 }}><Zap className="w-3 h-3" /> {onTrial ? 'Start a plan for more credits' : 'Get more credits'}</button>
                       )}
                     </span>
                   </div>

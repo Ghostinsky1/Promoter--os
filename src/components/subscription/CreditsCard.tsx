@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Zap, Loader2, Check } from 'lucide-react';
+import { Zap, Loader2, Check, ArrowRight } from 'lucide-react';
 import { useAsk } from '../ask/AskProvider';
+import { useOrganization } from '../../hooks/useOrganization';
 import { buyCredits, CREDIT_PACKS } from '../../lib/ask';
 
 /**
@@ -9,9 +10,14 @@ import { buyCredits, CREDIT_PACKS } from '../../lib/ask';
  * What burns a credit: a chat message (1), a chat message with photos (2), a
  * document scan (3). Deal Score and Insights are arithmetic on the promoter's
  * own numbers, not a model, and never cost a credit.
+ *
+ * On the free trial there are 20 credits and no packs: more credits means
+ * starting a plan (Jose's rule). The button scrolls to the plans below.
  */
 export function CreditsCard() {
   const { credits, refresh } = useAsk();
+  const { organization } = useOrganization();
+  const onTrial = organization?.subscription_status === 'trialing';
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const added = new URLSearchParams(window.location.search).get('credits') === 'added';
@@ -50,9 +56,24 @@ export function CreditsCard() {
 
       <p className="text-xs text-gray-400 mb-4">
         A chat message is 1 credit, 2 with photos attached. A document scan is 3. Deal Score and Insights are your own math and never cost anything.
-        Monthly credits reset each billing cycle; bought credits never expire and are used after them.
+        {onTrial
+          ? ' Your trial came with 20. A plan gives you a monthly allowance: Starter 100, Pro 400, Agency 1,500.'
+          : ' Monthly credits reset each billing cycle; bought credits never expire and are used after them.'}
       </p>
 
+      {onTrial ? (
+        <button
+          onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+          className="w-full flex items-center justify-between gap-3 bg-[#1140F0] hover:bg-[#0B2FB8] border border-[#5A8CFF]/40 rounded-xl px-4 py-3 text-left"
+          style={{ textTransform: 'none', letterSpacing: 0 }}
+        >
+          <span>
+            <span className="block text-white font-semibold">Start a plan to get more credits</span>
+            <span className="block text-[11px] text-white/70">Billed today, credits unlock right away. Pick a plan below.</span>
+          </span>
+          <ArrowRight className="w-5 h-5 text-[#8FD3FF] shrink-0" />
+        </button>
+      ) : (
       <div className="grid sm:grid-cols-2 gap-3">
         {CREDIT_PACKS.map((p) => (
           <button
@@ -70,6 +91,7 @@ export function CreditsCard() {
           </button>
         ))}
       </div>
+      )}
       {error && <p className="text-xs text-red-300 mt-3">{error}</p>}
     </div>
   );

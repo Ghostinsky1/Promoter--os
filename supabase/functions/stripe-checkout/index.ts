@@ -226,6 +226,10 @@ Deno.serve(async (req) => {
     }
     if (pack) {
       if (!sessionMetadata.organization_id) return corsResponse({ error: 'Sign in to buy credits.' }, 401);
+      // Jose's rule: the free trial comes with its credits and that is it.
+      // More credits means starting a plan, not buying a pack.
+      const { data: orgRow } = await supabase.from('organizations').select('subscription_status').eq('id', sessionMetadata.organization_id).maybeSingle();
+      if (orgRow?.subscription_status === 'trialing') return corsResponse({ error: 'Credit packs are for paid plans. Start a plan to get monthly credits.' }, 403);
       sessionMetadata.credits = String(pack.credits);
       sessionMetadata.pack = body.pack;
       delete sessionMetadata.tier;
@@ -233,6 +237,8 @@ Deno.serve(async (req) => {
       sessionMetadata.tier = price_id === 'price_1UG3GxGeegvFIqACTTpeqq4n' ? 'pro' : 'starter';
     }
 
+    // Stripe rejects trial_period_days: 0, so the key is left out for "bill today".
+    const trialDays = metadata?.trial_period_days !== undefined ? Number(metadata.trial_period_days) : isSignupFlow ? 7 : 0;
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
@@ -253,7 +259,11 @@ Deno.serve(async (req) => {
       metadata: sessionMetadata,
       subscription_data: mode === 'subscription'
         ? {
-            trial_period_days: metadata?.trial_period_days !== undefined ? Number(metadata.trial_period_days) : 14,
+            // The free trial lives in the app (7 days, no card). Starting a
+            // plan from inside the app bills today, so the plan's credits
+            // unlock right away. Only the legacy card-first signup gets a
+            // Stripe trial.
+            ...(trialDays > 0 ? { trial_period_days: trialDays } : {}),
             metadata: sessionMetadata
           }
         : undefined,

@@ -14,6 +14,9 @@ import { SummaryTab } from './tabs/SummaryTab';
 import { WizardHeader } from './WizardHeader';
 import { ArrowLeft, ArrowRight, Check, FileText, X, ChevronLeft, ChevronRight, Save } from 'lucide-react';
 import { findExistingShow, isDuplicateShowError } from '../lib/duplicateShow';
+import { VenuePicker } from './VenuePicker';
+import { withVenueCosts, type Venue } from '../lib/venues';
+import { offerFieldsFromTemplate } from '../lib/dealTemplate';
 
 // A rate box the user cleared yields NaN; NaN serializes to null and silently
 // wipes the column. Never let that reach the database.
@@ -47,6 +50,7 @@ export function CreateOffer() {
   const [venueCity, setVenueCity] = useState('');
   const [venueState, setVenueState] = useState('');
   const [venueZip, setVenueZip] = useState('');
+  const [pickedVenue, setPickedVenue] = useState<Venue | null>(null);
 
   const [facilityFeePerTicket, setFacilityFeePerTicket] = useState<number>(2.00);
   const [ageLimit, setAgeLimit] = useState<string>('All Ages');
@@ -198,6 +202,27 @@ export function CreateOffer() {
     navigate(location.pathname, { replace: true, state: {} });
   }, [location.state]);
 
+  // Picking a saved venue fills the address, capacity, fee and its cost lines.
+  const applyVenue = (v: Venue) => {
+    setPickedVenue(v);
+    setVenueName(v.name);
+    if (v.street) setVenueStreet(v.street);
+    if (v.city) setVenueCity(v.city);
+    if (v.state) setVenueState(v.state);
+    if (v.zip) setVenueZip(v.zip);
+    if (v.capacity) setCapacity(v.capacity);
+    if (v.facility_fee_per_ticket != null) setFacilityFeePerTicket(Number(v.facility_fee_per_ticket));
+    if (v.costs?.length) setExpenses((e) => withVenueCosts(e, v.costs));
+  };
+  const venueHandedRef = useRef(false);
+  useEffect(() => {
+    const vid = (location.state as any)?.venueId;
+    if (!vid || venueHandedRef.current) return;
+    venueHandedRef.current = true;
+    setShowInitialModal(false);
+    supabase.from('venues').select('*').eq('id', vid).maybeSingle().then(({ data }) => { if (data) applyVenue(data as Venue); });
+  }, [location.state]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const loadTemplate = (template: Template) => {
     setDealType(template.deal_type || 'flat_fee');
     setTaxWithholdingPct(template.tax_withholding_pct ?? 2);
@@ -217,6 +242,19 @@ export function CreateOffer() {
     if (t.insurance_per_attendee != null) setInsurancePerAttendee(Number(t.insurance_per_attendee));
     if (t.cc_fee_rate != null) setCcFeeRate(Number(t.cc_fee_rate));
     if (t.include_extra_revenue != null) setIncludeExtraRevenue(!!t.include_extra_revenue);
+    // The rest of the deal (Oct 20): guarantee and splits, payment terms, comps, artist travel.
+    const f = offerFieldsFromTemplate(t);
+    const setters: Record<string, (v: any) => void> = {
+      guarantee: setGuarantee, artist_percentage: setArtistPercentage, artist_backend_pct: setArtistBackendPct, promoter_backend_pct: setPromoterBackendPct,
+      facility_fee_mode: setFacilityFeeMode, artist_pct_basis: setArtistPctBasis, door_split_basis: setDoorSplitBasis,
+      balance_due_timing: setBalanceDueTiming, payment_method: setPaymentMethod, settlement_days: setSettlementDays,
+      merch_rate_soft: setMerchRateSoft, merch_rate_hard: setMerchRateHard, age_limit: setAgeLimit,
+      comps_artist: setCompsArtist, comps_venue: setCompsVenue, comps_promoter: setCompsPromoter,
+      include_hotel: setIncludeHotel, hotel_budget: setHotelBudget, hotel_nights: setHotelNights,
+      include_transport: setIncludeTransport, transport_budget: setTransportBudget,
+      include_flights: setIncludeFlights, flight_budget: setFlightBudget, include_rider: setIncludeRider, rider_cap: setRiderCap,
+    };
+    for (const [k, set] of Object.entries(setters)) if (f[k] !== undefined) set(f[k]);
     if (Array.isArray(t.extra_revenue) && t.extra_revenue.length > 0) setExtraRevenue(t.extra_revenue);
 
     if (template.ticket_tier_templates && template.ticket_tier_templates.length > 0) {
@@ -250,7 +288,8 @@ export function CreateOffer() {
         });
       });
 
-      setExpenses(newExpenses);
+      // A venue already picked keeps its cost lines on top of the template's.
+      setExpenses(pickedVenue ? withVenueCosts(newExpenses, pickedVenue.costs) : newExpenses);
     }
 
     setShowTemplateSelector(false);
@@ -410,6 +449,7 @@ export function CreateOffer() {
         venue_state: venueState,
         venue_zip: venueZip,
         venue_full_address: venueFullAddress,
+        ...(pickedVenue && pickedVenue.name === venueName ? { venue_id: pickedVenue.id } : {}),
         artist_deposit_status: artistDepositStatus,
         balance_due_timing: balanceDueTiming,
         custom_balance_due_date: customBalanceDueDate || null,
@@ -736,6 +776,16 @@ export function CreateOffer() {
       {/* Main Form Content */}
       <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         <div className="bg-[#14171E] border border-gray-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8">
+          {currentStep === 1 && (
+            <div className="mb-4">
+              <VenuePicker
+                label="Pick a saved venue (optional)"
+                placeholder="Search your venues"
+                onPick={applyVenue}
+                picked={pickedVenue && pickedVenue.name === venueName ? pickedVenue : null}
+              />
+            </div>
+          )}
           {currentStep === 1 && (
             <EventDetailsTab
               eventName={eventName}

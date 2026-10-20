@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, MapPin, Calendar, DollarSign, Music2, TrendingUp } from 'lucide-react';
+import { Plus, ChevronRight, AlertTriangle, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { Tour, TourWithDates } from '../types';
 import { useAuth } from '../hooks/useAuth';
-import { formatCurrency } from '../lib/calculations';
 import { FeatureGate } from '../components/FeatureGate';
 import { parseLocalDate } from '../lib/dateHelpers';
+import { loadTourRows, type TourRow } from '../lib/tourRows';
+import { STAGE, short$, money$ } from '../lib/tourPipeline';
 
 export function ToursPage() {
   return (
@@ -16,396 +16,180 @@ export function ToursPage() {
   );
 }
 
+const STATUS: Record<string, string> = {
+  planning: '#93A2B8', booking: '#5A8CFF', confirmed: '#4ADE80', active: '#8FD3FF', completed: '#6B7280', cancelled: '#F0605A',
+};
+const STATUS_OPTIONS = ['planning', 'booking', 'confirmed', 'active', 'completed', 'cancelled'];
+type Filter = 'running' | 'done' | 'all';
+
+const fmt = (d?: string | null) => (d ? parseLocalDate(d)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }) : null);
+
 function ToursPageContent() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [tours, setTours] = useState<TourWithDates[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [statusMenuOpen, setStatusMenuOpen] = useState<string | null>(null);
+  const [rows, setRows] = useState<TourRow[] | null>(null);
+  const [filter, setFilter] = useState<Filter>('running');
+  const [menu, setMenu] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
-      loadTours();
-    }
+    if (!user) return;
+    loadTourRows().then(setRows).catch(() => setRows([]));
   }, [user]);
 
   useEffect(() => {
-    const handleClickOutside = () => {
-      if (statusMenuOpen) {
-        setStatusMenuOpen(null);
-      }
-    };
+    if (!menu) return;
+    const close = () => setMenu(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [menu]);
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [statusMenuOpen]);
+  const shown = useMemo(() => (rows || []).filter((r) => {
+    const done = r.tour.status === 'completed' || r.tour.status === 'cancelled';
+    return filter === 'all' ? true : filter === 'done' ? done : !done;
+  }), [rows, filter]);
 
-  const loadTours = async () => {
-    try {
-      console.log('🔍 Loading tours...');
+  const totals = useMemo(() => shown.reduce((a, r) => ({
+    shows: a.shows + r.cards.filter((c) => c.stage !== 'dead').length,
+    made: a.made + r.m.made, closed: a.closed + r.m.closed, pipeline: a.pipeline + r.m.pipeline, pl: a.pl + r.m.pl,
+  }), { shows: 0, made: 0, closed: 0, pipeline: 0, pl: 0 }), [shown]);
 
-      if (!user) {
-        console.log('⚠️ No user logged in');
-        setTours([]);
-        setLoading(false);
-        return;
-      }
-
-      console.log('✅ User authenticated:', user.id);
-
-      const { data: memberData } = await supabase
-        .from('organization_members')
-        .select('organization_id')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (!memberData?.organization_id) {
-        console.log('⚠️ No organization found for user');
-        setTours([]);
-        setLoading(false);
-        return;
-      }
-
-      console.log('🏢 Organization ID:', memberData.organization_id);
-
-      const { data: toursData, error: toursError } = await supabase
-        .from('tours')
-        .select('*')
-        .eq('organization_id', memberData.organization_id)
-        .order('created_at', { ascending: false });
-
-      if (toursError) {
-        console.error('❌ Tours error:', toursError);
-        throw toursError;
-      }
-
-      console.log('📊 Tours loaded:', toursData?.length || 0);
-
-      if (toursData) {
-        const toursWithDates = await Promise.all(
-          toursData.map(async (tour) => {
-            const { data: offers } = await supabase
-              .from('offers')
-              .select('*, show:shows(*)')
-              .eq('tour_id', tour.id)
-              .eq('organization_id', memberData.organization_id)
-              .order('show_number', { ascending: true });
-
-            const dates = offers?.map((offer: any) => ({
-              offer_id: offer.id,
-              event_date: offer.show.event_date,
-              venue_name: offer.show.venue_name,
-              city: offer.show.venue_name.split(',')[1]?.trim() || 'TBD',
-              capacity: offer.show.capacity,
-              net_profit: offer.calculations?.netProfit || 0,
-              gross_potential: offer.calculations?.grossPotential || 0,
-              total_expenses: offer.calculations?.totalExpenses || 0,
-              status: offer.status || 'planning',
-              show_number: offer.show_number || 0
-            })) || [];
-
-            const activeDates = dates.filter(d => d.status !== 'cancelled');
-
-            const projected_revenue = activeDates.reduce((sum, d) => {
-              const revenue = parseFloat(d.gross_potential) || 0;
-              return sum + revenue;
-            }, 0);
-
-            const total_costs = activeDates.reduce((sum, d) => {
-              const costs = parseFloat(d.total_expenses) || 0;
-              return sum + costs;
-            }, 0);
-
-            const net_profit = activeDates.reduce((sum, d) => {
-              const profit = parseFloat(d.net_profit) || 0;
-              return sum + profit;
-            }, 0);
-
-            const settled_count = activeDates.filter(d => d.status === 'settled' || d.status === 'completed').length;
-
-            console.log(`Tour: ${tour.name}`);
-            console.log(`  Shows: ${dates.length}`);
-            console.log(`  Revenue: ${projected_revenue}`);
-            console.log(`  Costs: ${total_costs}`);
-            console.log(`  Profit: ${net_profit}`);
-
-            return {
-              ...tour,
-              dates,
-              projected_revenue,
-              total_costs,
-              net_profit,
-              settled_count
-            };
-          })
-        );
-
-        console.log('✅ Tours with dates loaded:', toursWithDates.length);
-        setTours(toursWithDates);
-      }
-    } catch (error) {
-      console.error('❌ Error loading tours:', error);
-      setTours([]);
-    } finally {
-      setLoading(false);
-    }
+  const setStatus = async (id: string, status: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMenu(null);
+    const { error } = await supabase.from('tours').update({ status }).eq('id', id);
+    if (!error) setRows((rs) => (rs || []).map((r) => (r.tour.id === id ? { ...r, tour: { ...r.tour, status } } : r)));
   };
 
-  const calculateTotalProjectedProfit = () => {
-    return tours.reduce((sum, tour) => sum + (tour.net_profit || 0), 0);
+  const counts = {
+    running: (rows || []).filter((r) => !['completed', 'cancelled'].includes(r.tour.status)).length,
+    done: (rows || []).filter((r) => ['completed', 'cancelled'].includes(r.tour.status)).length,
+    all: rows?.length || 0,
   };
-
-  const getUniqueCities = () => {
-    const cities = new Set<string>();
-    tours.forEach(tour => {
-      tour.dates?.forEach(date => cities.add(date.city));
-    });
-    return cities.size;
-  };
-
-  const getTotalShows = () => {
-    return tours.reduce((sum, tour) => sum + (tour.dates?.length || 0), 0);
-  };
-
-  const getTourStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      planning: 'bg-slate-500/20 text-slate-400 border border-slate-500/30',
-      booking: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
-      confirmed: 'bg-green-500/20 text-green-400 border border-green-500/30',
-      active: 'bg-purple-500/20 text-purple-400 border border-purple-500/30',
-      completed: 'bg-gray-500/20 text-gray-400 border border-gray-500/30',
-      cancelled: 'bg-red-500/20 text-red-400 border border-red-500/30'
-    };
-    return colors[status] || colors.planning;
-  };
-
-  const getTourProgress = (tour: TourWithDates) => {
-    if (!tour.dates || tour.dates.length === 0) return 0;
-    const completed = tour.dates.filter(d => d.status === 'settled' || d.status === 'completed').length;
-    return Math.round((completed / tour.dates.length) * 100);
-  };
-
-  const updateTourStatus = async (tourId: string, newStatus: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    try {
-      const { error } = await supabase
-        .from('tours')
-        .update({ status: newStatus })
-        .eq('id', tourId);
-
-      if (error) throw error;
-
-      setTours(tours.map(tour =>
-        tour.id === tourId ? { ...tour, status: newStatus } : tour
-      ));
-      setStatusMenuOpen(null);
-    } catch (error) {
-      console.error('Error updating tour status:', error);
-      alert('Failed to update tour status');
-    }
-  };
-
-  const toggleStatusMenu = (tourId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setStatusMenuOpen(statusMenuOpen === tourId ? null : tourId);
-  };
-
-  const statusOptions = ['planning', 'booking', 'confirmed', 'active', 'completed', 'cancelled'];
-
-  if (loading) {
-    return <div className="min-h-screen bg-[#1140F0] flex items-center justify-center text-white">Loading...</div>;
-  }
+  const lab = 'font-label text-[10px] tracking-[0.16em] uppercase';
 
   return (
     <div className="min-h-screen bg-[#1140F0]">
       <div className="bg-[#14171E] border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white">Tours</h1>
-              <p className="text-gray-400 mt-1">Manage multi-city tours and track performance</p>
-            </div>
-            <button
-              onClick={() => navigate('/tours/create')}
-              className="flex items-center gap-2 px-4 py-2 bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-2xl font-bold transition-colors"
-            >
-              <Plus className="h-5 w-5" />
-              Create Tour
-            </button>
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white leading-none">Tours</h1>
+            <p className="text-gray-400 text-sm mt-1">Every run, its pipeline and its P/L.</p>
           </div>
+          <button onClick={() => navigate('/tours/create')} className="flex items-center gap-1.5 px-3 py-2 bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-xl text-sm font-bold">
+            <Plus className="h-4 w-4" /> New tour
+          </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="p-4 bg-[#14171E] border border-gray-800 text-white rounded-2xl hover:border-[#8FD3FF]/50 transition-colors">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-[#8FD3FF]/10 rounded-xl">
-                <Music2 className="h-6 w-6 text-[#8FD3FF]" />
-              </div>
-              <div className="text-3xl font-bold text-white">{tours.length}</div>
+      <div className="max-w-6xl mx-auto px-4 py-4">
+        {/* totals strip */}
+        <div className="bg-[#14171E] border border-[#2A3040] rounded-xl grid grid-cols-3 sm:grid-cols-6 divide-x divide-[#2A3040] mb-3">
+          {[
+            ['Tours', String(shown.length), '#FFFFFF'],
+            ['Shows', String(totals.shows), '#FFFFFF'],
+            ['Made', short$(totals.made), '#4ADE80'],
+            ['Closed', short$(totals.closed), '#8FD3FF'],
+            ['Pipeline', short$(totals.pipeline), '#F2B640'],
+            ['P/L', money$(totals.pl), totals.pl < 0 ? '#F87171' : '#4ADE80'],
+          ].map(([l, v, c], i) => (
+            <div key={l} className={`px-3 py-2 ${i >= 3 ? 'border-t sm:border-t-0 border-[#2A3040]' : ''}`}>
+              <div className={`${lab} text-gray-400`}>{l}</div>
+              <div className="text-base font-bold leading-tight" style={{ color: c }}>{v}</div>
             </div>
-            <div className="text-sm text-gray-400">Active Tours</div>
-          </div>
-
-          <div className="p-4 bg-[#14171E] border border-gray-800 text-white rounded-2xl hover:border-blue-500/50 transition-colors">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-blue-500/10 rounded-xl">
-                <Calendar className="h-6 w-6 text-blue-400" />
-              </div>
-              <div className="text-3xl font-bold text-white">{getTotalShows()}</div>
-            </div>
-            <div className="text-sm text-gray-400">Total Shows</div>
-          </div>
-
-          <div className="p-4 bg-[#14171E] border border-gray-800 text-white rounded-2xl hover:border-green-500/50 transition-colors">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-green-500/10 rounded-xl">
-                <DollarSign className="h-6 w-6 text-green-400" />
-              </div>
-              <div className="text-3xl font-bold text-white">
-                ${Math.round(calculateTotalProjectedProfit() / 1000)}K
-              </div>
-            </div>
-            <div className="text-sm text-gray-400">Projected Profit</div>
-          </div>
-
-          <div className="p-4 bg-[#14171E] border border-gray-800 text-white rounded-2xl hover:border-orange-500/50 transition-colors">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-orange-500/10 rounded-xl">
-                <MapPin className="h-6 w-6 text-orange-400" />
-              </div>
-              <div className="text-3xl font-bold text-white">{getUniqueCities()}</div>
-            </div>
-            <div className="text-sm text-gray-400">Cities</div>
-          </div>
+          ))}
         </div>
 
-        {tours.length === 0 ? (
-          <div className="bg-[#14171E] border border-gray-800 rounded-3xl p-12 text-center">
-            <div className="w-20 h-20 bg-[#0B0D12] border border-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Music2 className="h-10 w-10 text-gray-600" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">No Tours Yet</h3>
-            <p className="text-gray-400 mb-6">
-              Create your first tour to manage multiple shows
-            </p>
-            <button
-              onClick={() => navigate('/tours/create')}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-2xl font-bold transition-colors"
-            >
-              <Plus className="h-5 w-5" />
-              Create Tour
+        {/* filter */}
+        <div className="flex gap-1 mb-2">
+          {(['running', 'done', 'all'] as Filter[]).map((f) => (
+            <button key={f} onClick={() => setFilter(f)}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold border ${filter === f ? 'bg-[#8FD3FF] text-[#04214D] border-[#8FD3FF]' : 'bg-[#14171E] text-gray-300 border-[#2A3040]'}`}
+              style={{ textTransform: 'none', letterSpacing: 0 }}>
+              {f === 'running' ? 'Running' : f === 'done' ? 'Done' : 'All'} <span className="opacity-60">{counts[f]}</span>
             </button>
+          ))}
+        </div>
+
+        {rows === null ? (
+          <div className="flex items-center justify-center py-16 text-white"><Loader2 className="w-5 h-5 animate-spin" /></div>
+        ) : shown.length === 0 ? (
+          <div className="bg-[#14171E] border border-[#2A3040] rounded-xl p-8 text-center">
+            <p className="text-white font-semibold">{rows.length ? 'Nothing here.' : 'No tours yet.'}</p>
+            <p className="text-gray-400 text-sm mt-1">A tour holds a run of shows: venues you are chasing, offers out, and the P/L.</p>
+            {!rows.length && (
+              <button onClick={() => navigate('/tours/create')} className="mt-4 inline-flex items-center gap-1.5 px-3 py-2 bg-[#8FD3FF] text-[#04214D] rounded-xl text-sm font-bold">
+                <Plus className="h-4 w-4" /> New tour
+              </button>
+            )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {tours.map((tour) => (
-              <div
-                key={tour.id}
-                className="bg-[#14171E] border-2 border-gray-700 rounded-3xl p-6 hover:shadow-xl hover:border-[#8FD3FF]/50 transition-all cursor-pointer"
-                onClick={() => navigate(`/tours/${tour.id}`)}
-              >
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#8FD3FF] to-[#6FB8F2] rounded-2xl flex items-center justify-center text-[#04214D] text-2xl font-bold flex-shrink-0">
-                    {tour.artist_name.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-bold text-white mb-1 truncate">{tour.name}</h3>
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                      <Music2 className="h-4 w-4" />
-                      <span>{tour.artist_name}</span>
+          <div className="bg-[#14171E] border border-[#2A3040] rounded-xl overflow-visible">
+            {/* column heads, desktop */}
+            <div className={`hidden md:grid grid-cols-[minmax(0,1fr)_150px_70px_80px_80px_80px_90px_16px] gap-3 px-4 py-2 border-b border-[#2A3040] ${lab} text-gray-500`}>
+              <span>Tour</span><span>Dates</span><span className="text-right">Shows</span>
+              <span className="text-right">Made</span><span className="text-right">Closed</span><span className="text-right">Pipeline</span><span className="text-right">P/L</span><span />
+            </div>
+            {shown.map((r) => {
+              const t = r.tour;
+              const live = r.cards.filter((c) => c.stage !== 'dead');
+              const badDates = t.start_date && t.end_date && t.end_date < t.start_date;
+              const from = r.first || t.start_date, to = r.last || t.end_date;
+              return (
+                <div key={t.id} onClick={() => navigate(`/tours/${t.id}`)}
+                  className="group cursor-pointer px-4 py-2.5 border-b border-[#2A3040] last:border-b-0 hover:bg-[#1A1F2B] md:grid md:grid-cols-[minmax(0,1fr)_150px_70px_80px_80px_80px_90px_16px] md:gap-3 md:items-center">
+                  <div className="min-w-0 flex items-center gap-2">
+                    <div className="relative shrink-0">
+                      <button onClick={(e) => { e.stopPropagation(); setMenu(menu === t.id ? null : t.id); }}
+                        title="Change status"
+                        className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-md border border-[#2A3040] text-[10px] font-semibold"
+                        style={{ color: STATUS[t.status] || '#93A2B8', textTransform: 'none', letterSpacing: 0 }}>
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: STATUS[t.status] || '#93A2B8' }} />{t.status}
+                      </button>
+                      {menu === t.id && (
+                        <div className="absolute left-0 top-full mt-1 bg-[#14171E] border border-[#2A3040] rounded-lg shadow-xl z-20 min-w-[120px] py-1" onClick={(e) => e.stopPropagation()}>
+                          {STATUS_OPTIONS.map((s) => (
+                            <button key={s} onClick={(e) => setStatus(t.id, s, e)} className={`w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-[#1A1F2B] ${s === t.status ? 'bg-[#1A1F2B]' : ''}`} style={{ textTransform: 'none', letterSpacing: 0, color: STATUS[s] }}>
+                              <span className="w-1.5 h-1.5 rounded-full" style={{ background: STATUS[s] }} />{s}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-400 mt-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>
-                        {parseLocalDate(tour.start_date)?.toLocaleDateString()} - {parseLocalDate(tour.end_date)?.toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <button
-                      onClick={(e) => toggleStatusMenu(tour.id, e)}
-                      className={`text-xs px-2.5 py-1 rounded-xl font-medium hover:opacity-80 transition-opacity ${getTourStatusColor(tour.status)}`}
-                    >
-                      {tour.status}
-                    </button>
-                    {statusMenuOpen === tour.id && (
-                      <div className="absolute right-0 top-full mt-2 bg-[#14171E] border border-gray-700 rounded-xl shadow-xl z-10 min-w-[140px]">
-                        {statusOptions.map((status) => (
-                          <button
-                            key={status}
-                            onClick={(e) => updateTourStatus(tour.id, status, e)}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-800 transition-colors first:rounded-t-xl last:rounded-b-xl ${
-                              status === tour.status ? 'bg-gray-800' : ''
-                            }`}
-                          >
-                            <span className={`inline-block px-2 py-0.5 rounded-lg text-xs font-medium ${getTourStatusColor(status)}`}>
-                              {status}
-                            </span>
-                          </button>
-                        ))}
+                    <div className="min-w-0">
+                      <div className="text-white font-semibold text-sm truncate">{t.name}{t.artist_name && t.artist_name !== t.name ? <span className="text-gray-400 font-normal"> · {t.artist_name}</span> : null}</div>
+                      <div className="text-[11px] text-gray-400 truncate">
+                        {r.next
+                          ? <>Next <span className="text-white">{r.next.city || r.next.venue}</span> {fmt(r.next.date)} · <span style={{ color: STAGE[r.next.stage].color }}>{STAGE[r.next.stage].label}</span></>
+                          : r.cities.length ? r.cities.slice(0, 4).join(' · ') + (r.cities.length > 4 ? ` +${r.cities.length - 4}` : '') : 'No venues yet'}
                       </div>
-                    )}
+                    </div>
                   </div>
+                  <div className="text-xs text-gray-300 mt-1 md:mt-0 flex items-center gap-1">
+                    {badDates && <span title="The tour's end date is before its start date. Check the dates."><AlertTriangle className="w-3.5 h-3.5 text-amber-300" /></span>}
+                    {from ? `${fmt(from)} – ${fmt(to)}` : <span className="text-gray-500">No dates</span>}
+                  </div>
+                  {/* numbers: a 5-across mini grid on phones, columns on desktop */}
+                  <div className="grid grid-cols-5 gap-2 mt-1.5 md:mt-0 md:contents">
+                    {[
+                      ['Shows', String(live.length), 'text-white'],
+                      ['Made', short$(r.m.made), 'text-green-400'],
+                      ['Closed', short$(r.m.closed), 'text-[#8FD3FF]'],
+                      ['Pipeline', short$(r.m.pipeline), 'text-amber-300'],
+                      ['P/L', money$(r.m.pl), r.m.pl < 0 ? 'text-red-400' : 'text-green-400'],
+                    ].map(([l, v, c]) => (
+                      <div key={l} className="md:text-right">
+                        <div className={`md:hidden ${lab} text-[9px] text-gray-500`}>{l}</div>
+                        <div className={`text-sm font-semibold ${c} ${l === 'P/L' ? 'font-bold' : ''}`}>{v}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <ChevronRight className="hidden md:block w-4 h-4 text-gray-600 group-hover:text-white" />
                 </div>
-
-                <div className="grid grid-cols-4 gap-3 mb-4">
-                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 text-center">
-                    <div className="text-xl font-bold text-blue-400">
-                      {tour.dates?.length || 0}
-                    </div>
-                    <div className="text-xs text-gray-400">Shows</div>
-                  </div>
-                  <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-center">
-                    <div className="text-lg font-bold text-green-400">
-                      ${Math.round((tour.projected_revenue || 0) / 1000)}K
-                    </div>
-                    <div className="text-xs text-gray-400">Revenue</div>
-                  </div>
-                  <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-3 text-center">
-                    <div className="text-lg font-bold text-orange-400">
-                      ${Math.round((tour.total_costs || 0) / 1000)}K
-                    </div>
-                    <div className="text-xs text-gray-400">Costs</div>
-                  </div>
-                  <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-3 text-center">
-                    <div className={`text-lg font-bold ${
-                      (tour.net_profit || 0) >= 0 ? 'text-[#8FD3FF]' : 'text-red-500'
-                    }`}>
-                      ${Math.round((tour.net_profit || 0) / 1000)}K
-                    </div>
-                    <div className="text-xs text-gray-400">Profit</div>
-                  </div>
-                </div>
-
-                <div className="mb-3">
-                  <div className="flex justify-between text-xs text-gray-400 mb-1">
-                    <span>Tour Progress</span>
-                    <span>{getTourProgress(tour)}%</span>
-                  </div>
-                  <div className="w-full h-2 bg-[#0B0D12] border border-gray-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-[#8FD3FF] to-[#6FB8F2] transition-all"
-                      style={{ width: `${getTourProgress(tour)}%` }}
-                    />
-                  </div>
-                </div>
-
-                {tour.dates && tour.dates.length > 0 && (
-                  <div className="flex items-center gap-2 text-sm text-gray-400">
-                    <MapPin className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">
-                      {tour.dates.slice(0, 3).map(d => d.city).join(', ')}
-                      {tour.dates.length > 3 && ` +${tour.dates.length - 3} more`}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
+        <p className="text-[11px] text-white/60 mt-2">Made = settled shows. Closed = confirmed shows' projected profit. P/L = made minus tour costs.</p>
       </div>
     </div>
   );

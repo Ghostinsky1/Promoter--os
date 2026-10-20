@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Zap, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -6,6 +6,9 @@ import { calculateFromOffer, formatCurrency } from '../lib/calculations';
 import { survivalRead } from '../lib/downside';
 import { findExistingShow } from '../lib/duplicateShow';
 import { HelpLink } from './HelpLink';
+import { VenuePicker } from './VenuePicker';
+import { withVenueCosts, type Venue } from '../lib/venues';
+import { offerFieldsFromTemplate, dealLine, expenseTotal } from '../lib/dealTemplate';
 
 /**
  * PROMOTER OS — Quick Offer. The easy way.
@@ -64,8 +67,8 @@ export function QuickOffer() {
   const [qp] = useSearchParams();
   const fromTour = qp.get('tour');
   const fromLead = qp.get('lead');
-  const city = qp.get('city') || '';
-  const state = qp.get('state') || '';
+  const qCity = qp.get('city') || '';
+  const qState = qp.get('state') || '';
   const [artist, setArtist] = useState(qp.get('artist') || '');
   const [venue, setVenue] = useState(qp.get('venue') || '');
   const [date, setDate] = useState(qp.get('date') || '');
@@ -76,22 +79,56 @@ export function QuickOffer() {
   const [ads, setAds] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [picked, setPicked] = useState<Venue | null>(null);
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [templateId, setTemplateId] = useState('');
+  const template = templates.find((t) => t.id === templateId) || null;
+
+  // Saved deal templates, and a venue handed over from its page (?venue_id=).
+  useEffect(() => {
+    supabase.from('templates').select('*').order('created_at', { ascending: false }).then(({ data }) => setTemplates(data || []));
+    const vid = qp.get('venue_id');
+    if (vid) supabase.from('venues').select('*').eq('id', vid).maybeSingle().then(({ data }) => { if (data) pickVenue(data as Venue); });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const pickVenue = (v: Venue) => {
+    setPicked(v); setVenue(v.name);
+    if (v.capacity) setCapacity(String(v.capacity));
+  };
+  const pickTemplate = (id: string) => {
+    setTemplateId(id);
+    const t = templates.find((x) => x.id === id);
+    if (!t) return;
+    const f = offerFieldsFromTemplate(t);
+    if (!price && f.ticket_tiers?.[0]?.price) setPrice(String(f.ticket_tiers[0].price));
+    if (!fee && Number(f.guarantee) > 0) setFee(String(f.guarantee));
+  };
+  const usePicked = picked && picked.name === venue ? picked : null;
+  const city = usePicked?.city || qCity;
+  const state = usePicked?.state || qState;
+  const tFields = template ? offerFieldsFromTemplate(template) : {};
+  const itemized = withVenueCosts(tFields.expenses || { talent: {}, general: {}, marketing: {}, production: {} }, usePicked?.costs || []);
+  const itemizedTotal = expenseTotal(itemized);
 
   // The offer as it would be saved. The read below runs on exactly this.
   const draft = useMemo(() => {
     const cap = Math.max(0, Math.round(num(capacity)));
+    const { ticket_tiers: _tiers, expenses: _exp, ...deal } = tFields as any;
+    const e = itemized;
     return {
       ...DEFAULTS,
+      ...deal,
+      ...(usePicked?.facility_fee_per_ticket != null ? { facility_fee_per_ticket: Number(usePicked.facility_fee_per_ticket) } : {}),
       guarantee: num(fee),
       ticket_tiers: [{ type: 'GA', allotment: cap, comps: 0, price: num(price) }],
       expenses: {
-        talent: {},
-        general: { show_costs: num(costs) },
-        marketing: { paid_social: num(ads) },
-        production: {},
+        talent: { ...e.talent },
+        general: { ...e.general, ...(num(costs) || !('show_costs' in e.general) ? { show_costs: num(costs) } : {}) },
+        marketing: { ...e.marketing, ...(num(ads) || !('paid_social' in e.marketing) ? { paid_social: num(ads) } : {}) },
+        production: { ...e.production },
       },
     };
-  }, [capacity, price, fee, costs, ads]);
+  }, [capacity, price, fee, costs, ads, templateId, usePicked]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const calc = useMemo(() => calculateFromOffer(draft, 'estimate'), [draft]);
   const read = useMemo(() => survivalRead({ ...draft, calculations: calc, show: { capacity: num(capacity) } } as any), [draft, calc, capacity]);
@@ -136,6 +173,7 @@ export function QuickOffer() {
         ...(fromTour ? { tour_id: fromTour } : {}),
         ...(city ? { venue_city: city } : {}),
         ...(state ? { venue_state: state } : {}),
+        ...(usePicked ? { venue_id: usePicked.id, venue_street: usePicked.street, venue_zip: usePicked.zip } : {}),
       });
       if (offerErr) { await supabase.from('shows').delete().eq('id', showId); throw offerErr; }
       if (fromTour && fromLead) {
@@ -166,13 +204,23 @@ export function QuickOffer() {
 
         <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] gap-3 items-start">
           <div className="bg-[#14171E] border border-[#2A3040] rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {templates.length > 0 && (
+              <label className="block sm:col-span-2">
+                <span className="font-label text-[10px] tracking-[0.16em] uppercase text-gray-400">Deal template</span>
+                <select value={templateId} onChange={(e) => pickTemplate(e.target.value)} className="mt-1 w-full bg-[#0B0D12] border border-[#2A3040] rounded-lg px-3 py-2 text-[15px] text-white outline-none focus:border-[#8FD3FF]">
+                  <option value="">None — flat fee, default terms</option>
+                  {templates.map((t) => <option key={t.id} value={t.id}>{t.name} · {dealLine(t)}</option>)}
+                </select>
+                {template && <span className="text-[11px] text-green-300/90 mt-0.5 block">Deal: {dealLine({ ...template, guarantee: num(fee) })} · deposit {template.deposit_pct ?? 20}% · fees and rates from the template{template.ticket_tier_templates?.length > 1 ? ' · its ticket tiers are used in the full offer' : ''}</span>}
+              </label>
+            )}
             <div className="sm:col-span-2"><Field label="Artist" value={artist} onChange={setArtist} placeholder="Who is playing" /></div>
-            <Field label="Venue" value={venue} onChange={setVenue} placeholder="The room" />
+            <VenuePicker value={venue} onChange={setVenue} onPick={pickVenue} picked={picked} />
             <Field label="Date" value={date} onChange={setDate} type="date" />
             <Field label="Capacity" value={capacity} onChange={setCapacity} placeholder="800" inputMode="numeric" hint="How many tickets you can sell" />
             <Field label="Ticket price" value={price} onChange={setPrice} prefix="$" placeholder="30" inputMode="decimal" hint="One price is fine; add tiers later" />
-            <Field label="Artist fee" value={fee} onChange={setFee} prefix="$" placeholder="0" inputMode="decimal" hint="Flat guarantee. Leave 0 if not set yet" />
-            <Field label="Show costs" value={costs} onChange={setCosts} prefix="$" placeholder="0" inputMode="decimal" hint="Venue, sound, security, staff — one number for now" />
+            <Field label="Artist fee" value={fee} onChange={setFee} prefix="$" placeholder="0" inputMode="decimal" hint={template ? 'The guarantee in this deal' : 'Flat guarantee. Leave 0 if not set yet'} />
+            <Field label={itemizedTotal > 0 ? 'Other costs' : 'Show costs'} value={costs} onChange={setCosts} prefix="$" placeholder="0" inputMode="decimal" hint={itemizedTotal > 0 ? `On top of ${formatCurrency(itemizedTotal)} already in from ${[usePicked?.costs?.length ? 'the venue' : '', template ? 'the template' : ''].filter(Boolean).join(' and ')}` : 'Venue, sound, security, staff — one number for now'} />
             <Field label="Ads" value={ads} onChange={setAds} prefix="$" placeholder="0" inputMode="decimal" hint="What you plan to spend on marketing" />
           </div>
 
@@ -213,7 +261,7 @@ export function QuickOffer() {
               {saving ? 'Creating…' : 'Create offer'}
             </button>
             {error && <p className="text-xs text-red-200 bg-red-900/30 border border-red-800/50 rounded-lg px-3 py-2">{error}</p>}
-            <p className="text-[12px] text-white/75">Saved as <b>Planning</b> — a sketch, not counted in your numbers until you move it to Confirmed. Need tiers, deposits, or support acts? <button onClick={() => navigate('/offers/create')} className="text-white underline" style={{ textTransform: 'none', letterSpacing: 0 }}>Use the full offer</button>.</p>
+            <p className="text-[12px] text-white/75">Saved as <b>Planning</b> — a sketch, not counted in your numbers until you move it to Confirmed. Need tiers, deposits, or support acts? <button onClick={() => navigate('/offers/create', { state: { ...(template ? { template } : {}), ...(usePicked ? { venueId: usePicked.id } : {}) } })} className="text-white underline" style={{ textTransform: 'none', letterSpacing: 0 }}>Use the full offer</button>.</p>
           </div>
         </div>
       </div>

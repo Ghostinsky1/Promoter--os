@@ -17,6 +17,7 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
 }) {
   const el = useRef<HTMLDivElement>(null);
   const globe = useRef<any>(null);
+  const flown = useRef(false);
   const placed = useMemo(() => cards.filter((c) => c.lat != null && c.lng != null), [cards]);
   const path = useMemo(() => route(placed), [placed]);
 
@@ -34,10 +35,10 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
       .hexPolygonsData(countries)
       .hexPolygonResolution(3).hexPolygonMargin(0.55).hexPolygonUseDots(true)
       .hexPolygonColor(() => 'rgba(143,211,255,0.55)')
-      .pointAltitude(0.012).pointRadius(0.55).pointResolution(16)
-      .arcStroke(0.55).arcDashLength(0.45).arcDashGap(0.25).arcDashAnimateTime(2600).arcAltitudeAutoScale(0.35)
+      .pointAltitude(0.015).pointRadius(0.75).pointResolution(16)
+      .arcStroke(0.7).arcDashLength(0.45).arcDashGap(0.25).arcDashAnimateTime(2600).arcAltitudeAutoScale(0.35)
       .ringMaxRadius(3.2).ringPropagationSpeed(2.2).ringRepeatPeriod(900)
-      .labelSize(0.9).labelDotRadius(0).labelAltitude(0.015).labelResolution(2)
+      .labelSize(1.15).labelDotRadius(0).labelAltitude(0.015).labelResolution(2)
       .labelColor(() => 'rgba(255,255,255,0.9)')
       .onPointClick((p: any) => onSelect(p.key))
       .onLabelClick((p: any) => onSelect(p.key));
@@ -47,6 +48,7 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
     // Stop spinning once someone grabs it.
     el.current.addEventListener('pointerdown', () => { g.controls().autoRotate = false; }, { once: true });
     globe.current = g;
+    flown.current = false;
     return () => { try { g._destructor?.(); } catch { /* ignore */ } if (el.current) el.current.innerHTML = ''; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -62,34 +64,54 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
   // Data.
   useEffect(() => {
     const g = globe.current; if (!g) return;
+    // The route in date order; a night in the same city as the one before draws no line.
     const arcs = path.slice(1).map((c, i) => ({
       startLat: path[i].lat, startLng: path[i].lng, endLat: c.lat, endLng: c.lng,
       color: [STAGE[path[i].stage].color, STAGE[c.stage].color],
-    }));
+    })).filter((a) => Math.abs(a.startLat! - a.endLat!) + Math.abs(a.startLng! - a.endLng!) > 0.05);
+    // One label per city, with how many shows land there.
+    const spots = new Map<string, { lat: number; lng: number; city: string; n: number; key: string }>();
+    for (const c of placed) {
+      if (c.stage === 'dead') continue;
+      const k = `${c.lat!.toFixed(1)},${c.lng!.toFixed(1)}`;
+      const s = spots.get(k);
+      if (s) s.n++; else spots.set(k, { lat: c.lat!, lng: c.lng!, city: c.city || c.venue, n: 1, key: c.key });
+    }
     g.pointsData(placed)
       .pointLat('lat').pointLng('lng')
       .pointColor((c: Card) => (c.key === selectedKey ? '#FFFFFF' : STAGE[c.stage].color))
-      .pointRadius((c: Card) => (c.key === selectedKey ? 0.9 : c.stage === 'dead' ? 0.35 : 0.55))
+      .pointRadius((c: Card) => (c.key === selectedKey || c.key === nextKey ? 1.05 : c.stage === 'dead' ? 0.4 : 0.75))
       .pointLabel((c: Card) => `<div style="font:600 12px Saira Condensed,system-ui;background:#14171E;border:1px solid #2A3040;border-radius:8px;padding:6px 8px;color:#fff">${esc(c.city)} · ${esc(c.venue)}<br><span style="color:${STAGE[c.stage].color}">${STAGE[c.stage].label}</span>${c.date ? ` · ${c.date}` : ''}</div>`);
     g.arcsData(arcs).arcColor('color');
-    g.labelsData(placed.filter((c) => c.stage !== 'dead')).labelLat('lat').labelLng('lng').labelText((c: Card) => c.city);
+    g.labelsData([...spots.values()]).labelLat('lat').labelLng('lng').labelText((s: any) => (s.n > 1 ? `${s.city} (${s.n})` : s.city));
     const next = placed.find((c) => c.key === nextKey);
     g.ringsData(next ? [next] : []).ringLat('lat').ringLng('lng').ringColor(() => (t: number) => `rgba(143,211,255,${1 - t})`);
   }, [placed, path, nextKey, selectedKey]);
 
   // Fly to the route when it first has dots, and to a card when one is picked.
-  const flown = useRef(false);
   useEffect(() => {
     const g = globe.current; if (!g || !placed.length) return;
     const focus = placed.find((c) => c.key === selectedKey);
     if (focus) { g.controls().autoRotate = false; g.pointOfView({ lat: focus.lat, lng: focus.lng, altitude: 1.5 }, 900); return; }
     if (!flown.current) {
       flown.current = true;
-      const lat = placed.reduce((s, c) => s + c.lat!, 0) / placed.length;
-      const lng = placed.reduce((s, c) => s + c.lng!, 0) / placed.length;
-      g.pointOfView({ lat, lng, altitude: 2.3 }, 1400);
+      // Spin in, then land on the next show (or the middle of the route) and hold there
+      // so the run is in view. Grab it to spin it yourself.
+      // Frame the whole route, leaning toward the next show; zoom to how spread out it is.
+      const n = placed.find((c) => c.key === nextKey);
+      const cLat = placed.reduce((s, c) => s + c.lat!, 0) / placed.length;
+      const cLng = placed.reduce((s, c) => s + c.lng!, 0) / placed.length;
+      const lat = n ? (cLat + n.lat!) / 2 : cLat;
+      const lng = n ? (cLng + n.lng!) / 2 : cLng;
+      const spread = Math.max(...placed.map((c) => Math.hypot(c.lat! - lat, (c.lng! - lng) * Math.cos((lat * Math.PI) / 180))));
+      const altitude = Math.min(2.2, Math.max(0.6, 0.2 + spread / 17));
+      setTimeout(() => {
+        const live = globe.current; if (!live) return;
+        live.controls().autoRotate = false;
+        live.pointOfView({ lat: lat - 3, lng, altitude }, 1600);
+      }, 1800);
     }
-  }, [placed, selectedKey]);
+  }, [placed, selectedKey, nextKey]);
 
   return <div ref={el} style={{ height, width: '100%', cursor: 'grab' }} aria-label="Tour route on a globe" />;
 }

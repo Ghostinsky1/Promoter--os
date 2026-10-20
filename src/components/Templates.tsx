@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase';
 import { Template } from '../types';
 import { Plus, Copy, Edit, Trash2, FileText } from 'lucide-react';
 import { CreateTemplateModal } from './CreateTemplateModal';
+import { offerFieldsFromTemplate, expenseTotal, dealLine } from '../lib/dealTemplate';
+import { short$ } from '../lib/tourPipeline';
 
 export function Templates() {
   const navigate = useNavigate();
@@ -90,134 +92,64 @@ export function Templates() {
     }
   };
 
-  const getDealTypeLabel = (dealType: string) => {
-    switch (dealType) {
-      case 'flat_fee': return 'Flat Fee';
-      case 'guarantee_vs_percentage': return 'Guarantee vs %';
-      case 'percentage_only': return '% Only';
-      case 'door_deal': return 'Door Deal';
-      default: return dealType;
-    }
-  };
+  const lab = 'font-label text-[10px] tracking-[0.16em] uppercase';
+  const cols = 'md:grid-cols-[minmax(0,1fr)_170px_90px_90px_80px_150px]';
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#1140F0] flex items-center justify-center">
-        <div className="text-gray-400">Loading templates...</div>
-      </div>
-    );
+    return <div className="min-h-screen bg-[#1140F0] flex items-center justify-center text-white text-sm">Loading templates…</div>;
   }
 
   return (
     <div className="min-h-screen bg-[#1140F0]">
       <div className="bg-[#14171E] border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white">Offer Templates</h1>
-              <p className="text-gray-400 mt-1">Save and reuse offer configurations</p>
-            </div>
-            <button
-              onClick={() => setIsCreating(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#8FD3FF] text-[#04214D] rounded-lg font-semibold hover:bg-[#6FB8F2] transition-all transform hover:scale-105"
-            >
-              <Plus className="h-5 w-5" />
-              Create Template
-            </button>
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white leading-none">Deal templates</h1>
+            <p className="text-gray-400 text-sm mt-1">Your usual deals, saved. Pick one on a new offer and the whole setup fills in.</p>
           </div>
+          <button onClick={() => setIsCreating(true)} className="flex items-center gap-1.5 px-3 py-2 bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-xl text-sm font-bold">
+            <Plus className="h-4 w-4" /> New template
+          </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-4">
+        <p className="text-[12px] text-white/80 mb-2">Fastest way to make one: open an offer you liked and press <b className="text-white">Save as template</b> — it keeps the deal, tiers, costs and fees.</p>
         {templates.length === 0 ? (
-          <div className="bg-[#14171E] rounded-xl border border-gray-800 p-16 text-center">
-            <div className="w-24 h-24 bg-[#22262F] rounded-full flex items-center justify-center mx-auto mb-6">
-              <FileText className="h-12 w-12 text-gray-500" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-3">No Templates Yet</h3>
-            <p className="text-gray-400 mb-8 max-w-md mx-auto">
-              Create your first template to quickly set up future offers
-            </p>
-            <button
-              onClick={() => setIsCreating(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#8FD3FF] text-[#04214D] rounded-lg font-semibold hover:bg-[#6FB8F2] transition-all transform hover:scale-105"
-            >
-              <Plus className="h-5 w-5" />
-              Create Template
-            </button>
+          <div className="bg-[#14171E] border border-[#2A3040] rounded-xl p-8 text-center">
+            <FileText className="h-8 w-8 text-gray-500 mx-auto mb-2" />
+            <p className="text-white font-semibold">No templates yet.</p>
+            <p className="text-gray-400 text-sm mt-1">Save one from an offer, or build one here.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {templates.map((template) => (
-              <div
-                key={template.id}
-                className="bg-[#14171E] rounded-xl border border-gray-800 p-6 hover:border-[#8FD3FF]/50 transition-all group"
-              >
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="w-14 h-14 bg-[#22262F] rounded-xl flex items-center justify-center group-hover:bg-[#8FD3FF]/10 transition-colors">
-                    <FileText className="h-7 w-7 text-[#8FD3FF]" />
+          <div className="bg-[#14171E] border border-[#2A3040] rounded-xl">
+            <div className={`hidden md:grid ${cols} gap-3 px-4 py-2 border-b border-[#2A3040] ${lab} text-gray-500`}>
+              <span>Template</span><span>Deal</span><span className="text-right">Deposit</span><span className="text-right">Tiers</span><span className="text-right">Costs</span><span />
+            </div>
+            {templates.map((template) => {
+              const f = offerFieldsFromTemplate(template);
+              const costs = expenseTotal(f.expenses);
+              const tiers = template.ticket_tier_templates || [];
+              return (
+                <div key={template.id} className={`px-4 py-2.5 border-b border-[#2A3040] last:border-b-0 md:grid ${cols} md:gap-3 md:items-center`}>
+                  <div className="min-w-0">
+                    <div className="text-white font-semibold text-sm truncate">{template.name}</div>
+                    <div className="text-[11px] text-gray-400 truncate">{template.description || '—'}</div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-white mb-1 truncate">{template.name}</h3>
-                    <p className="text-sm text-gray-400 line-clamp-2">
-                      {template.description || 'No description'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 mb-5">
-                  <div className="bg-[#22262F] rounded-lg p-3">
-                    <div className="text-xs text-gray-400 mb-1">Deal Type</div>
-                    <div className="font-semibold text-sm text-white">
-                      {getDealTypeLabel(template.deal_type)}
-                    </div>
-                  </div>
-                  <div className="bg-[#22262F] rounded-lg p-3">
-                    <div className="text-xs text-gray-400 mb-1">Expenses</div>
-                    <div className="font-semibold text-sm text-white">
-                      {template.expense_categories?.length || 0} categories
-                    </div>
+                  <div className="text-sm text-[#8FD3FF] mt-1 md:mt-0">{dealLine(template)}</div>
+                  <div className="text-sm text-gray-300 md:text-right">{template.deposit_pct ?? 0}% <span className="md:hidden text-gray-500">deposit</span></div>
+                  <div className="text-sm text-gray-300 md:text-right" title={tiers.map((t) => `${t.type} $${t.price}`).join(' · ')}>{tiers.length ? tiers.map((t) => `$${t.price}`).slice(0, 3).join('/') : '—'}</div>
+                  <div className="text-sm text-gray-300 md:text-right">{costs ? short$(costs) : '—'}</div>
+                  <div className="flex gap-1.5 mt-2 md:mt-0 md:justify-end">
+                    <button onClick={() => navigate('/offers/create', { state: { template } })} className="flex items-center gap-1 px-2.5 py-1.5 bg-[#8FD3FF] text-[#04214D] rounded-lg text-xs font-bold" title="Start a full offer from this deal">
+                      <Copy className="h-3.5 w-3.5" /> Use
+                    </button>
+                    <button onClick={() => setEditingTemplate(template)} className="px-2 py-1.5 bg-[#22262F] text-gray-300 rounded-lg hover:text-white" title="Edit"><Edit className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => deleteTemplate(template.id)} className="px-2 py-1.5 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20" title="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>
                 </div>
-
-                <div className="space-y-3 text-sm mb-5 pb-5 border-b border-gray-800">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Deposit:</span>
-                    <span className="font-semibold text-white">{template.deposit_pct}%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Tax Withholding:</span>
-                    <span className="font-semibold text-white">{template.tax_withholding_pct}%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Ticket Tiers:</span>
-                    <span className="font-semibold text-white">{template.ticket_tier_templates?.length || 0}</span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => navigate('/offers/create', { state: { template } })}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-[#8FD3FF] text-[#04214D] rounded-lg text-sm font-semibold hover:bg-[#6FB8F2] transition-all transform hover:scale-105"
-                  >
-                    <Copy className="h-4 w-4" />
-                    Use Template
-                  </button>
-                  <button
-                    onClick={() => setEditingTemplate(template)}
-                    className="flex items-center justify-center px-3 py-2.5 bg-[#22262F] text-gray-300 rounded-lg hover:bg-[#14171E] transition-colors"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => deleteTemplate(template.id)}
-                    className="flex items-center justify-center px-3 py-2.5 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

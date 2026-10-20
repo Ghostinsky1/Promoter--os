@@ -64,6 +64,15 @@ export function TourTimeline({ cards, nextKey, selectedKey, onSelect, start, end
           );
         })}
       </div>
+      {!next && shows.length > 0 && (() => {
+        const last = [...shows].reverse().find((c) => parseLocalDate(c.date!)! <= today) ?? shows[shows.length - 1];
+        return (
+          <button onClick={() => onSelect(last.key)} className="mt-1 w-full text-left bg-[#0B0D12] border border-[#2A3040] rounded-xl px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-0.5" style={{ textTransform: 'none', letterSpacing: 0 }}>
+            <span className="font-label text-[10px] tracking-[0.18em] text-gray-400 shrink-0">NOTHING COMING UP</span>
+            <span className="text-gray-300 text-sm min-w-0">Last show: <span className="text-white">{last.city || last.venue}</span> · {parseLocalDate(last.date!)!.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}. Add a dated venue and it lights up as NEXT.</span>
+          </button>
+        );
+      })()}
       {next && (
         <button onClick={() => onSelect(next.key)} className="mt-1 w-full text-left bg-[#0B0D12] border border-[#8FD3FF]/40 rounded-xl px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-0.5" style={{ textTransform: 'none', letterSpacing: 0 }}>
           <span className="font-label text-[10px] tracking-[0.18em] text-[#8FD3FF] shrink-0">NEXT</span>

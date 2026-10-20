@@ -30,7 +30,7 @@ export function PipelineBoard({ cards, selectedKey, onOpen, onMove, onAdd }: {
 
   return (
     <DndContext sensors={sensors} onDragStart={(e) => setDragging(cards.find((c) => c.key === e.active.id) ?? null)} onDragEnd={end} onDragCancel={() => setDragging(null)}>
-      <div className="flex gap-2.5 overflow-x-auto pb-2 -mx-1 px-1 snap-x" style={{ scrollbarWidth: 'thin' }}>
+      <div className="flex gap-2.5 overflow-x-auto pb-2 -mx-1 px-1 snap-x items-start" style={{ scrollbarWidth: 'thin' }}>
         {live.map((s) => {
           const list = cards.filter((c) => c.stage === s.key).sort(byDate);
           const sum = list.reduce((t, c) => t + (c.money ?? 0), 0);
@@ -48,7 +48,7 @@ export function PipelineBoard({ cards, selectedKey, onOpen, onMove, onAdd }: {
                   <button onClick={() => onAdd(s.key)} className="text-gray-500 hover:text-[#8FD3FF] p-1" title={`Add a venue to ${s.label}`}><Plus className="w-4 h-4" /></button>
                 )}
               </div>
-              <div className="space-y-2 min-h-[60px]">
+              <div className="space-y-2 min-h-[48px] max-h-[60vh] overflow-y-auto">
                 {list.map((c) => <CardView key={c.key} c={c} on={c.key === selectedKey} onOpen={onOpen} />)}
               </div>
             </Column>
@@ -72,7 +72,7 @@ function Column({ stage, children }: { stage: Stage; children: React.ReactNode }
   return (
     <div
       ref={setNodeRef}
-      className={`snap-start shrink-0 w-[232px] rounded-2xl p-2 border transition-colors ${isOver ? 'bg-[#8FD3FF]/10 border-[#8FD3FF]/60' : 'bg-[#14171E] border-[#2A3040]'}`}
+      className={`snap-start shrink-0 w-[210px] sm:w-[232px] rounded-2xl p-2 border transition-colors ${isOver ? 'bg-[#8FD3FF]/10 border-[#8FD3FF]/60' : 'bg-[#14171E] border-[#2A3040]'}`}
     >
       {children}
     </div>

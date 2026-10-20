@@ -17,7 +17,7 @@ import type { AskThread } from '../../lib/ask';
  * On phones a four-tab bar sits under it: Home / Ask / Shows / Settle.
  */
 
-const APP_PREFIXES = ['/dashboard', '/offers', '/tours', '/templates', '/settings', '/subscription', '/deal-estimator', '/artist-fee', '/help'];
+const APP_PREFIXES = ['/dashboard', '/offers', '/tours', '/venues', '/templates', '/settings', '/subscription', '/deal-estimator', '/artist-fee', '/help'];
 const CHIPS = ['What needs me?', 'Cash I need', 'Unsettled shows', 'Coming up', 'Review a deal', 'Add receipts'];
 const ACCEPT = '.pdf,image/png,image/jpeg,image/webp,image/gif';
 

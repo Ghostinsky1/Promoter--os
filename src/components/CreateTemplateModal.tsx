@@ -16,7 +16,7 @@ export function CreateTemplateModal({ existingTemplate, onClose, onSave }: Creat
     name: existingTemplate?.name || '',
     description: existingTemplate?.description || '',
     type: existingTemplate?.type || 'venue' as 'venue' | 'artist' | 'event',
-    deal_type: existingTemplate?.deal_type || 'flat_guarantee' as 'flat_guarantee' | 'promoter_profit',
+    deal_type: (existingTemplate?.deal_type === 'flat_guarantee' ? 'flat_fee' : existingTemplate?.deal_type) || 'flat_fee',
     deposit_pct: existingTemplate?.deposit_pct || 20,
     deposit_due_timing: existingTemplate?.deposit_due_timing || '30_days_before',
     tax_withholding_pct: existingTemplate?.tax_withholding_pct || 2,
@@ -25,6 +25,10 @@ export function CreateTemplateModal({ existingTemplate, onClose, onSave }: Creat
     expense_categories: existingTemplate?.expense_categories || [] as ExpenseCategoryTemplate[],
     legal_terms: existingTemplate?.legal_terms || ''
   });
+  // The rest of the deal lives in templates.deal (guarantee, splits, payment terms…).
+  const [deal, setDeal] = useState<Record<string, any>>({ ...((existingTemplate as any)?.deal || {}) });
+  const setDealNum = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setDeal({ ...deal, [k]: e.target.value === '' ? undefined : Number(e.target.value) });
 
   const handleSave = async () => {
     if (!templateData.name) {
@@ -52,6 +56,7 @@ export function CreateTemplateModal({ existingTemplate, onClose, onSave }: Creat
 
       const payload = {
         ...templateData,
+        deal: Object.fromEntries(Object.entries(deal).filter(([, v]) => v !== undefined && v !== null && !Number.isNaN(v))),
         user_id: user.id,
         organization_id: memberData.organization_id,
         updated_at: new Date().toISOString()
@@ -276,12 +281,46 @@ Artist to provide marketing support through social media and allowing promoter a
                   <label className="block text-base font-semibold mb-2 text-slate-900">Deal Type</label>
                   <select
                     value={templateData.deal_type}
-                    onChange={(e) => setTemplateData({ ...templateData, deal_type: e.target.value as 'flat_guarantee' | 'promoter_profit' })}
+                    onChange={(e) => setTemplateData({ ...templateData, deal_type: e.target.value })}
                     className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
-                    <option value="flat_guarantee">Flat Guarantee</option>
-                    <option value="promoter_profit">Promoter Profit Deal (85/15)</option>
+                    <option value="flat_fee">Flat fee — artist gets a set amount</option>
+                    <option value="guarantee_vs_percentage">Guarantee vs % — artist gets the higher</option>
+                    <option value="percentage_only">% only — no guarantee</option>
+                    <option value="door_deal">Door deal — split after costs</option>
+                    <option value="promoter_profit">Promoter profit split (e.g. 85/15)</option>
                   </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {templateData.deal_type !== 'percentage_only' && templateData.deal_type !== 'door_deal' && (
+                    <div>
+                      <label className="block text-base font-semibold mb-2 text-slate-900">Guarantee $</label>
+                      <input type="number" value={deal.guarantee ?? ''} onChange={setDealNum('guarantee')} placeholder="Leave blank to type it per show"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                  )}
+                  {templateData.deal_type !== 'flat_fee' && templateData.deal_type !== 'promoter_profit' && (
+                    <div>
+                      <label className="block text-base font-semibold mb-2 text-slate-900">Artist %</label>
+                      <input type="number" value={deal.artist_percentage ?? ''} onChange={setDealNum('artist_percentage')} placeholder="85"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                  )}
+                  {templateData.deal_type === 'promoter_profit' && (
+                    <>
+                      <div>
+                        <label className="block text-base font-semibold mb-2 text-slate-900">Artist share of profit %</label>
+                        <input type="number" value={deal.artist_backend_pct ?? ''} onChange={setDealNum('artist_backend_pct')} placeholder="85"
+                          className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                      </div>
+                      <div>
+                        <label className="block text-base font-semibold mb-2 text-slate-900">Your share %</label>
+                        <input type="number" value={deal.promoter_backend_pct ?? ''} onChange={setDealNum('promoter_backend_pct')} placeholder="15"
+                          className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

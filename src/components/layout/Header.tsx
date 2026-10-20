@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Music2, Plus, User, LogOut, Menu, X, Settings, CreditCard, LayoutDashboard, FileText, Music, Calculator, HelpCircle } from 'lucide-react';
+import { Music2, Plus, User, LogOut, Menu, X, Settings, CreditCard, LayoutDashboard, FileText, Music, Calculator, HelpCircle, MapPin, Layers } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
@@ -17,9 +17,12 @@ export function Header() {
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/offers', label: 'My Offers', icon: FileText },
     { href: '/tours', label: 'Tours', icon: Music },
+    { href: '/venues', label: 'Venues', icon: MapPin },
+    { href: '/templates', label: 'Templates', icon: Layers },
     { href: '/artist-fee', label: 'Artist Fee', icon: Calculator },
-    { href: '/settings', label: 'Settings', icon: Settings },
-    { href: '/subscription', label: 'Subscription', icon: CreditCard },
+    // Settings and Subscription also sit in the account menu, so the top bar skips them.
+    { href: '/settings', label: 'Settings', icon: Settings, mobileOnly: true },
+    { href: '/subscription', label: 'Subscription', icon: CreditCard, mobileOnly: true },
     { href: '/help', label: 'Help', icon: HelpCircle }
   ];
 
@@ -96,14 +99,14 @@ export function Header() {
 
             {user && (
               <>
-                <nav className="hidden lg:flex items-center gap-1">
-                  {navItems.map((item) => {
+                <nav className="hidden lg:flex items-center gap-0.5">
+                  {navItems.filter((item) => !item.mobileOnly).map((item) => {
                     const Icon = item.icon;
                     return (
                       <Link
                         key={item.href}
                         to={item.href}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                        className={`flex items-center gap-1.5 px-2.5 xl:px-3 py-2 rounded-lg font-medium text-sm transition-all ${
                           isActive(item.href)
                             ? 'bg-[#8FD3FF]/10 text-[#8FD3FF]'
                             : 'text-[#A8B2C1] hover:bg-[#22262F] hover:text-white'

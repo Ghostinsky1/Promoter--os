@@ -41,7 +41,7 @@ export function TourDetailsPage() {
     if (!id) return;
     const [{ data: t }, { data: o }, { data: l }, { data: c }, { data: av }] = await Promise.all([
       supabase.from('tours').select('*').eq('id', id).maybeSingle(),
-      supabase.from('offers').select('*, show:shows(*)').eq('tour_id', id),
+      supabase.from('offers').select('*, show:shows(*), venue:venues(*)').eq('tour_id', id),
       supabase.from('tour_leads').select('*').eq('tour_id', id).order('position'),
       supabase.from('tour_costs').select('*').eq('tour_id', id).order('created_at'),
       supabase.from('offers').select('id, status, calculations, show:shows(artist_name, venue_name, event_date, capacity)').is('tour_id', null),
@@ -67,15 +67,21 @@ export function TourDetailsPage() {
 
   const rawCards = useMemo(() => buildCards(leads, offers, settlements), [leads, offers, settlements]);
 
-  // Offers on the tour with no lead carry no coordinates: look their city up once.
+  // Shows with no spot on the map yet: look the city up once. A hit is saved on the
+  // venue (or the lead) so every offer at that room lands on the globe from now on.
+  const [geoTried, setGeoTried] = useState<Record<string, boolean>>({});
   useEffect(() => {
     let alive = true;
     (async () => {
       for (const c of rawCards) {
-        if (c.lat != null || !c.offer || offerGeo[c.key] || !c.city) continue;
-        const g = await geocode(c.city, c.region);
+        if (c.lat != null || offerGeo[c.key] || geoTried[c.key]) continue;
+        const g = c.city ? await geocode(c.city, c.region) : null;
         if (!alive) return;
-        if (g) setOfferGeo((m) => ({ ...m, [c.key]: g }));
+        setGeoTried((t) => ({ ...t, [c.key]: true }));
+        if (!g) continue;
+        setOfferGeo((m) => ({ ...m, [c.key]: g }));
+        if (c.lead) await supabase.from('tour_leads').update({ lat: g.lat, lng: g.lng }).eq('id', c.lead.id);
+        else if (c.offer?.venue?.id) await supabase.from('venues').update({ lat: g.lat, lng: g.lng }).eq('id', c.offer.venue.id);
       }
     })();
     return () => { alive = false; };
@@ -85,6 +91,24 @@ export function TourDetailsPage() {
   const m = useMemo(() => money(cards, costs), [cards, costs]);
   const next = useMemo(() => nextShow(cards), [cards]);
   const sel = cards.find((c) => c.key === selected) ?? null;
+  const offMap = cards.filter((c) => c.stage !== 'dead' && c.lat == null && geoTried[c.key]);
+  const [fix, setFix] = useState<{ key: string; value: string; busy?: boolean; err?: string } | null>(null);
+
+  // Put a show on the map by fixing its city. Offers fix the saved venue (so every show
+  // there is fixed); leads fix the lead.
+  const saveCity = async (c: Card, raw: string) => {
+    const [city, region] = raw.split(',').map((x) => x.trim());
+    if (!city) return;
+    setFix({ key: c.key, value: raw, busy: true });
+    const g = await geocode(city, region || null);
+    if (!g) { setFix({ key: c.key, value: raw, err: `Couldn't find "${raw}". Try "Denver, CO".` }); return; }
+    if (c.lead) await supabase.from('tour_leads').update({ city, region: region || null, lat: g.lat, lng: g.lng, updated_at: new Date().toISOString() }).eq('id', c.lead.id);
+    else if (c.offer?.venue?.id) await supabase.from('venues').update({ city, state: region || null, lat: g.lat, lng: g.lng, updated_at: new Date().toISOString() }).eq('id', c.offer.venue.id);
+    else if (c.offer) await supabase.from('offers').update({ venue_city: city, venue_state: region || null }).eq('id', c.offer.id);
+    setOfferGeo((m) => ({ ...m, [c.key]: g }));
+    setFix(null);
+    await load();
+  };
 
   // ───────── writes ─────────
   const saveLead = async (patch: Partial<TourLead>, leadId: string | null) => {
@@ -179,7 +203,7 @@ export function TourDetailsPage() {
           <button onClick={() => navigate('/tours')} className="p-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 shrink-0"><ArrowLeft className="w-5 h-5" /></button>
           <div className="min-w-0 flex-1">
             <div className="font-label text-[10px] tracking-[0.2em] uppercase text-[#CFE4FF]">Tour</div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight truncate">{tour.name}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight truncate">{tour.name}</h1>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/80 mt-1">
               {tour.artist_name && <span className="inline-flex items-center gap-1.5"><Music2 className="w-4 h-4" />{tour.artist_name}</span>}
               {(tour.start_date || tour.end_date) && (
@@ -202,15 +226,15 @@ export function TourDetailsPage() {
         </div>
 
         {/* Money */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-2 mb-3">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5 sm:gap-2 mb-3">
           {tiles.map((t) => (
             <div key={t.label} className="bg-[#14171E] border border-[#2A3040] rounded-2xl px-3 py-2.5">
-              <div className="font-label text-[10px] tracking-[0.16em] uppercase" style={{ color: t.color }}>{t.label}</div>
-              <div className={`text-xl font-bold ${t.v < 0 ? 'text-red-400' : 'text-white'}`}>{t.v === 0 ? '$0' : short$(t.v)}</div>
-              <div className="text-[11px] text-gray-500 leading-tight">{t.sub}</div>
+              <div className="font-label text-[9px] sm:text-[10px] tracking-[0.14em] uppercase truncate" style={{ color: t.color }}>{t.label}</div>
+              <div className={`text-base sm:text-xl font-bold ${t.v < 0 ? 'text-red-400' : 'text-white'}`}>{t.v === 0 ? '$0' : short$(t.v)}</div>
+              <div className="text-[10px] sm:text-[11px] text-gray-500 leading-tight truncate">{t.sub}</div>
             </div>
           ))}
-          <div className="col-span-2 md:col-span-1 rounded-2xl px-3 py-2.5 border-2" style={{ background: '#0B0D12', borderColor: m.pl >= 0 ? '#4ADE80' : '#F0605A', boxShadow: `0 0 22px ${m.pl >= 0 ? 'rgba(74,222,128,0.25)' : 'rgba(240,96,90,0.25)'}` }}>
+          <div className="col-span-3 md:col-span-1 rounded-2xl px-3 py-2.5 border-2" style={{ background: '#0B0D12', borderColor: m.pl >= 0 ? '#4ADE80' : '#F0605A', boxShadow: `0 0 22px ${m.pl >= 0 ? 'rgba(74,222,128,0.25)' : 'rgba(240,96,90,0.25)'}` }}>
             <div className="font-label text-[10px] tracking-[0.16em] uppercase text-white">Tour P/L</div>
             <div className={`text-2xl font-bold ${m.pl >= 0 ? 'text-green-400' : 'text-red-400'}`}>{money$(m.pl)}</div>
             <div className="text-[11px] text-gray-500 leading-tight">made − tour costs</div>
@@ -258,6 +282,28 @@ export function TourDetailsPage() {
               </div>
             </div>
           </div>
+          {offMap.length > 0 && (
+            <div className="border-t border-[#2A3040] px-3 sm:px-4 py-2.5 bg-[#F2B640]/5">
+              <div className="text-[12px] text-amber-200 mb-1.5">Not on the map yet — the city is missing or misspelled. Fix it once and every show at that venue lands on the globe.</div>
+              <div className="flex flex-wrap gap-2">
+                {offMap.map((c) => fix?.key === c.key ? (
+                  <div key={c.key} className="flex flex-wrap items-center gap-1.5 bg-[#0B0D12] border border-[#2A3040] rounded-lg px-2 py-1">
+                    <span className="text-xs text-white">{c.venue}</span>
+                    <input autoFocus value={fix.value} onChange={(e) => setFix({ key: c.key, value: e.target.value })}
+                      onKeyDown={(e) => { if (e.key === 'Enter') saveCity(c, fix.value); if (e.key === 'Escape') setFix(null); }}
+                      placeholder="City, ST" className="w-36 bg-transparent border-b border-[#8FD3FF]/60 text-sm text-white outline-none" style={{ textTransform: 'none', letterSpacing: 0 }} />
+                    <button onClick={() => saveCity(c, fix.value)} disabled={fix.busy} className="text-xs bg-[#8FD3FF] text-[#04214D] rounded px-2 py-0.5 font-bold">{fix.busy ? '…' : 'Save'}</button>
+                    {fix.err && <span className="text-[11px] text-amber-300 w-full">{fix.err}</span>}
+                  </div>
+                ) : (
+                  <button key={c.key} onClick={() => setFix({ key: c.key, value: [c.city, c.region].filter(Boolean).join(', ') })}
+                    className="text-xs text-white bg-[#0B0D12] border border-[#F2B640]/50 rounded-lg px-2 py-1 hover:border-[#F2B640]" style={{ textTransform: 'none', letterSpacing: 0 }}>
+                    {c.venue}{c.date ? ` · ${parseLocalDate(c.date)!.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''} · <span className="text-amber-300">{c.city || c.region ? `"${[c.city, c.region].filter(Boolean).join(', ')}"` : 'no city'} — set city</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="border-t border-[#2A3040] px-3 sm:px-4 pt-3 pb-3">
             <TourTimeline cards={cards} nextKey={next?.key ?? null} selectedKey={selected} onSelect={pick} start={tour.start_date} end={tour.end_date} />
           </div>

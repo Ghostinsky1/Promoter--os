@@ -90,10 +90,13 @@ export function stageFromOffer(offer: any, lead: TourLead | null): Stage {
 }
 
 function cityOf(offer: any): { city: string; region: string | null } {
-  const c = (offer?.venue_city || '').trim();
-  if (c) return { city: c, region: offer?.venue_state || null };
+  // A saved venue knows its city best; then the offer's own address; then "Venue, City".
+  const v = offer?.venue;
+  if (v?.city) return { city: String(v.city).trim(), region: v.state || null };
+  const c = String(offer?.venue_city || '').replace(/^[\s,]+|[\s,]+$/g, '');
+  if (c) return { city: c, region: offer?.venue_state?.trim() || v?.state || null };
   const after = String(offer?.show?.venue_name || '').split(',').slice(1).join(',').trim();
-  return { city: after || '', region: offer?.venue_state || null };
+  return { city: after || '', region: offer?.venue_state?.trim() || v?.state || null };
 }
 
 export function buildCards(leads: TourLead[], offers: any[], settlements: Record<string, any>): Card[] {
@@ -124,7 +127,7 @@ function card(lead: TourLead | null, offer: any | null, settlements: Record<stri
     city: lead?.city || where?.city || '',
     region: lead?.region ?? where?.region ?? null,
     date: offer?.show?.event_date || lead?.event_date || null,
-    lat: lead?.lat ?? null, lng: lead?.lng ?? null,
+    lat: lead?.lat ?? offer?.venue?.lat ?? null, lng: lead?.lng ?? offer?.venue?.lng ?? null,
     money, moneyKind,
     contact: lead?.contact ?? null, next: lead?.next_step ?? null, sent: lead?.sent ?? null, notes: lead?.notes ?? null,
   };
@@ -173,29 +176,54 @@ export function splitCity(raw: string): { city: string; region: string | null } 
   return { city: c || raw.trim(), region: r || null };
 }
 
+const MX: Record<string, string> = {
+  CDMX: 'Mexico City', NL: 'Nuevo León', JAL: 'Jalisco', JA: 'Jalisco', BC: 'Baja California', CHIH: 'Chihuahua', COAH: 'Coahuila', SON: 'Sonora',
+  TAMPS: 'Tamaulipas', GTO: 'Guanajuato', QRO: 'Querétaro', PUE: 'Puebla', VER: 'Veracruz', YUC: 'Yucatán', QROO: 'Quintana Roo', SLP: 'San Luis Potosí',
+  MICH: 'Michoacán', OAX: 'Oaxaca', GRO: 'Guerrero', SIN: 'Sinaloa', DGO: 'Durango', ZAC: 'Zacatecas', AGS: 'Aguascalientes', MEX: 'México',
+};
+const NICK: Record<string, string> = { stl: 'St. Louis', kc: 'Kansas City', kcmo: 'Kansas City', nyc: 'New York', la: 'Los Angeles', slc: 'Salt Lake City', atl: 'Atlanta', chi: 'Chicago', okc: 'Oklahoma City', cdmx: 'Mexico City' };
+
+/** Ways people write a city: "saint louis " → also try "St. Louis". */
+function cityVariants(raw: string): string[] {
+  const c = raw.replace(/^[\s,]+|[\s,]+$/g, '').replace(/\s+/g, ' ');
+  const out = [NICK[c.toLowerCase()] || c];
+  if (/^saint\s/i.test(c)) out.push(c.replace(/^saint\s/i, 'St. '), c.replace(/^saint\s/i, 'St '));
+  if (/^st\.?\s/i.test(c)) out.push(c.replace(/^st\.?\s/i, 'Saint '));
+  if (/^east saint\s/i.test(c)) out.push(c.replace(/^east saint\s/i, 'East St. '));
+  return [...new Set(out.filter(Boolean))];
+}
+
 const memo = new Map<string, { lat: number; lng: number } | null>();
-export async function geocode(city: string, region: string | null, country = 'US'): Promise<{ lat: number; lng: number } | null> {
-  const key = `${city}|${region ?? ''}|${country}`.toLowerCase();
+export async function geocode(city: string, region: string | null, country?: string): Promise<{ lat: number; lng: number } | null> {
+  const reg = (region || '').trim();
+  const R = reg.toUpperCase().replace(/\./g, '');
+  const usState = US[R] || Object.values(US).find((n) => n.toLowerCase() === reg.toLowerCase());
+  const mxState = MX[R];
+  const cc = country || (usState ? 'US' : mxState ? 'MX' : '');
+  const key = `${city}|${reg}|${cc}`.toLowerCase().trim();
   if (memo.has(key)) return memo.get(key)!;
   try {
-    const cached = localStorage.getItem(`geo:${key}`);
+    const cached = localStorage.getItem(`geo2:${key}`);
     if (cached) { const v = JSON.parse(cached); memo.set(key, v); return v; }
   } catch { /* ignore */ }
-  if (!city) return null;
+  if (!city.trim()) return null;
+  const want = (usState || mxState || reg).toLowerCase();
+  let v: { lat: number; lng: number } | null = null;
   try {
-    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=10&language=en&format=json${country ? `&countryCode=${encodeURIComponent(country)}` : ''}`;
-    const r = await fetch(url);
-    const j = await r.json();
-    const results: any[] = j?.results || [];
-    const want = region ? (US[region.toUpperCase()] || region).toLowerCase() : null;
-    const hit = (want && results.find((x) => String(x.admin1 || '').toLowerCase() === want)) || results[0];
-    const v = hit ? { lat: Number(hit.latitude), lng: Number(hit.longitude) } : null;
-    memo.set(key, v);
-    try { localStorage.setItem(`geo:${key}`, JSON.stringify(v)); } catch { /* ignore */ }
-    return v;
+    for (const name of cityVariants(city)) {
+      const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=10&language=en&format=json${cc ? `&countryCode=${cc}` : ''}`;
+      const j = await (await fetch(url)).json();
+      const results: any[] = j?.results || [];
+      const hit = (want && results.find((x) => String(x.admin1 || '').toLowerCase() === want)) || results[0];
+      if (hit) { v = { lat: Number(hit.latitude), lng: Number(hit.longitude) }; break; }
+    }
   } catch {
-    return null;
+    return null; // offline: try again next time
   }
+  memo.set(key, v);
+  // Only remember hits; a miss may be a typo the promoter fixes in a minute.
+  if (v) { try { localStorage.setItem(`geo2:${key}`, JSON.stringify(v)); } catch { /* ignore */ } }
+  return v;
 }
 
 export const money$ = (v: number) => (v < 0 ? '-' : '') + '$' + Math.abs(Math.round(v)).toLocaleString('en-US');

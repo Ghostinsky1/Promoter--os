@@ -20,6 +20,8 @@ import { ArtistFeeEstimator } from './components/ArtistFeeEstimator';
 import { SubscriptionPage } from './pages/SubscriptionPage';
 import { SuccessPage } from './pages/SuccessPage';
 import { TemplatesPage } from './pages/TemplatesPage';
+import { VenuesPage } from './pages/VenuesPage';
+import { VenueDetailPage } from './pages/VenueDetailPage';
 import { ToursPage } from './pages/ToursPage';
 import { CreateTourPage } from './pages/CreateTourPage';
 import { TourDetailsPage } from './pages/TourDetailsPage';
@@ -118,6 +120,8 @@ function AppRoutes() {
       <Route path="/artist-fee" element={<ProtectedRoute><ArtistFeeEstimator /></ProtectedRoute>} />
       <Route path="/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
       <Route path="/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
+      <Route path="/venues" element={<ProtectedRoute><VenuesPage /></ProtectedRoute>} />
+      <Route path="/venues/:id" element={<ProtectedRoute><VenueDetailPage /></ProtectedRoute>} />
       <Route path="/tours" element={<ProtectedRoute><ToursPage /></ProtectedRoute>} />
       <Route path="/tours/create" element={<ProtectedRoute><CreateTourPage /></ProtectedRoute>} />
       <Route path="/tours/:id" element={<ProtectedRoute><TourDetailsPage /></ProtectedRoute>} />

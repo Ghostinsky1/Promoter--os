@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Route as RouteIcon, ChevronRight } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { loadTourRows } from '../../lib/tourRows';
 import { parseLocalDate } from '../../lib/dateHelpers';
-import { buildCards, money, nextShow, short$, money$, STAGE, type TourLead, type TourCost } from '../../lib/tourPipeline';
+import { short$, money$, STAGE } from '../../lib/tourPipeline';
 
 /** Dashboard: one compact card per tour that is still running. Links into the tour. */
 export function TourCards() {
@@ -11,23 +11,9 @@ export function TourCards() {
   const [rows, setRows] = useState<any[] | null>(null);
 
   useEffect(() => {
-    (async () => {
-      const { data: tours } = await supabase.from('tours').select('*').not('status', 'in', '(completed,cancelled)').order('start_date');
-      if (!tours?.length) { setRows([]); return; }
-      const ids = tours.map((t: any) => t.id);
-      const [{ data: offers }, { data: leads }, { data: costs }] = await Promise.all([
-        supabase.from('offers').select('*, show:shows(*)').in('tour_id', ids),
-        supabase.from('tour_leads').select('*').in('tour_id', ids),
-        supabase.from('tour_costs').select('*').in('tour_id', ids),
-      ]);
-      const offerIds = (offers || []).map((o: any) => o.id);
-      const { data: st } = offerIds.length ? await supabase.from('settlements').select('offer_id, actual_profit').in('offer_id', offerIds) : { data: [] as any[] };
-      const sMap = Object.fromEntries((st || []).map((s: any) => [s.offer_id, s]));
-      setRows(tours.map((t: any) => {
-        const cards = buildCards((leads || []).filter((l: any) => l.tour_id === t.id) as TourLead[], (offers || []).filter((o: any) => o.tour_id === t.id), sMap);
-        return { tour: t, m: money(cards, (costs || []).filter((c: any) => c.tour_id === t.id) as TourCost[]), next: nextShow(cards), venues: cards.length };
-      }));
-    })();
+    loadTourRows({ activeOnly: true })
+      .then((rs) => setRows(rs.map((r) => ({ tour: r.tour, m: r.m, next: r.next, venues: r.cards.length }))))
+      .catch(() => setRows([]));
   }, []);
 
   if (!rows?.length) return null;

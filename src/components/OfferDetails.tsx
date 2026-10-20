@@ -26,6 +26,7 @@ import { ArtistsDashboard } from './artists/ArtistsDashboard';
 import { generateArtistOfferSheet } from '../lib/generateArtistOfferSheet';
 import { ArrowLeft, Calendar, MapPin, Users, CreditCard as Edit, FileDown, Eye, Mail, BarChart3, Copy, Film, Trash2, Calculator, Sparkles, Undo2, Loader2, Check, Plus, X, GripVertical } from 'lucide-react';
 import { HelpLink } from './HelpLink';
+import { templateFromOffer, dealLine } from '../lib/dealTemplate';
 
 type TabKey = 'deal' | 'tickets' | 'costs' | 'money' | 'tasks';
 const TABS: { key: TabKey; label: string }[] = [
@@ -226,42 +227,17 @@ export function OfferDetails() {
         .eq('is_active', true)
         .maybeSingle();
       if (!memberData?.organization_id) throw new Error('No organization found.');
-      const expenseCategories = Object.keys(offer.expenses).map(category => ({
-        title: category.charAt(0).toUpperCase() + category.slice(1),
-        items: Object.entries(offer.expenses[category as keyof typeof offer.expenses]).map(([name, amount]) => ({
-          name, default_amount: amount
-        }))
-      }));
-      const { error } = await supabase.from('templates').insert([{
+      // The whole deal: type and splits, deposit and payment terms, tiers, expense lines,
+      // fees and rates, artist travel — so the next show starts exactly where this one is.
+      const { error } = await supabase.from('templates').insert([templateFromOffer(offer, {
         user_id: user.id,
         organization_id: memberData.organization_id,
         name: templateName,
-        description: `Template based on ${offer.show.artist_name} at ${offer.show.venue_name}`,
-        type: 'event',
-        deal_type: offer.deal_type,
-        deposit_pct: offer.deposit_pct,
-        deposit_due_timing: offer.deposit_due_timing || '30_days_before',
-        tax_withholding_pct: offer.tax_withholding_pct,
-        sales_tax_pct: offer.sales_tax_pct,
-        ticket_tier_templates: offer.ticket_tiers.map(tier => ({
-          type: tier.type, price: tier.price,
-          default_allotment: tier.allotment, default_comps: tier.comps
-        })),
-        expense_categories: expenseCategories,
-        // The fees are part of the deal this template is meant to reproduce.
-        // Without them the next show starts from the blank form's defaults.
-        facility_fee_per_ticket: offer.facility_fee_per_ticket ?? 0,
-        ascap_rate: offer.ascap_rate ?? 0,
-        bmi_rate: offer.bmi_rate ?? 0,
-        sesac_rate: offer.sesac_rate ?? 0,
-        insurance_per_attendee: offer.insurance_per_attendee ?? 0,
-        cc_fee_rate: offer.cc_fee_rate ?? 0,
-        include_extra_revenue: (offer as any).include_extra_revenue ?? false,
-        extra_revenue: (offer as any).extra_revenue ?? [],
-        legal_terms: companySettings?.legal_terms || ''
-      }]);
+        description: `${dealLine(offer)} · from ${offer.show.artist_name} at ${offer.show.venue_name}`,
+        legal_terms: companySettings?.legal_terms || '',
+      })]);
       if (error) throw error;
-      alert('Template saved successfully!');
+      alert('Saved as a deal template. Pick it next time you make an offer.');
       navigate('/templates');
     } catch (error) {
       console.error('Error saving template:', error);

@@ -44,6 +44,7 @@ const HISTORY_LIMIT = 30;
 const THREAD_LIMIT = 30;
 const MAX_ROUNDS = 6;
 const MAX_FILES = 4;
+const MAX_OUT = 8000;
 const MAX_FILE_BYTES = 12 * 1024 * 1024;
 
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': '*' };
@@ -310,6 +311,8 @@ READING A DOCUMENT (a deal memo, an artist offer, a venue quote, a contract, a s
 4. Give your read in two or three plain sentences: what the promoter is on the hook for, what protects them, what to push back on. Run calculate_deal when you have enough numbers to show what a bad night looks like; if you do not, ask for the one or two numbers you need (usually capacity and ticket price).
 5. End by asking if they want it saved as a draft offer. Do not save until they say so.
 
+HANDWRITTEN AND SPANISH SHEETS are normal -- a phone photo of a venue's cost list on paper is a real document; read it. Common words: Renta = venue rent; Trabajadores / Staff = workers; Policías / Seguridad = police or security; Aseguranza / Seguro = insurance; Sonido = sound; Luces = lights; Permisos (de alcohol) = permits / liquor permit; Promoción = marketing; Total. Copy each line as written. A range ("2500-3000") is a range: show both, and say which one the sheet's own total uses. A "?" or a blank is MISSING -- say so, never fill it. Check the sheet's total against its lines and say "check this" if it doesn't match. Use the venue costs as expense lines (venue, security, production, insurance, permits) and keep the artist separate. If you cannot make out a number, say which line and ask -- never guess a digit.
+
 HOW CAN WE MAKE THIS WORK: use calculate_deal to try changes, one or two at a time -- a lower guarantee, a guarantee-versus-percentage deal, a different ticket price, a cost that can go, bar or other revenue if they have it. Report each as "at 50% sold: ... at 100%: ...". Compare to the deal as offered. Recommend the version that survives a half-full room. Nothing is saved by calculate_deal.
 
 BAD-NIGHT READ: SAFE clears at 50% sold, TIGHT clears at 70%, FRAGILE needs more than 70%, UNDERWATER loses money even sold out. "Cash you need on hand" means deposits not yet paid plus marketing, before the doors open. Artist balances and night-of costs come out of the door and are NOT due now -- say so when asked. When something doesn't add up say "check this" and state the numbers; never suggest anyone is cheating, padding, or acting in bad faith -- it is usually a mistake and the promoter has to work with these people again.
@@ -331,6 +334,38 @@ function fileKind(name: string): { mime: string; isPdf: boolean } {
   return { mime: 'image/jpeg', isPdf: false };
 }
 
+/** What the bytes really are. Phones rename HEIC photos to .jpg; the name lies, the bytes don't. */
+function sniff(bytes: Uint8Array): string | null {
+  const b = bytes;
+  if (b[0] === 0xff && b[1] === 0xd8) return 'image/jpeg';
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return 'image/png';
+  if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) return 'image/gif';
+  if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45) return 'image/webp';
+  if (b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) return 'application/pdf';
+  const brand = String.fromCharCode(...b.subarray(4, 12));
+  if (brand.startsWith('ftyp') && /heic|heix|hevc|mif1|msf1|heif/.test(brand + String.fromCharCode(...b.subarray(12, 24)))) return 'image/heic';
+  return null;
+}
+
+/** One file from storage as a content block the model can read, or a plain note saying why not. */
+async function fileBlock(supabase: Any, imp: Any): Promise<Any> {
+  if (num(imp.file_size) > MAX_FILE_BYTES) return { type: 'text', text: `[${imp.file_name} is over 12MB and could not be read. Ask the promoter for a smaller file or the key numbers.]` };
+  const { data: file } = await supabase.storage.from('imports').download(imp.storage_path);
+  if (!file) return { type: 'text', text: `[${imp.file_name} could not be loaded from storage. Ask the promoter to attach it again.]` };
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const kind = sniff(bytes) ?? fileKind(imp.file_name).mime;
+  if (kind === 'image/heic') return { type: 'text', text: `[${imp.file_name} is an iPhone HEIC photo, which can't be read here. Ask the promoter to send it as a screenshot or JPG — or type the numbers.]` };
+  const b64 = toBase64(bytes);
+  return kind === 'application/pdf'
+    ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 }, title: imp.file_name }
+    : { type: 'image', source: { type: 'base64', media_type: kind, data: b64 } };
+}
+
+async function sha256hex(s: string): Promise<string> {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(d)].map((x) => x.toString(16).padStart(2, '0')).join('');
+}
+
 function toBase64(bytes: Uint8Array): string {
   let binary = '';
   const CHUNK = 0x8000;
@@ -347,6 +382,29 @@ function summarizeToolResult(name: string, out: Any): string {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
+
+  // ---- SELF-TEST (operator only): run one model turn on a stored file, execute nothing. ----
+  // Guarded by a random operator key; only its SHA-256 lives here.
+  const stKey = req.headers.get('x-selftest-key');
+  if (stKey && await sha256hex(stKey) === '1faea1bf7dee87f4a6b5bca358728d811b4eb597176f490d5c781064782994eb') {
+    const b: Any = await req.json().catch(() => ({}));
+    const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+    const { data: imp } = await admin.from('document_imports').select('*').eq('id', String(b.import_id ?? '')).maybeSingle();
+    if (!imp) return json({ error: 'no such import' }, 404);
+    const content: Any[] = [{ type: 'text', text: 'CONTEXT: self-test, no live shows loaded.' }, { type: 'text', text: `File: ${imp.file_name}` }, await fileBlock(admin, imp), { type: 'text', text: String(b.message ?? 'Structure this.') }];
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({ model: MODEL, max_tokens: MAX_OUT, system: [{ type: 'text', text: SYSTEM }], tools: modelTools(), messages: [{ role: 'user', content }] }),
+    });
+    const out: Any = await res.json();
+    return json({
+      status: res.status, stop_reason: out.stop_reason, usage: out.usage, block_kind: content[2]?.type, media_type: content[2]?.source?.media_type,
+      text: (out.content || []).filter((c: Any) => c.type === 'text').map((c: Any) => c.text).join('\n'),
+      tool_calls: (out.content || []).filter((c: Any) => c.type === 'tool_use').map((c: Any) => ({ name: c.name, input: c.input })),
+      error: out.error,
+    });
+  }
 
   const authHeader = req.headers.get('Authorization') ?? '';
   if (!authHeader.startsWith('Bearer ')) return json({ error: 'Sign in first.' }, 401);
@@ -417,14 +475,7 @@ Deno.serve(async (req) => {
   for (const id of importIds) {
     const { data: imp } = await supabase.from('document_imports').select('*').eq('id', id).eq('organization_id', orgId).maybeSingle();
     if (!imp) continue;
-    if (num(imp.file_size) > MAX_FILE_BYTES) { attachments.push({ import_id: imp.id, file_name: imp.file_name }); fileBlocks.push({ type: 'text', text: `[${imp.file_name} is over 12MB and could not be read. Ask the promoter for a smaller file or the key numbers.]` }); continue; }
-    const { data: file } = await supabase.storage.from('imports').download(imp.storage_path);
-    if (!file) continue;
-    const b64 = toBase64(new Uint8Array(await file.arrayBuffer()));
-    const { mime, isPdf } = fileKind(imp.file_name);
-    fileBlocks.push(isPdf
-      ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 }, title: imp.file_name }
-      : { type: 'image', source: { type: 'base64', media_type: mime, data: b64 } });
+    fileBlocks.push({ type: 'text', text: `File: ${imp.file_name}` }, await fileBlock(supabase, imp));
     attachments.push({ import_id: imp.id, file_name: imp.file_name });
     await supabase.from('document_imports').update({ status: 'extracting', kind: 'ask' }).eq('id', imp.id);
   }
@@ -439,6 +490,23 @@ Deno.serve(async (req) => {
     role: m.role,
     content: (m.attachments?.length ? `[attached: ${m.attachments.map((a: Any) => a.file_name).join(', ')}]\n` : '') + (m.content || '(no text)'),
   }));
+
+  // Follow-ups ("where is it?", "add the artist") need the file again: history only carries its
+  // name. Re-attach this thread's most recent files (up to MAX_FILES in all) so the model can
+  // still read them. Jose, Oct 20: a cost sheet photo was "unreadable" on the second message.
+  if (fileBlocks.length < MAX_FILES * 2) {
+    const earlier: { import_id: string; file_name: string }[] = [];
+    for (const m of (history || []) as Any[]) {          // newest first
+      if (m.role !== 'user' || !Array.isArray(m.attachments)) continue;
+      for (const a of m.attachments) if (a?.import_id && !earlier.some((e) => e.import_id === a.import_id)) earlier.push(a);
+    }
+    const room = MAX_FILES - attachments.length;
+    for (const a of earlier.slice(0, Math.max(0, room))) {
+      const { data: imp } = await supabase.from('document_imports').select('*').eq('id', a.import_id).eq('organization_id', orgId).maybeSingle();
+      if (!imp) continue;
+      fileBlocks.push({ type: 'text', text: `Earlier file in this chat (sent again so you can read it): ${imp.file_name}` }, await fileBlock(supabase, imp));
+    }
+  }
 
   const { offers_index, open_tasks, ...briefForModel } = brief;
   const settlementState = thread.offer_id ? await loadSettlementState(supabase, orgId, thread.offer_id) : null;
@@ -459,6 +527,7 @@ ${thread.offer_id ? `THIS THREAD IS ABOUT OFFER: ${thread.offer_id}\n` : ''}${se
   if (ctx) ctx.inApp = true;
 
   let inTok = 0, outTok = 0, reply = '';
+  let truncatedOnce = false;
   const changed: string[] = [];
   let dealOnTable: Any = thread.deal_on_table;
   let wrote = false;
@@ -469,7 +538,7 @@ ${thread.offer_id ? `THIS THREAD IS ABOUT OFFER: ${thread.offer_id}\n` : ''}${se
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-        body: JSON.stringify({ model: MODEL, max_tokens: 2000, system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }], tools, messages }),
+        body: JSON.stringify({ model: MODEL, max_tokens: MAX_OUT, system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }], tools, messages }),
       });
       if (!res.ok) {
         console.error('Anthropic error', res.status, (await res.text()).slice(0, 300));
@@ -483,6 +552,15 @@ ${thread.offer_id ? `THIS THREAD IS ABOUT OFFER: ${thread.offer_id}\n` : ''}${se
       const text = content.filter((c) => c.type === 'text').map((c) => c.text).join('\n').trim();
       if (text) reply += (reply ? '\n\n' : '') + text;
       const uses = content.filter((c) => c.type === 'tool_use');
+      // Cut off mid-answer (a long deal written into a tool call). The tool call is incomplete
+      // and can't be run; ask again with the instruction to work in smaller steps.
+      if (out.stop_reason === 'max_tokens' && !truncatedOnce) {
+        truncatedOnce = true;
+        const kept = content.filter((c) => c.type === 'text' && c.text?.trim());
+        if (kept.length) messages.push({ role: 'assistant', content: kept });
+        messages.push({ role: 'user', content: [{ type: 'text', text: '(system) Your last reply was cut off before it finished. Do it again in smaller steps: lay the deal out in short lines first, then make one tool call at a time with only the fields that are stated.' }] });
+        continue;
+      }
       if (uses.length === 0 || out.stop_reason !== 'tool_use') break;
       messages.push({ role: 'assistant', content });
       const results: Any[] = [];
@@ -631,7 +709,8 @@ ${thread.offer_id ? `THIS THREAD IS ABOUT OFFER: ${thread.offer_id}\n` : ''}${se
   }
 
   const usd = Number((inTok * PRICE_IN + outTok * PRICE_OUT).toFixed(5));
-  if (!reply.trim()) reply = changed.length ? changed.join(' ') : 'Got it.';
+  // Never a silent "Got it." — if there is no answer, say so.
+  if (!reply.trim()) reply = changed.length ? changed.join(' ') : "I didn't finish that one — my answer got cut off. Send it again (or just say \"go on\") and I'll pick it up.";
   await supabase.from('ask_messages').insert({ organization_id: orgId, user_id: user.id, thread_id: thread.id, role: 'assistant', content: reply.trim(), changed, input_tokens: inTok, output_tokens: outTok, cost_usd: usd });
   await supabase.from('ask_threads').update({ last_message_at: new Date().toISOString() }).eq('id', thread.id);
   for (const a of attachments) await supabase.from('document_imports').update({ status: 'extracted', engine: 'anthropic', extracted_at: new Date().toISOString() }).eq('id', a.import_id);

@@ -77,6 +77,7 @@ export function OfferDetails() {
     setSalesTaxPct,
     setTaxWithholdingPct,
     setDepositPct,
+    setDealTerms,
     addTier,
     renameTier,
     removeTier,
@@ -645,6 +646,37 @@ export function OfferDetails() {
               >
                 <Plus className="w-3.5 h-3.5" /> Add a tier
               </button>
+              {(() => {
+                // Facility fee: what the venue keeps per ticket. "On top" = the fan pays it over
+                // the ticket price, your gross is untouched. "Inside" = it comes out of your price.
+                const feePer = state?.facilityFeePerTicket ?? offer.facility_fee_per_ticket ?? 0;
+                const feeMode = (state?.facilityFeeMode ?? (offer as any).facility_fee_mode ?? 'on_top') as 'on_top' | 'inside';
+                const paidSellable = tierStates.filter((t) => t.price > 0).reduce((n, t) => n + Math.max(0, t.allotment - t.comps), 0);
+                const feeTotal = feePer * paidSellable;
+                return (
+                  <div className="flex justify-between items-center pt-1 gap-2">
+                    <span className="text-xs text-gray-400 inline-flex items-center gap-1 flex-wrap">
+                      Facility fee <EditableNum value={feePer} onChange={(v) => setDealTerms({ facilityFeePerTicket: Math.max(0, v) })} prefix="$" suffix="/tkt" width="w-14" step="0.25" />
+                      <span className="inline-flex rounded-full border border-gray-700 overflow-hidden ml-1">
+                        {(['on_top', 'inside'] as const).map((m) => (
+                          <button
+                            key={m}
+                            onClick={() => setDealTerms({ facilityFeeMode: m })}
+                            className={`px-2 py-0.5 text-[10px] ${feeMode === m ? 'bg-[#8FD3FF] text-[#04214D] font-semibold' : 'text-gray-400 hover:text-white'}`}
+                            style={{ textTransform: 'none', letterSpacing: 0 }}
+                            title={m === 'on_top' ? 'Fan pays it on top of the ticket. Your gross is untouched.' : 'It comes out of your ticket price. Lowers your net gross.'}
+                          >
+                            {m === 'on_top' ? 'on top' : 'inside'}
+                          </button>
+                        ))}
+                      </span>
+                    </span>
+                    {feeMode === 'inside'
+                      ? <span className="font-medium text-red-400 text-sm">-{formatCurrency(feeTotal)}</span>
+                      : <span className="text-[11px] text-gray-500">fan pays {formatCurrency(feeTotal)}</span>}
+                  </div>
+                );
+              })()}
               <div className="flex justify-between items-center pt-1">
                 <span className="text-xs text-gray-400 inline-flex items-center gap-1">
                   Sales Tax <EditableNum value={salesTaxPct} onChange={setSalesTaxPct} suffix="%" width="w-14" />

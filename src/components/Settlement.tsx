@@ -2,7 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { OfferWithShow, CompanySettings } from '../types';
-import { formatCurrency, netGrossOf, computeDeal, dealTermsOf, dealTypeOf } from '../lib/calculations';
+import { formatCurrency, netGrossOf, computeDeal, dealTermsOf, dealTypeOf, calculateFromOffer } from '../lib/calculations';
+import { EditableNum } from './EditableNum';
 import { generateSettlementPDF } from '../lib/generateSettlementPDF';
 import { parseLocalDate } from '../lib/dateHelpers';
 import { useOrganization } from '../hooks/useOrganization';
@@ -399,6 +400,25 @@ export function Settlement() {
    * does not mark the show settled. That still takes the Save button, once
    * the ticket counts and everything else are in.
    */
+  /**
+   * The facility fee is adjustable here (Jose, Oct 20): the venue's real per-ticket fee is
+   * often only known at settlement. It is a term of the show, so it is saved on the offer
+   * (with the offer's estimate recalculated) and the settlement is recalculated with it.
+   */
+  const feeSaveTimer = useRef<number | undefined>(undefined);
+  const updateFacilityFee = (patch: { facility_fee_per_ticket?: number; facility_fee_mode?: 'on_top' | 'inside' }) => {
+    if (!offer || !settlement) return;
+    const nextOffer = { ...offer, ...patch } as OfferWithShow;
+    setOffer(nextOffer);
+    setSettlement(calculateActuals(settlement, nextOffer));
+    window.clearTimeout(feeSaveTimer.current);
+    feeSaveTimer.current = window.setTimeout(async () => {
+      const calculations = calculateFromOffer(nextOffer, 'estimate');
+      const { error } = await supabase.from('offers').update({ ...patch, calculations }).eq('id', nextOffer.id);
+      if (error) console.error('facility fee save failed', error);
+    }, 800);
+  };
+
   const applyFromChat = async (a: ChatApply) => {
     if (!settlement) return;
     const n = (v: unknown) => (Number.isFinite(Number(v)) ? Number(v) : 0);
@@ -954,31 +974,50 @@ export function Settlement() {
 
                 {(() => {
                   const totalSellable = settlement.actual_attendance.reduce((sum, tier) => sum + tier.actual_sold, 0);
+                  const paidSold = settlement.actual_attendance.filter((t) => (t.price || 0) > 0).reduce((sum, t) => sum + t.actual_sold, 0);
                   const actualRevenue = settlement.actual_revenue;
-                  const salesTax = actualRevenue * (offer.sales_tax_pct / 100);
-                  const netGross = actualRevenue - salesTax;
+                  // Same money model as the totals above (netGrossOf): sales tax is on top and
+                  // passed through; the facility fee only lowers net gross when it is "inside".
+                  const feePer = offer.facility_fee_per_ticket || 0;
+                  const feeMode = ((offer as any).facility_fee_mode === 'inside' ? 'inside' : 'on_top') as 'on_top' | 'inside';
+                  const netGross = netGrossOf(actualRevenue, paidSold, offer.sales_tax_pct || 0, feePer, feeMode).netGross;
 
-                  const facilityFees = totalSellable * (offer.facility_fee_per_ticket || 0);
+                  const facilityFees = paidSold * feePer;
                   const ascap = netGross * (offer.ascap_rate || 0);
                   const bmi = netGross * (offer.bmi_rate || 0);
                   const sesac = netGross * (offer.sesac_rate || 0);
                   const insurance = totalSellable * (offer.insurance_per_attendee || 0);
                   const ccFee = netGross * (offer.cc_fee_rate || 0);
-                  const variableTotal = facilityFees + ascap + bmi + sesac + insurance + ccFee;
-
-                  if (variableTotal > 0) {
+                  // Always shown: the facility fee row is where it gets adjusted, even at $0.
+                  {
                     return (
                       <div>
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="text-gray-400 text-sm font-semibold uppercase">Variable Expenses</h3>
                         </div>
                         <div className="space-y-2">
-                          {facilityFees > 0 && (
-                            <div className="flex items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
-                              <span className="text-white flex-1">Facility Fees ({formatCurrency(offer.facility_fee_per_ticket || 0)}/ticket)</span>
-                              <span className="text-gray-400 text-sm">{formatCurrency(facilityFees)}</span>
-                            </div>
-                          )}
+                          <div className="flex flex-wrap items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
+                            <span className="text-white inline-flex items-center gap-1.5 flex-1 min-w-0 flex-wrap">
+                              Facility fee
+                              <EditableNum value={feePer} onChange={(v) => updateFacilityFee({ facility_fee_per_ticket: Math.max(0, v) })} prefix="$" suffix="/ticket" width="w-16" step="0.25" size="sm" />
+                              <span className="inline-flex rounded-full border border-gray-700 overflow-hidden">
+                                {(['on_top', 'inside'] as const).map((m) => (
+                                  <button
+                                    key={m}
+                                    onClick={() => updateFacilityFee({ facility_fee_mode: m })}
+                                    className={`px-2.5 py-0.5 text-xs ${feeMode === m ? 'bg-[#8FD3FF] text-[#04214D] font-semibold' : 'text-gray-400 hover:text-white'}`}
+                                    style={{ textTransform: 'none', letterSpacing: 0 }}
+                                    title={m === 'on_top' ? 'Fan pays it on top of the ticket. Not your cost.' : 'It comes out of your ticket price. Lowers your net gross.'}
+                                  >
+                                    {m === 'on_top' ? 'on top' : 'inside'}
+                                  </button>
+                                ))}
+                              </span>
+                            </span>
+                            {feeMode === 'inside'
+                              ? <span className="text-red-400 text-sm">-{formatCurrency(facilityFees)}</span>
+                              : <span className="text-gray-500 text-xs">fan pays {formatCurrency(facilityFees)} · not your cost</span>}
+                          </div>
                           {ascap > 0 && (
                             <div className="flex items-center gap-2 p-3 bg-[#0B0D12] rounded-xl">
                               <span className="text-white flex-1">ASCAP ({((offer.ascap_rate || 0) * 100).toFixed(2)}%)</span>
@@ -1013,7 +1052,6 @@ export function Settlement() {
                       </div>
                     );
                   }
-                  return null;
                 })()}
 
                 {Object.keys(settlement.actual_expenses).map((category) => {

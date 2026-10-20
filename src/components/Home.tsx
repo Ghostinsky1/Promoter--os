@@ -18,6 +18,7 @@ import { CashOnHandPanel } from './CashOnHandPanel';
 import { useAsk } from './ask/AskProvider';
 import { NeedsYou } from './ask/NeedsYou';
 import { TourCards } from './tour/TourCards';
+import { DashboardGlobe } from './tour/DashboardGlobe';
 import { HelpLink } from './HelpLink';
 
 interface DashboardStats {
@@ -300,6 +301,9 @@ export function Home() {
       <div className="px-5 sm:px-6 py-5 max-w-7xl mx-auto space-y-4">
         {/* [02] What needs the promoter. Same rows the Ask bar reads. */}
         <NeedsYou brief={ask.brief} loading={ask.loading} onOpen={(link) => navigate(link)} />
+
+        {/* Every tour on one globe: been (gray), coming (lit), next (pulsing). */}
+        <DashboardGlobe />
 
         {/* Tours still running: route, money, next show. */}
         <TourCards />

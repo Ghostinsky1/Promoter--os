@@ -4,13 +4,17 @@ import * as THREE from 'three';
 import { feature } from 'topojson-client';
 import { polygonToCells } from 'h3-js';
 import countriesTopo from 'world-atlas/countries-110m.json';
-import { STAGE, route, lastShow, canonicalCity, isBooked, type Card } from '../../lib/tourPipeline';
+import { STAGE, route, lastShow, canonicalCity, isBooked, isPast, money$, type Card } from '../../lib/tourPipeline';
+import { parseLocalDate } from '../../lib/dateHelpers';
+
+const GRAY = '#9AA4B5';
 
 /**
- * The tour on a spinning globe, in the house CRT blue: land as glowing dots, the route as a
- * moving line between the shows in date order, each show a dot in its stage color, the next
- * show pulsing. Drag to spin, scroll / pinch to zoom, tap a dot to open its card.
- * Loaded lazily — three.js is heavy and only this page needs it.
+ * The tour on a spinning globe, in the house CRT blue. Where we've been is light gray; what's
+ * coming is lit in its stage color, the next show pulsing, the route drawn between the real
+ * shows in date order. Hover a dot: the event, the date, and whether it made money.
+ * Drag to spin, scroll / pinch to zoom, tap a dot to open its card.
+ * Loaded lazily — three.js is heavy and only the pages that show it need it.
  */
 export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, height = 420 }: {
   cards: Card[]; nextKey: string | null; selectedKey: string | null; onSelect: (key: string) => void; height?: number;
@@ -40,7 +44,7 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
       .arcStroke(0.7).arcDashLength(0.45).arcDashGap(0.25).arcDashAnimateTime(2600).arcAltitudeAutoScale(0.35)
       .ringMaxRadius(3.2).ringPropagationSpeed(2.2).ringRepeatPeriod(900)
       .labelDotRadius(0).labelAltitude(0.015).labelResolution(2)
-            .onPointClick((p: any) => onSelect(p.key))
+      .onPointClick((p: any) => onSelect(p.key))
       .onLabelClick((p: any) => onSelect(p.key));
     g.controls().autoRotate = true;
     g.controls().autoRotateSpeed = 0.45;
@@ -64,25 +68,26 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
   // Data.
   useEffect(() => {
     const g = globe.current; if (!g) return;
-    // The route in date order; two nights in the same city draw no line.
+    const colorOf = (c: Card) => (c.key === selectedKey ? '#FFFFFF' : isPast(c) ? GRAY : STAGE[c.stage].color);
+    // The route in date order; two nights in the same city draw no line. Past legs are gray.
     const arcs = path.slice(1).map((c, i) => ({
       startLat: path[i].lat, startLng: path[i].lng, endLat: c.lat, endLng: c.lng,
-      color: [STAGE[path[i].stage].color, STAGE[c.stage].color],
+      color: isPast(c) ? ['rgba(154,164,181,0.45)', 'rgba(154,164,181,0.45)'] : [colorOf(path[i]), colorOf(c)],
     })).filter((a) => Math.abs(a.startLat! - a.endLat!) + Math.abs(a.startLng! - a.endLng!) > 0.3);
     // One label per city: "saint louis", "St Louis" and "STL" are the same spot. Counts the
-    // real shows there; leads add "+N looking".
-    const spots = new Map<string, { lat: number; lng: number; city: string; shows: number; leads: number; key: string }>();
+    // real shows there; leads add "+N looking". A city with only past shows is gray.
+    const spots = new Map<string, { lat: number; lng: number; city: string; shows: number; leads: number; upcoming: number; key: string }>();
     for (const c of placed) {
       if (c.stage === 'dead') continue;
       const name = canonicalCity(c.city || c.venue);
       const k = [...spots.values()].find((x) => Math.hypot(x.lat - c.lat!, x.lng - c.lng!) < 0.6)?.key ?? c.key;
-      const sp = spots.get(k) ?? { lat: c.lat!, lng: c.lng!, city: name, shows: 0, leads: 0, key: c.key };
-      if (isBooked(c.stage)) { sp.shows++; sp.city = name; } else sp.leads++;
+      const sp = spots.get(k) ?? { lat: c.lat!, lng: c.lng!, city: name, shows: 0, leads: 0, upcoming: 0, key: c.key };
+      if (isBooked(c.stage)) { sp.shows++; sp.city = name; if (!isPast(c)) { sp.upcoming++; sp.key = c.key; } } else sp.leads++;
       spots.set(k, sp);
     }
     // Labels that would sit on top of each other get nudged down, one row at a time.
     const text = (x: any) => `${x.city}${x.shows > 1 ? ` (${x.shows})` : ''}${x.leads && !x.shows ? ` · ${x.leads} looking` : x.leads ? ` +${x.leads}` : ''}`;
-    const labels = [...spots.values()].sort((a, b) => b.lat - a.lat).map((x) => ({ ...x, labelLat: x.lat, text: text(x), size: x.shows ? 1.0 : 0.8 }));
+    const labels = [...spots.values()].sort((a, b) => b.lat - a.lat).map((x) => ({ ...x, labelLat: x.lat, text: text(x), size: x.upcoming ? 1.0 : 0.8 }));
     for (let pass = 0; pass < 4; pass++) {
       for (let i = 0; i < labels.length; i++) {
         for (let j = 0; j < i; j++) {
@@ -95,17 +100,17 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
     }
     g.pointsData(placed)
       .pointLat('lat').pointLng('lng')
-      .pointColor((c: Card) => (c.key === selectedKey ? '#FFFFFF' : STAGE[c.stage].color))
-      .pointRadius((c: Card) => (c.key === selectedKey || c.key === nextKey ? 1.05 : isBooked(c.stage) ? 0.75 : 0.45))
-      .pointLabel((c: Card) => `<div style="font:600 12px Saira Condensed,system-ui;background:#14171E;border:1px solid #2A3040;border-radius:8px;padding:6px 8px;color:#fff">${esc(c.city)} · ${esc(c.venue)}<br><span style="color:${STAGE[c.stage].color}">${STAGE[c.stage].label}</span>${c.date ? ` · ${c.date}` : ''}</div>`);
+      .pointColor(colorOf)
+      .pointRadius((c: Card) => (c.key === selectedKey || c.key === nextKey ? 1.05 : isPast(c) ? 0.5 : isBooked(c.stage) ? 0.75 : 0.45))
+      .pointLabel(tip);
     g.arcsData(arcs).arcColor('color');
-    g.labelsData(labels).labelLat('labelLat').labelLng('lng').labelText('text')
-      .labelColor((x: any) => (x.shows ? 'rgba(255,255,255,0.95)' : 'rgba(200,214,235,0.75)')).labelSize('size');
+    g.labelsData(labels).labelLat('labelLat').labelLng('lng').labelText('text').labelSize('size')
+      .labelColor((x: any) => (x.upcoming ? 'rgba(255,255,255,0.95)' : x.shows ? 'rgba(154,164,181,0.8)' : 'rgba(200,214,235,0.7)'));
     const next = placed.find((c) => c.key === nextKey);
     g.ringsData(next ? [next] : []).ringLat('lat').ringLng('lng').ringColor(() => (t: number) => `rgba(143,211,255,${1 - t})`);
   }, [placed, path, nextKey, selectedKey]);
 
-  // Fly to the route when it first has dots, and to a card when one is picked.
+  // Fly to the next show when the globe first has dots, and to a card when one is picked.
   useEffect(() => {
     const g = globe.current; if (!g || !placed.length) return;
     const focus = placed.find((c) => c.key === selectedKey);
@@ -113,10 +118,9 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
     if (!flown.current) {
       flown.current = true;
       // Spin in, then land on the next show — or the last one played — zoomed so the
-      // whole route fits. Grab it to spin it yourself.
+      // real route fits. Grab it to spin it yourself.
       const n = placed.find((c) => c.key === nextKey) ?? lastShow(placed) ?? placed[0];
       const lat = n.lat!, lng = n.lng!;
-      // Zoom to fit the real shows (leads can be anywhere); close in when there are few.
       const fit = path.length > 1 ? path : placed;
       const spread = Math.max(...fit.map((c) => Math.hypot(c.lat! - lat, (c.lng! - lng) * Math.cos((lat * Math.PI) / 180))));
       const altitude = Math.min(1.1, Math.max(0.5, 0.15 + spread / 16));
@@ -126,9 +130,28 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
         live.pointOfView({ lat: lat - 3, lng, altitude }, 1600);
       }, 1800);
     }
-  }, [placed, selectedKey, nextKey]);
+  }, [placed, selectedKey, nextKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <div ref={el} style={{ height, width: '100%', cursor: 'grab' }} aria-label="Tour route on a globe" />;
+}
+
+/** Hover card: the event, the date, and whether it made money. */
+function tip(c: Card): string {
+  const past = isPast(c);
+  const when = c.date ? parseLocalDate(c.date)!.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'No date';
+  const title = c.artist ? `${esc(c.artist)} · ${esc(c.venue)}` : esc(c.venue);
+  const stage = past && c.stage !== 'settled' && isBooked(c.stage) ? 'Played · not settled yet' : past && c.stage === 'settled' ? 'Played' : STAGE[c.stage].label;
+  let line = '';
+  if (c.money != null) {
+    const up = c.money >= 0;
+    const word = c.moneyKind === 'actual' ? (up ? 'Made' : 'Lost') : c.moneyKind === 'projected' ? 'Projected' : 'Guess';
+    const color = c.moneyKind === 'actual' ? (up ? '#4ADE80' : '#F87171') : '#C8D6EB';
+    line = `<div style="margin-top:4px;font-weight:700;color:${color}">${word} ${money$(Math.abs(c.money))}${c.moneyKind === 'actual' ? (up ? ' ✓ profitable' : '') : ''}</div>`;
+  } else if (past) line = `<div style="margin-top:4px;color:#C8D6EB">Settle it to see what it made</div>`;
+  return `<div style="font:600 12px Saira Condensed,system-ui;background:#14171E;border:1px solid #2A3040;border-radius:8px;padding:6px 9px;color:#fff;max-width:240px">
+    <div style="color:${past ? GRAY : '#8FD3FF'};font-size:10px;letter-spacing:.14em;text-transform:uppercase">${esc(canonicalCity(c.city) || '')} · ${stage}</div>
+    <div>${title}</div>
+    <div style="color:#A8B2C1">${when}</div>${line}</div>`;
 }
 
 function drawable(f: any): boolean {

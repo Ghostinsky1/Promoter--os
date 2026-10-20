@@ -251,6 +251,14 @@ export function TourDetailsPage() {
           <div className="grid lg:grid-cols-[1fr_300px]">
             <div className="relative bg-[radial-gradient(ellipse_at_center,#0B2FB8_0%,#0B0D12_70%)]">
               <div className="absolute top-3 left-3 z-10 font-label text-[10px] tracking-[0.2em] uppercase text-[#8FD3FF] flex items-center gap-1.5"><Globe2 className="w-3.5 h-3.5" /> The route</div>
+              <div className="absolute top-3 right-3 z-10 flex items-center gap-3 text-[10px] font-label tracking-[0.14em] uppercase">
+                <span className="inline-flex items-center gap-1 text-[#9AA4B5]"><span className="w-2 h-2 rounded-full bg-[#9AA4B5]" /> Been</span>
+                <span className="inline-flex items-center gap-1 text-[#4ADE80]"><span className="w-2 h-2 rounded-full bg-[#4ADE80]" /> Coming</span>
+                <span className="inline-flex items-center gap-1 text-[#8FD3FF]"><span className="w-2 h-2 rounded-full bg-[#8FD3FF] animate-pulse" /> Next</span>
+              </div>
+              {!next && cards.some((c) => c.lat != null) && (
+                <div className="absolute inset-x-0 bottom-4 z-10 text-center text-sm text-white/80">Nothing coming up on this tour — these are the cities you played. Add a venue with a date and it lights up.</div>
+              )}
               <Suspense fallback={<div className="h-[420px] flex items-center justify-center text-gray-500"><Loader2 className="w-5 h-5 animate-spin" /></div>}>
                 <TourGlobe cards={cards.filter((c) => c.stage !== 'dead')} nextKey={next?.key ?? null} selectedKey={selected} onSelect={pick} height={typeof window !== 'undefined' && window.innerWidth < 640 ? 340 : 420} />
               </Suspense>

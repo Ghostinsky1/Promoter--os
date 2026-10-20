@@ -35,12 +35,20 @@ export const LEAD_STAGES: LeadStage[] = ['lead', 'contacted', 'talking', 'hold',
 /** Real shows: confirmed by the venue (with or without paper), offer out, or played. */
 export const BOOKED: Stage[] = ['offer_sent', 'confirmed', 'settled'];
 export const isBooked = (s: Stage) => BOOKED.includes(s);
+/** Already happened (the date is before today). */
+export function isPast(c: Card): boolean {
+  if (!c.date) return false;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const d = parseLocalDate(c.date);
+  return !!d && d < today;
+}
 
 export interface TourLead {
   id: string;
   organization_id: string;
   tour_id: string;
   venue: string;
+  artist: string | null;
   city: string;
   region: string | null;
   country: string;
@@ -127,6 +135,7 @@ function card(lead: TourLead | null, offer: any | null, settlements: Record<stri
     key: lead ? lead.id : `offer:${offer.id}`,
     lead, offer, stage,
     venue: lead?.venue || offer?.show?.venue_name?.split(',')[0] || 'Venue',
+    artist: offer?.show?.artist_name || null,
     city: lead?.city || where?.city || '',
     region: lead?.region ?? where?.region ?? null,
     date: offer?.show?.event_date || lead?.event_date || null,

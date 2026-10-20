@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { parseLocalDate } from '../../lib/dateHelpers';
-import { STAGE, route, isBooked, short$, type Card } from '../../lib/tourPipeline';
+import { STAGE, route, isBooked, isPast, short$, type Card } from '../../lib/tourPipeline';
 
 /**
  * The run as a line: every dated show from first to last, a dot per show in its stage color,
@@ -58,9 +58,13 @@ export function TourTimeline({ cards, nextKey, selectedKey, onSelect, start, end
             >
               <span
                 className={`block rounded-full border-2 border-[#14171E] transition-transform ${on ? 'scale-150' : 'group-hover:scale-125'} ${isNext ? 'animate-pulse' : ''}`}
-                style={isBooked(c.stage) || on
-                  ? { width: 14, height: 14, background: STAGE[c.stage].color, boxShadow: `0 0 ${on || isNext ? 14 : 6}px ${STAGE[c.stage].color}` }
-                  : { width: 8, height: 8, background: STAGE[c.stage].color, opacity: 0.6, marginTop: 3 }}
+                style={on
+                  ? { width: 14, height: 14, background: '#FFFFFF', boxShadow: '0 0 14px #FFFFFF' }
+                  : isPast(c)
+                    ? { width: isBooked(c.stage) ? 11 : 7, height: isBooked(c.stage) ? 11 : 7, background: '#9AA4B5', opacity: isBooked(c.stage) ? 0.8 : 0.4, marginTop: isBooked(c.stage) ? 1.5 : 3.5 }
+                    : isBooked(c.stage)
+                      ? { width: 14, height: 14, background: STAGE[c.stage].color, boxShadow: `0 0 ${isNext ? 14 : 6}px ${STAGE[c.stage].color}` }
+                      : { width: 8, height: 8, background: STAGE[c.stage].color, opacity: 0.6, marginTop: 3 }}
               />
             </button>
           );

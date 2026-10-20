@@ -133,11 +133,12 @@ export function TourDetailsPage() {
     if (!tour) return;
     // A lead with no offer: stage only. Offer stages need the offer first.
     if (!c.offer) {
-      if (to === 'offer_sent' || to === 'confirmed' || to === 'settled') {
+      if (to === 'offer_sent' || to === 'settled') {
         setToast({ text: `${c.city}: make the offer first — then it can move to ${STAGE[to].label}.` });
         setDrawer({ card: c });
         return;
       }
+      if (to === 'confirmed') setToast({ text: `${c.city} is confirmed. Make the offer when you're ready so the numbers count.`, link: { label: 'Open', to: `/tours/${tour.id}?open=${c.lead!.id}` } });
       setLeads((ls) => ls.map((l) => (l.id === c.lead!.id ? { ...l, stage: to as LeadStage } : l)));
       await supabase.from('tour_leads').update({ stage: to, updated_at: new Date().toISOString() }).eq('id', c.lead!.id);
       return;
@@ -155,7 +156,7 @@ export function TourDetailsPage() {
     setOffers((os) => os.map((o) => (o.id === c.offer.id ? { ...o, ...patch } : o)));
     const { error } = await supabase.from('offers').update(patch).eq('id', c.offer.id);
     if (error) { setToast({ text: 'Could not move that one. Try again.' }); await load(); return; }
-    if (to === 'lead' || to === 'contacted' || to === 'talking' || to === 'hold') {
+    if (to === 'lead' || to === 'contacted' || to === 'talking' || to === 'hold' || to === 'confirmed') {
       if (c.lead) await supabase.from('tour_leads').update({ stage: to }).eq('id', c.lead.id);
       else await supabase.from('tour_leads').insert({ tour_id: tour.id, organization_id: tour.organization_id, venue: c.venue, city: c.city, region: c.region, lat: c.lat, lng: c.lng, event_date: c.date, stage: to, offer_id: c.offer.id, position: leads.length });
     }

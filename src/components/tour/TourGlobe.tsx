@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { feature } from 'topojson-client';
 import { polygonToCells } from 'h3-js';
 import countriesTopo from 'world-atlas/countries-110m.json';
-import { STAGE, route, type Card } from '../../lib/tourPipeline';
+import { STAGE, route, lastShow, canonicalCity, isBooked, type Card } from '../../lib/tourPipeline';
 
 /**
  * The tour on a spinning globe, in the house CRT blue: land as glowing dots, the route as a
@@ -19,7 +19,8 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
   const globe = useRef<any>(null);
   const flown = useRef(false);
   const placed = useMemo(() => cards.filter((c) => c.lat != null && c.lng != null), [cards]);
-  const path = useMemo(() => route(placed), [placed]);
+  // The line runs through the real shows; leads are dots only.
+  const path = useMemo(() => route(placed, true), [placed]);
 
   // Build once.
   useEffect(() => {
@@ -38,9 +39,8 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
       .pointAltitude(0.015).pointRadius(0.75).pointResolution(16)
       .arcStroke(0.7).arcDashLength(0.45).arcDashGap(0.25).arcDashAnimateTime(2600).arcAltitudeAutoScale(0.35)
       .ringMaxRadius(3.2).ringPropagationSpeed(2.2).ringRepeatPeriod(900)
-      .labelSize(1.15).labelDotRadius(0).labelAltitude(0.015).labelResolution(2)
-      .labelColor(() => 'rgba(255,255,255,0.9)')
-      .onPointClick((p: any) => onSelect(p.key))
+      .labelDotRadius(0).labelAltitude(0.015).labelResolution(2)
+            .onPointClick((p: any) => onSelect(p.key))
       .onLabelClick((p: any) => onSelect(p.key));
     g.controls().autoRotate = true;
     g.controls().autoRotateSpeed = 0.45;
@@ -64,26 +64,43 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
   // Data.
   useEffect(() => {
     const g = globe.current; if (!g) return;
-    // The route in date order; a night in the same city as the one before draws no line.
+    // The route in date order; two nights in the same city draw no line.
     const arcs = path.slice(1).map((c, i) => ({
       startLat: path[i].lat, startLng: path[i].lng, endLat: c.lat, endLng: c.lng,
       color: [STAGE[path[i].stage].color, STAGE[c.stage].color],
-    })).filter((a) => Math.abs(a.startLat! - a.endLat!) + Math.abs(a.startLng! - a.endLng!) > 0.05);
-    // One label per city, with how many shows land there.
-    const spots = new Map<string, { lat: number; lng: number; city: string; n: number; key: string }>();
+    })).filter((a) => Math.abs(a.startLat! - a.endLat!) + Math.abs(a.startLng! - a.endLng!) > 0.3);
+    // One label per city: "saint louis", "St Louis" and "STL" are the same spot. Counts the
+    // real shows there; leads add "+N looking".
+    const spots = new Map<string, { lat: number; lng: number; city: string; shows: number; leads: number; key: string }>();
     for (const c of placed) {
       if (c.stage === 'dead') continue;
-      const k = `${c.lat!.toFixed(1)},${c.lng!.toFixed(1)}`;
-      const s = spots.get(k);
-      if (s) s.n++; else spots.set(k, { lat: c.lat!, lng: c.lng!, city: c.city || c.venue, n: 1, key: c.key });
+      const name = canonicalCity(c.city || c.venue);
+      const k = [...spots.values()].find((x) => Math.hypot(x.lat - c.lat!, x.lng - c.lng!) < 0.6)?.key ?? c.key;
+      const sp = spots.get(k) ?? { lat: c.lat!, lng: c.lng!, city: name, shows: 0, leads: 0, key: c.key };
+      if (isBooked(c.stage)) { sp.shows++; sp.city = name; } else sp.leads++;
+      spots.set(k, sp);
+    }
+    // Labels that would sit on top of each other get nudged down, one row at a time.
+    const text = (x: any) => `${x.city}${x.shows > 1 ? ` (${x.shows})` : ''}${x.leads && !x.shows ? ` · ${x.leads} looking` : x.leads ? ` +${x.leads}` : ''}`;
+    const labels = [...spots.values()].sort((a, b) => b.lat - a.lat).map((x) => ({ ...x, labelLat: x.lat, text: text(x), size: x.shows ? 1.0 : 0.8 }));
+    for (let pass = 0; pass < 4; pass++) {
+      for (let i = 0; i < labels.length; i++) {
+        for (let j = 0; j < i; j++) {
+          const a = labels[j], b = labels[i];
+          const rowH = Math.max(a.size, b.size) * 1.9;
+          const wide = (a.text.length * a.size + b.text.length * b.size) * 0.3; // rough text width in degrees
+          if (Math.abs(b.labelLat - a.labelLat) < rowH && Math.abs(b.lng - a.lng) < wide) b.labelLat = a.labelLat - rowH;
+        }
+      }
     }
     g.pointsData(placed)
       .pointLat('lat').pointLng('lng')
       .pointColor((c: Card) => (c.key === selectedKey ? '#FFFFFF' : STAGE[c.stage].color))
-      .pointRadius((c: Card) => (c.key === selectedKey || c.key === nextKey ? 1.05 : c.stage === 'dead' ? 0.4 : 0.75))
+      .pointRadius((c: Card) => (c.key === selectedKey || c.key === nextKey ? 1.05 : isBooked(c.stage) ? 0.75 : 0.45))
       .pointLabel((c: Card) => `<div style="font:600 12px Saira Condensed,system-ui;background:#14171E;border:1px solid #2A3040;border-radius:8px;padding:6px 8px;color:#fff">${esc(c.city)} · ${esc(c.venue)}<br><span style="color:${STAGE[c.stage].color}">${STAGE[c.stage].label}</span>${c.date ? ` · ${c.date}` : ''}</div>`);
     g.arcsData(arcs).arcColor('color');
-    g.labelsData([...spots.values()]).labelLat('lat').labelLng('lng').labelText((s: any) => (s.n > 1 ? `${s.city} (${s.n})` : s.city));
+    g.labelsData(labels).labelLat('labelLat').labelLng('lng').labelText('text')
+      .labelColor((x: any) => (x.shows ? 'rgba(255,255,255,0.95)' : 'rgba(200,214,235,0.75)')).labelSize('size');
     const next = placed.find((c) => c.key === nextKey);
     g.ringsData(next ? [next] : []).ringLat('lat').ringLng('lng').ringColor(() => (t: number) => `rgba(143,211,255,${1 - t})`);
   }, [placed, path, nextKey, selectedKey]);
@@ -95,16 +112,14 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
     if (focus) { g.controls().autoRotate = false; g.pointOfView({ lat: focus.lat, lng: focus.lng, altitude: 1.5 }, 900); return; }
     if (!flown.current) {
       flown.current = true;
-      // Spin in, then land on the next show (or the middle of the route) and hold there
-      // so the run is in view. Grab it to spin it yourself.
-      // Frame the whole route, leaning toward the next show; zoom to how spread out it is.
-      const n = placed.find((c) => c.key === nextKey);
-      const cLat = placed.reduce((s, c) => s + c.lat!, 0) / placed.length;
-      const cLng = placed.reduce((s, c) => s + c.lng!, 0) / placed.length;
-      const lat = n ? (cLat + n.lat!) / 2 : cLat;
-      const lng = n ? (cLng + n.lng!) / 2 : cLng;
-      const spread = Math.max(...placed.map((c) => Math.hypot(c.lat! - lat, (c.lng! - lng) * Math.cos((lat * Math.PI) / 180))));
-      const altitude = Math.min(2.2, Math.max(0.6, 0.2 + spread / 17));
+      // Spin in, then land on the next show — or the last one played — zoomed so the
+      // whole route fits. Grab it to spin it yourself.
+      const n = placed.find((c) => c.key === nextKey) ?? lastShow(placed) ?? placed[0];
+      const lat = n.lat!, lng = n.lng!;
+      // Zoom to fit the real shows (leads can be anywhere); close in when there are few.
+      const fit = path.length > 1 ? path : placed;
+      const spread = Math.max(...fit.map((c) => Math.hypot(c.lat! - lat, (c.lng! - lng) * Math.cos((lat * Math.PI) / 180))));
+      const altitude = Math.min(1.1, Math.max(0.5, 0.15 + spread / 16));
       setTimeout(() => {
         const live = globe.current; if (!live) return;
         live.controls().autoRotate = false;

@@ -18,7 +18,7 @@
 import { parseLocalDate } from './dateHelpers';
 
 export type Stage = 'lead' | 'contacted' | 'talking' | 'hold' | 'offer_sent' | 'confirmed' | 'settled' | 'dead';
-export type LeadStage = 'lead' | 'contacted' | 'talking' | 'hold' | 'dead';
+export type LeadStage = 'lead' | 'contacted' | 'talking' | 'hold' | 'confirmed' | 'dead';
 
 export const STAGES: { key: Stage; label: string; color: string; hint: string }[] = [
   { key: 'lead', label: 'To contact', color: '#93A2B8', hint: 'Not reached out yet' },
@@ -31,7 +31,10 @@ export const STAGES: { key: Stage; label: string; color: string; hint: string }[
   { key: 'dead', label: 'Dead', color: '#4B5563', hint: 'Said no, released or cancelled' },
 ];
 export const STAGE = Object.fromEntries(STAGES.map((s) => [s.key, s])) as Record<Stage, (typeof STAGES)[number]>;
-export const LEAD_STAGES: LeadStage[] = ['lead', 'contacted', 'talking', 'hold', 'dead'];
+export const LEAD_STAGES: LeadStage[] = ['lead', 'contacted', 'talking', 'hold', 'confirmed', 'dead'];
+/** Real shows: confirmed by the venue (with or without paper), offer out, or played. */
+export const BOOKED: Stage[] = ['offer_sent', 'confirmed', 'settled'];
+export const isBooked = (s: Stage) => BOOKED.includes(s);
 
 export interface TourLead {
   id: string;
@@ -150,14 +153,25 @@ export function money(cards: Card[], costs: TourCost[]): Money {
   return { made, closed, tryingToClose: trying, earlyLeads: early, pipeline: trying + early, tourCosts, pl: made - tourCosts, counts };
 }
 
-/** Dated, not dead, in date order — the route. */
-export function route(cards: Card[]): Card[] {
-  return cards.filter((c) => c.date && c.stage !== 'dead').sort((a, b) => (a.date! < b.date! ? -1 : 1));
+/** Dated, not dead, in date order. `bookedOnly` keeps the real shows (the route line). */
+export function route(cards: Card[], bookedOnly = false): Card[] {
+  const dated = cards.filter((c) => c.date && c.stage !== 'dead');
+  const booked = bookedOnly ? dated.filter((c) => isBooked(c.stage)) : dated;
+  return booked.sort((a, b) => (a.date! < b.date! ? -1 : a.date! > b.date! ? 1 : a.city.localeCompare(b.city)));
 }
 
+/** The next show: the next booked one if there is any, otherwise the next date on the board. */
 export function nextShow(cards: Card[]): Card | null {
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  return route(cards).find((c) => { const d = parseLocalDate(c.date!); return c.stage !== 'settled' && d && d >= today; }) ?? null;
+  const upcoming = (list: Card[]) => list.find((c) => { const d = parseLocalDate(c.date!); return c.stage !== 'settled' && d && d >= today; }) ?? null;
+  return upcoming(route(cards, true)) ?? upcoming(route(cards));
+}
+
+/** Last booked show that already happened (what the globe lands on when nothing is coming up). */
+export function lastShow(cards: Card[]): Card | null {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const past = route(cards, true).filter((c) => { const d = parseLocalDate(c.date!); return d && d < today; });
+  return past[past.length - 1] ?? route(cards)[0] ?? null;
 }
 
 // ───────── geocoding (Open-Meteo, free, no key) ─────────
@@ -186,11 +200,22 @@ const NICK: Record<string, string> = { stl: 'St. Louis', kc: 'Kansas City', kcmo
 /** Ways people write a city: "saint louis " → also try "St. Louis". */
 function cityVariants(raw: string): string[] {
   const c = raw.replace(/^[\s,]+|[\s,]+$/g, '').replace(/\s+/g, ' ');
-  const out = [NICK[c.toLowerCase()] || c];
-  if (/^saint\s/i.test(c)) out.push(c.replace(/^saint\s/i, 'St. '), c.replace(/^saint\s/i, 'St '));
-  if (/^st\.?\s/i.test(c)) out.push(c.replace(/^st\.?\s/i, 'Saint '));
+  const out: string[] = [];
+  if (NICK[c.toLowerCase()]) out.push(NICK[c.toLowerCase()]);
+  // The proper spelling first — "saint louis" on its own finds a Saint Louis in Michigan.
+  if (/^saint\s/i.test(c)) out.push(c.replace(/^saint\s/i, 'St. '));
   if (/^east saint\s/i.test(c)) out.push(c.replace(/^east saint\s/i, 'East St. '));
+  out.push(c);
+  if (/^st\.?\s/i.test(c)) out.push(c.replace(/^st\.?\s/i, 'Saint '));
   return [...new Set(out.filter(Boolean))];
+}
+
+/** "saint louis", "STL", "St Louis" → "St. Louis": one spelling per city for labels. */
+export function canonicalCity(raw: string): string {
+  const c = (raw || '').replace(/^[\s,]+|[\s,]+$/g, '').replace(/\s+/g, ' ');
+  if (NICK[c.toLowerCase()]) return NICK[c.toLowerCase()];
+  return c.replace(/^saint\s/i, 'St. ').replace(/^st\s/i, 'St. ').replace(/^east saint\s/i, 'East St. ')
+    .split(' ').map((w) => (w.length > 2 && w === w.toLowerCase()) || w === w.toUpperCase() ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w).join(' ');
 }
 
 const memo = new Map<string, { lat: number; lng: number } | null>();
@@ -214,7 +239,8 @@ export async function geocode(city: string, region: string | null, country?: str
       const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=10&language=en&format=json${cc ? `&countryCode=${cc}` : ''}`;
       const j = await (await fetch(url)).json();
       const results: any[] = j?.results || [];
-      const hit = (want && results.find((x) => String(x.admin1 || '').toLowerCase() === want)) || results[0];
+      // With a state given, only a result in that state counts; a wrong-state hit is worse than none.
+      const hit = want ? results.find((x) => String(x.admin1 || '').toLowerCase() === want) : results[0];
       if (hit) { v = { lat: Number(hit.latitude), lng: Number(hit.longitude) }; break; }
     }
   } catch {

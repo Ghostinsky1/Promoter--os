@@ -99,7 +99,7 @@ export function LeadDrawer({ card, initialStage, tourId, artist, onClose, onSave
               <label className="block"><span className={lab}>Show date</span><input type="date" className={input} value={d.event_date} onChange={set('event_date')} /></label>
               <label className="block"><span className={lab}>Stage</span>
                 <select className={input} value={d.stage} onChange={set('stage')} disabled={!!offer && offer.status !== 'planning'}>
-                  {LEAD_STAGES.map((s) => <option key={s} value={s}>{STAGE[s].label}</option>)}
+                  {LEAD_STAGES.map((s) => <option key={s} value={s}>{s === 'confirmed' ? 'Confirmed (venue said yes)' : STAGE[s].label}</option>)}
                 </select>
               </label>
             </div>

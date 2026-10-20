@@ -8,6 +8,7 @@ import {
   type Card, type Stage, type TourLead, type TourCost, type LeadStage,
 } from '../lib/tourPipeline';
 import { PipelineBoard } from '../components/tour/PipelineBoard';
+import { PipelineList } from '../components/tour/PipelineList';
 import { TourTimeline } from '../components/tour/TourTimeline';
 import { LeadDrawer } from '../components/tour/LeadDrawer';
 
@@ -36,6 +37,8 @@ export function TourDetailsPage() {
   const [offerGeo, setOfferGeo] = useState<Record<string, { lat: number; lng: number }>>({});
   const [statusOpen, setStatusOpen] = useState(false);
   const [newCost, setNewCost] = useState({ label: '', amount: '' });
+  const [view, setView] = useState<'dates' | 'board'>(() => { try { return (localStorage.getItem('pos_pipeline_view') as any) || 'dates'; } catch { return 'dates'; } });
+  const switchView = (v: 'dates' | 'board') => { setView(v); try { localStorage.setItem('pos_pipeline_view', v); } catch { /* ignore */ } };
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -320,19 +323,40 @@ export function TourDetailsPage() {
 
         {/* Pipeline */}
         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-          <h2 className="text-lg font-bold text-white">Pipeline</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-bold text-white">Pipeline</h2>
+            <div className="flex rounded-lg border border-white/30 overflow-hidden text-xs">
+              <button onClick={() => switchView('dates')} className={`px-2.5 py-1 ${view === 'dates' ? 'bg-white text-[#04214D] font-bold' : 'text-white hover:bg-white/10'}`} style={{ textTransform: 'none', letterSpacing: 0 }}>By date</button>
+              <button onClick={() => switchView('board')} className={`px-2.5 py-1 ${view === 'board' ? 'bg-white text-[#04214D] font-bold' : 'text-white hover:bg-white/10'}`} style={{ textTransform: 'none', letterSpacing: 0 }}>Board</button>
+            </div>
+          </div>
           <div className="flex gap-2">
             <button onClick={() => setShowAddOffer(true)} className="text-sm text-white border border-white/30 hover:bg-white/10 rounded-xl px-3 py-2 inline-flex items-center gap-1.5" style={{ textTransform: 'none', letterSpacing: 0 }}><Link2 className="w-4 h-4" /> Add an existing offer</button>
             <button onClick={() => setDrawer({ card: null, stage: 'lead' })} className="text-sm bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-xl px-3 py-2 font-bold inline-flex items-center gap-1.5"><Plus className="w-4 h-4" /> Venue</button>
           </div>
         </div>
-        <PipelineBoard
-          cards={cards}
-          selectedKey={selected}
-          onOpen={(c) => { pick(c.key); setDrawer({ card: c }); }}
-          onMove={moveCard}
-          onAdd={(stage) => setDrawer({ card: null, stage: stage as LeadStage })}
-        />
+        {view === 'board' ? (
+          <PipelineBoard
+            cards={cards}
+            selectedKey={selected}
+            onOpen={(c) => { pick(c.key); setDrawer({ card: c }); }}
+            onMove={moveCard}
+            onAdd={(stage) => setDrawer({ card: null, stage: stage as LeadStage })}
+          />
+        ) : (
+          <PipelineList
+            cards={cards}
+            selectedKey={selected}
+            onOpen={(c) => { pick(c.key); setDrawer({ card: c }); }}
+            onMove={moveCard}
+            onAdd={() => setDrawer({ card: null, stage: 'lead' })}
+            onMakeOffer={(c) => {
+              if (!c.lead) return;
+              const q = new URLSearchParams({ tour: tour.id, lead: c.lead.id, artist: tour.artist_name || '', venue: c.venue, city: c.city, ...(c.region ? { state: c.region } : {}), ...(c.date ? { date: c.date } : {}) });
+              navigate(`/offers/quick?${q.toString()}`);
+            }}
+          />
+        )}
 
         {/* Tour costs */}
         <div className="bg-[#14171E] border border-[#2A3040] rounded-2xl p-4 mt-4">

@@ -43,9 +43,8 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
       .pointAltitude(0.015).pointRadius(0.75).pointResolution(16)
       .arcStroke(0.7).arcDashLength(0.45).arcDashGap(0.25).arcDashAnimateTime(2600).arcAltitudeAutoScale(0.35)
       .ringMaxRadius(3.2).ringPropagationSpeed(2.2).ringRepeatPeriod(900)
-      .labelDotRadius(0).labelAltitude(0.015).labelResolution(2)
-      .onPointClick((p: any) => onSelect(p.key))
-      .onLabelClick((p: any) => onSelect(p.key));
+            .onPointClick((p: any) => onSelect(p.key));
+
     g.controls().autoRotate = true;
     g.controls().autoRotateSpeed = 0.45;
     g.controls().enableDamping = true;
@@ -85,27 +84,37 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
       if (isBooked(c.stage)) { sp.shows++; sp.city = name; if (!isPast(c)) { sp.upcoming++; sp.key = c.key; } } else sp.leads++;
       spots.set(k, sp);
     }
-    // Labels that would sit on top of each other get nudged down, one row at a time.
-    const text = (x: any) => `${x.city}${x.shows > 1 ? ` (${x.shows})` : ''}${x.leads && !x.shows ? ` · ${x.leads} looking` : x.leads ? ` +${x.leads}` : ''}`;
-    const labels = [...spots.values()].sort((a, b) => b.lat - a.lat).map((x) => ({ ...x, labelLat: x.lat, text: text(x), size: x.upcoming ? 1.0 : 0.8 }));
-    for (let pass = 0; pass < 4; pass++) {
-      for (let i = 0; i < labels.length; i++) {
-        for (let j = 0; j < i; j++) {
-          const a = labels[j], b = labels[i];
-          const rowH = Math.max(a.size, b.size) * 1.9;
-          const wide = (a.text.length * a.size + b.text.length * b.size) * 0.3; // rough text width in degrees
-          if (Math.abs(b.labelLat - a.labelLat) < rowH && Math.abs(b.lng - a.lng) < wide) b.labelLat = a.labelLat - rowH;
-        }
-      }
+    // Pills next to each city, sized in pixels so they stay readable at any zoom. Two cities
+    // close together get one pill above the dot and one below, so they never cover each other.
+    // Pills sit to the right of their dot. When two cities are close, the western one flips
+    // to the left of its dot, so the two pills point away from each other.
+    const list = [...spots.values()].sort((a, b) => a.lng - b.lng);
+    const left = new Set<string>();
+    for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+      if (Math.abs(list[i].lat - list[j].lat) < 2.5 && Math.abs(list[i].lng - list[j].lng) < 7) left.add(list[i].key);
     }
+    const labels = list.map((x) => ({ ...x, left: left.has(x.key) }));
     g.pointsData(placed)
       .pointLat('lat').pointLng('lng')
       .pointColor(colorOf)
       .pointRadius((c: Card) => (c.key === selectedKey || c.key === nextKey ? 1.05 : isPast(c) ? 0.5 : isBooked(c.stage) ? 0.75 : 0.45))
       .pointLabel(tip);
     g.arcsData(arcs).arcColor('color');
-    g.labelsData(labels).labelLat('labelLat').labelLng('lng').labelText('text').labelSize('size')
-      .labelColor((x: any) => (x.upcoming ? 'rgba(255,255,255,0.95)' : x.shows ? 'rgba(154,164,181,0.8)' : 'rgba(200,214,235,0.7)'));
+    g.htmlElementsData(labels).htmlLat('lat').htmlLng('lng').htmlAltitude(0.02).htmlTransitionDuration(0)
+      .htmlElement((x: any) => {
+        // The renderer owns the outer element's transform, so the pill is a child that we offset.
+        const el = document.createElement('div');
+        const pill = document.createElement('div');
+        const tone = x.upcoming ? '#FFFFFF' : x.shows ? GRAY : '#C8D6EB';
+        const border = x.upcoming ? 'rgba(143,211,255,0.7)' : 'rgba(154,164,181,0.35)';
+        pill.innerHTML = `<span style="color:${tone};font-weight:${x.upcoming ? 700 : 500}">${esc(x.city)}</span>${x.shows ? `<span style="color:${x.upcoming ? '#4ADE80' : GRAY};margin-left:5px">${x.shows}</span>` : ''}${x.leads ? `<span style="color:#F2B640;margin-left:5px">+${x.leads}</span>` : ''}`;
+        pill.style.cssText = `position:absolute;top:0;${x.left ? 'right:9px' : 'left:9px'};transform:translateY(-50%);pointer-events:auto;cursor:pointer;white-space:nowrap;font:600 11px 'Saira Condensed',system-ui;letter-spacing:.02em;background:rgba(11,13,18,0.85);border:1px solid ${border};border-radius:999px;padding:2px 8px;${x.upcoming ? '' : 'opacity:.85'}`;
+        pill.title = `${x.shows} show${x.shows === 1 ? '' : 's'}${x.leads ? ` · ${x.leads} venue${x.leads === 1 ? '' : 's'} in the pipeline` : ''}`;
+        pill.onclick = (e) => { e.stopPropagation(); onSelect(x.key); };
+        el.style.cssText = 'position:relative;width:0;height:0;pointer-events:none';
+        el.appendChild(pill);
+        return el;
+      });
     const next = placed.find((c) => c.key === nextKey);
     g.ringsData(next ? [next] : []).ringLat('lat').ringLng('lng').ringColor(() => (t: number) => `rgba(143,211,255,${1 - t})`);
   }, [placed, path, nextKey, selectedKey]);

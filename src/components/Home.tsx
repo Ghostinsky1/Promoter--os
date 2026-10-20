@@ -17,6 +17,7 @@ import { cashOnHand, type CashOnHand } from '../lib/upfrontCost';
 import { CashOnHandPanel } from './CashOnHandPanel';
 import { useAsk } from './ask/AskProvider';
 import { NeedsYou } from './ask/NeedsYou';
+import { TourCards } from './tour/TourCards';
 import { HelpLink } from './HelpLink';
 
 interface DashboardStats {
@@ -299,6 +300,9 @@ export function Home() {
       <div className="px-5 sm:px-6 py-5 max-w-7xl mx-auto space-y-4">
         {/* [02] What needs the promoter. Same rows the Ask bar reads. */}
         <NeedsYou brief={ask.brief} loading={ask.loading} onOpen={(link) => navigate(link)} />
+
+        {/* Tours still running: route, money, next show. */}
+        <TourCards />
 
         {/* Four numbers, one row. */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">

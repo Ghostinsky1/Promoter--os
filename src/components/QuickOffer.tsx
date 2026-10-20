@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Zap, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { calculateFromOffer, formatCurrency } from '../lib/calculations';
@@ -59,9 +59,16 @@ function Field({ label, value, onChange, prefix, placeholder, type = 'text', hin
 
 export function QuickOffer() {
   const navigate = useNavigate();
-  const [artist, setArtist] = useState('');
-  const [venue, setVenue] = useState('');
-  const [date, setDate] = useState('');
+  // From a tour lead ("Make offer"): the venue, city and date come along, and the new
+  // offer is put on the tour and linked back to the lead.
+  const [qp] = useSearchParams();
+  const fromTour = qp.get('tour');
+  const fromLead = qp.get('lead');
+  const city = qp.get('city') || '';
+  const state = qp.get('state') || '';
+  const [artist, setArtist] = useState(qp.get('artist') || '');
+  const [venue, setVenue] = useState(qp.get('venue') || '');
+  const [date, setDate] = useState(qp.get('date') || '');
   const [capacity, setCapacity] = useState('');
   const [price, setPrice] = useState('');
   const [fee, setFee] = useState('');
@@ -126,8 +133,16 @@ export function QuickOffer() {
         id: offerId, show_id: showId, ...draft, calculations: calc,
         user_id: user.id, organization_id: member.organization_id,
         offer_sent_date: new Date().toISOString().slice(0, 10),
+        ...(fromTour ? { tour_id: fromTour } : {}),
+        ...(city ? { venue_city: city } : {}),
+        ...(state ? { venue_state: state } : {}),
       });
       if (offerErr) { await supabase.from('shows').delete().eq('id', showId); throw offerErr; }
+      if (fromTour && fromLead) {
+        await supabase.from('tour_leads').update({ offer_id: offerId, event_date: date || null, updated_at: new Date().toISOString() }).eq('id', fromLead);
+        navigate(`/tours/${fromTour}?open=${fromLead}`);
+        return;
+      }
       navigate(`/offers/${offerId}`);
     } catch (e: any) {
       setError(e?.message || 'Could not create the offer.');
@@ -139,7 +154,7 @@ export function QuickOffer() {
     <div className="min-h-screen bg-[#1140F0] p-3 sm:p-5">
       <div className="max-w-5xl mx-auto">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-white/80 hover:text-white mb-3 text-sm" style={{ textTransform: 'none', letterSpacing: 0 }}>
-          <ArrowLeft className="w-4 h-4" /> Back
+          <ArrowLeft className="w-4 h-4" /> {fromTour ? 'Back to the tour' : 'Back'}
         </button>
         <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
           <div>

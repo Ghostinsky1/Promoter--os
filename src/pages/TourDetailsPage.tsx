@@ -1,681 +1,344 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, Music2, MapPin, Users, Plus, Download, Edit, ChevronRight, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Calendar, Music2, Plus, Trash2, Globe2, Loader2, Link2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { TourWithDates } from '../types';
-import { formatCurrency } from '../lib/calculations';
 import { parseLocalDate } from '../lib/dateHelpers';
+import {
+  STAGES, STAGE, buildCards, money, nextShow, geocode, short$, money$,
+  type Card, type Stage, type TourLead, type TourCost, type LeadStage,
+} from '../lib/tourPipeline';
+import { PipelineBoard } from '../components/tour/PipelineBoard';
+import { TourTimeline } from '../components/tour/TourTimeline';
+import { LeadDrawer } from '../components/tour/LeadDrawer';
 
+const TourGlobe = lazy(() => import('../components/tour/TourGlobe'));
+
+/**
+ * A tour, run like a CRM (Jose, Oct 20): the route on a globe, the run on a timeline,
+ * every venue on a pipeline board from first email to settled, and the tour's money —
+ * what we made, what's closed, what we're trying to close, tour costs, and the P/L.
+ */
 export function TourDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [tour, setTour] = useState<TourWithDates | null>(null);
+  const [params, setParams] = useSearchParams();
+  const [tour, setTour] = useState<any>(null);
+  const [offers, setOffers] = useState<any[]>([]);
+  const [settlements, setSettlements] = useState<Record<string, any>>({});
+  const [leads, setLeads] = useState<TourLead[]>([]);
+  const [costs, setCosts] = useState<TourCost[]>([]);
+  const [available, setAvailable] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAddShow, setShowAddShow] = useState(false);
-  const [availableOffers, setAvailableOffers] = useState<any[]>([]);
-  const [settlements, setSettlements] = useState<any[]>([]);
-  const [statusMenuOpen, setStatusMenuOpen] = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [drawer, setDrawer] = useState<{ card: Card | null; stage?: LeadStage } | null>(null);
+  const [showAddOffer, setShowAddOffer] = useState(false);
+  const [toast, setToast] = useState<{ text: string; link?: { label: string; to: string } } | null>(null);
+  const [offerGeo, setOfferGeo] = useState<Record<string, { lat: number; lng: number }>>({});
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [newCost, setNewCost] = useState({ label: '', amount: '' });
 
-  useEffect(() => {
-    if (id) {
-      loadTourData();
-      loadAvailableOffers();
-      loadSettlements();
-    }
+  const load = useCallback(async () => {
+    if (!id) return;
+    const [{ data: t }, { data: o }, { data: l }, { data: c }, { data: av }] = await Promise.all([
+      supabase.from('tours').select('*').eq('id', id).maybeSingle(),
+      supabase.from('offers').select('*, show:shows(*)').eq('tour_id', id),
+      supabase.from('tour_leads').select('*').eq('tour_id', id).order('position'),
+      supabase.from('tour_costs').select('*').eq('tour_id', id).order('created_at'),
+      supabase.from('offers').select('id, status, calculations, show:shows(artist_name, venue_name, event_date, capacity)').is('tour_id', null),
+    ]);
+    setTour(t); setOffers(o || []); setLeads((l || []) as TourLead[]); setCosts((c || []) as TourCost[]); setAvailable(av || []);
+    const ids = (o || []).map((x: any) => x.id);
+    if (ids.length) {
+      const { data: s } = await supabase.from('settlements').select('offer_id, actual_profit, actual_revenue, settled_at').in('offer_id', ids);
+      setSettlements(Object.fromEntries((s || []).map((x: any) => [x.offer_id, x])));
+    } else setSettlements({});
+    setLoading(false);
   }, [id]);
 
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => { const k = params.get('open'); if (k && leads.length) { setSelected(k); } }, [params, leads.length]);
+  useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 6000); return () => clearTimeout(t); }, [toast]);
   useEffect(() => {
-    const handleClickOutside = () => {
-      if (statusMenuOpen) {
-        setStatusMenuOpen(false);
+    if (!statusOpen) return;
+    const close = () => setStatusOpen(false);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [statusOpen]);
+
+  const rawCards = useMemo(() => buildCards(leads, offers, settlements), [leads, offers, settlements]);
+
+  // Offers on the tour with no lead carry no coordinates: look their city up once.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      for (const c of rawCards) {
+        if (c.lat != null || !c.offer || offerGeo[c.key] || !c.city) continue;
+        const g = await geocode(c.city, c.region);
+        if (!alive) return;
+        if (g) setOfferGeo((m) => ({ ...m, [c.key]: g }));
       }
-    };
+    })();
+    return () => { alive = false; };
+  }, [rawCards]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [statusMenuOpen]);
+  const cards = useMemo(() => rawCards.map((c) => (c.lat == null && offerGeo[c.key] ? { ...c, ...offerGeo[c.key] } : c)), [rawCards, offerGeo]);
+  const m = useMemo(() => money(cards, costs), [cards, costs]);
+  const next = useMemo(() => nextShow(cards), [cards]);
+  const sel = cards.find((c) => c.key === selected) ?? null;
 
-  const loadTourData = async () => {
-    try {
-      const { data: tourData } = await supabase
-        .from('tours')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (tourData) {
-        const { data: offers } = await supabase
-          .from('offers')
-          .select('*, show:shows(*)')
-          .eq('tour_id', id)
-          .order('show_number', { ascending: true });
-
-        const dates = offers?.map((offer: any) => ({
-          offer_id: offer.id,
-          event_date: offer.show.event_date,
-          venue_name: offer.show.venue_name,
-          city: offer.show.venue_name.split(',')[1]?.trim() || 'TBD',
-          capacity: offer.show.capacity,
-          net_profit: offer.calculations?.netProfit || 0,
-          gross_potential: offer.calculations?.grossPotential || 0,
-          total_expenses: offer.calculations?.totalExpenses || 0,
-          status: offer.status || 'planning',
-          show_number: offer.show_number || 0
-        })) || [];
-
-        const activeDates = dates.filter(d => d.status !== 'cancelled');
-
-        const projected_revenue = activeDates.reduce((sum, d) => {
-          const revenue = parseFloat(d.gross_potential) || 0;
-          return sum + revenue;
-        }, 0);
-
-        const total_costs = activeDates.reduce((sum, d) => {
-          const costs = parseFloat(d.total_expenses) || 0;
-          return sum + costs;
-        }, 0);
-
-        const net_profit = activeDates.reduce((sum, d) => {
-          const profit = parseFloat(d.net_profit) || 0;
-          return sum + profit;
-        }, 0);
-
-        console.log('=== TOUR CALCULATIONS ===');
-        console.log('Number of shows:', dates.length);
-        console.log('Projected Revenue:', projected_revenue);
-        console.log('Total Costs:', total_costs);
-        console.log('Net Profit:', net_profit);
-        console.log('Shows data:', dates);
-
-        setTour({
-          ...tourData,
-          dates,
-          projected_revenue,
-          total_costs,
-          net_profit
-        });
-      }
-    } catch (error) {
-      console.error('Error loading tour:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadAvailableOffers = async () => {
-    try {
-      const { data } = await supabase
-        .from('offers')
-        .select('*, show:shows(*)')
-        .is('tour_id', null);
-
-      if (data) {
-        setAvailableOffers(data);
-      }
-    } catch (error) {
-      console.error('Error loading offers:', error);
-    }
-  };
-
-  const loadSettlements = async () => {
-    try {
-      const { data: offers } = await supabase
-        .from('offers')
-        .select('id')
-        .eq('tour_id', id);
-
-      if (offers && offers.length > 0) {
-        const offerIds = offers.map(o => o.id);
-
-        const { data: settlementsData } = await supabase
-          .from('settlements')
-          .select('*')
-          .in('offer_id', offerIds);
-
-        if (settlementsData) {
-          setSettlements(settlementsData);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading settlements:', error);
-    }
-  };
-
-  const calculateSettlementTotals = () => {
-    if (settlements.length === 0) {
-      return null;
-    }
-
-    const actual_revenue = settlements.reduce((sum, s) => {
-      const revenue = parseFloat(s.actual_revenue) || 0;
-      return sum + revenue;
-    }, 0);
-
-    const actual_expenses = settlements.reduce((sum, s) => {
-      const expenses = parseFloat(s.actual_total_expenses) || 0;
-      return sum + expenses;
-    }, 0);
-
-    const actual_profit = settlements.reduce((sum, s) => {
-      const profit = parseFloat(s.actual_net_profit) || 0;
-      return sum + profit;
-    }, 0);
-
-    const projected_revenue = settlements.reduce((sum, s) => {
-      const revenue = parseFloat(s.projected_revenue) || 0;
-      return sum + revenue;
-    }, 0);
-
-    const projected_expenses = settlements.reduce((sum, s) => {
-      const expenses = parseFloat(s.projected_expenses) || 0;
-      return sum + expenses;
-    }, 0);
-
-    const projected_profit = settlements.reduce((sum, s) => {
-      const profit = parseFloat(s.projected_profit) || 0;
-      return sum + profit;
-    }, 0);
-
-    return {
-      actual_revenue,
-      actual_expenses,
-      actual_profit,
-      projected_revenue,
-      projected_expenses,
-      projected_profit,
-      variance_revenue: actual_revenue - projected_revenue,
-      variance_expenses: actual_expenses - projected_expenses,
-      variance_profit: actual_profit - projected_profit,
-      settled_count: settlements.length
-    };
-  };
-
-  const addShowToTour = async (offerId: string) => {
-    try {
-      const nextShowNumber = (tour?.dates?.length || 0) + 1;
-
-      const { error } = await supabase
-        .from('offers')
-        .update({
-          tour_id: id,
-          show_number: nextShowNumber
-        })
-        .eq('id', offerId);
-
-      if (error) throw error;
-
-      loadTourData();
-      loadAvailableOffers();
-      setShowAddShow(false);
-    } catch (error) {
-      console.error('Error adding show to tour:', error);
-      alert('Failed to add show to tour');
-    }
-  };
-
-  const updateTourStatus = async (newStatus: string, event: React.MouseEvent) => {
-    event.stopPropagation();
+  // ───────── writes ─────────
+  const saveLead = async (patch: Partial<TourLead>, leadId: string | null) => {
     if (!tour) return;
-
-    try {
-      const { error } = await supabase
-        .from('tours')
-        .update({ status: newStatus })
-        .eq('id', id);
-
+    if (leadId) {
+      const { error } = await supabase.from('tour_leads').update({ ...patch, updated_at: new Date().toISOString() }).eq('id', leadId);
       if (error) throw error;
-
-      setTour({ ...tour, status: newStatus });
-      setStatusMenuOpen(false);
-    } catch (error) {
-      console.error('Error updating tour status:', error);
-      alert('Failed to update tour status');
+    } else {
+      const { data, error } = await supabase.from('tour_leads').insert({ ...patch, tour_id: tour.id, organization_id: tour.organization_id, position: leads.length }).select('id').single();
+      if (error) throw error;
+      setSelected(data.id);
     }
+    await load();
   };
 
-  const toggleStatusMenu = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    setStatusMenuOpen(!statusMenuOpen);
+  const deleteLead = async (leadId: string) => {
+    await supabase.from('tour_leads').delete().eq('id', leadId);
+    setDrawer(null); setSelected(null); await load();
   };
 
-  const getTourStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      planning: 'bg-slate-500/20 text-slate-400 border border-slate-500/30',
-      booking: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
-      confirmed: 'bg-green-500/20 text-green-400 border border-green-500/30',
-      active: 'bg-purple-500/20 text-purple-400 border border-purple-500/30',
-      completed: 'bg-gray-500/20 text-gray-400 border border-gray-500/30',
-      cancelled: 'bg-red-500/20 text-red-400 border border-red-500/30'
-    };
-    return colors[status] || colors.planning;
+  const moveCard = async (c: Card, to: Stage) => {
+    if (!tour) return;
+    // A lead with no offer: stage only. Offer stages need the offer first.
+    if (!c.offer) {
+      if (to === 'offer_sent' || to === 'confirmed' || to === 'settled') {
+        setToast({ text: `${c.city}: make the offer first — then it can move to ${STAGE[to].label}.` });
+        setDrawer({ card: c });
+        return;
+      }
+      setLeads((ls) => ls.map((l) => (l.id === c.lead!.id ? { ...l, stage: to as LeadStage } : l)));
+      await supabase.from('tour_leads').update({ stage: to, updated_at: new Date().toISOString() }).eq('id', c.lead!.id);
+      return;
+    }
+    // A card with an offer: the offer's status moves it.
+    if (to === 'settled') {
+      setToast({ text: `${c.city}: settle it on the settlement page — that's what marks it settled.`, link: { label: 'Open settlement', to: `/offers/${c.offer.id}/settlement` } });
+      return;
+    }
+    const patch: Record<string, any> =
+      to === 'offer_sent' ? { status: 'offer_sent' } :
+      to === 'confirmed' ? { status: 'confirmed' } :
+      to === 'dead' ? { status: 'cancelled', ...(c.offer.cancelled_at ? {} : { cancelled_at: new Date().toISOString() }) } :
+      { status: 'planning' };
+    setOffers((os) => os.map((o) => (o.id === c.offer.id ? { ...o, ...patch } : o)));
+    const { error } = await supabase.from('offers').update(patch).eq('id', c.offer.id);
+    if (error) { setToast({ text: 'Could not move that one. Try again.' }); await load(); return; }
+    if (to === 'lead' || to === 'contacted' || to === 'talking' || to === 'hold') {
+      if (c.lead) await supabase.from('tour_leads').update({ stage: to }).eq('id', c.lead.id);
+      else await supabase.from('tour_leads').insert({ tour_id: tour.id, organization_id: tour.organization_id, venue: c.venue, city: c.city, region: c.region, lat: c.lat, lng: c.lng, event_date: c.date, stage: to, offer_id: c.offer.id, position: leads.length });
+    }
+    if (to === 'dead') setToast({ text: `${c.city} marked cancelled. If it cost you anything, record it on the offer.`, link: { label: 'Open offer', to: `/offers/${c.offer.id}` } });
+    await load();
   };
 
+  const addExistingOffer = async (offerId: string) => {
+    await supabase.from('offers').update({ tour_id: id, show_number: offers.length + 1 }).eq('id', offerId);
+    setShowAddOffer(false); await load();
+  };
+
+  const addCost = async () => {
+    const amount = Number(newCost.amount.replace(/[^0-9.-]/g, ''));
+    if (!newCost.label.trim() || !Number.isFinite(amount) || !tour) return;
+    await supabase.from('tour_costs').insert({ tour_id: tour.id, organization_id: tour.organization_id, label: newCost.label.trim(), amount });
+    setNewCost({ label: '', amount: '' }); await load();
+  };
+  const removeCost = async (costId: string) => { await supabase.from('tour_costs').delete().eq('id', costId); await load(); };
+
+  const setStatus = async (s: string) => {
+    await supabase.from('tours').update({ status: s }).eq('id', id);
+    setTour({ ...tour, status: s }); setStatusOpen(false);
+  };
+
+  const pick = (key: string) => { setSelected(key); setParams({}, { replace: true }); };
+
+  if (loading) return <div className="min-h-screen bg-[#1140F0] flex items-center justify-center text-white"><Loader2 className="w-6 h-6 animate-spin" /></div>;
+  if (!tour) return <div className="min-h-screen bg-[#1140F0] flex items-center justify-center text-white">Tour not found</div>;
+
+  const tiles = [
+    { label: 'Made', sub: `${m.counts.settled} settled · actual`, v: m.made, color: '#4ADE80' },
+    { label: 'Closed', sub: `${m.counts.confirmed} confirmed · projected`, v: m.closed, color: '#8FD3FF' },
+    { label: 'Trying to close', sub: `${m.counts.talking + m.counts.hold + m.counts.offer_sent} talking / hold / sent`, v: m.tryingToClose, color: '#F2B640' },
+    { label: 'Early leads', sub: `${m.counts.lead + m.counts.contacted} to contact / contacted · your guesses`, v: m.earlyLeads, color: '#93A2B8' },
+    { label: 'Tour costs', sub: `${costs.length} line${costs.length === 1 ? '' : 's'}`, v: -m.tourCosts, color: '#F0605A' },
+  ];
   const statusOptions = ['planning', 'booking', 'confirmed', 'active', 'completed', 'cancelled'];
-
-  if (loading) {
-    return <div className="min-h-screen bg-[#1140F0] flex items-center justify-center text-white">Loading...</div>;
-  }
-
-  if (!tour) {
-    return <div className="min-h-screen bg-[#1140F0] flex items-center justify-center text-white">Tour not found</div>;
-  }
 
   return (
     <div className="min-h-screen bg-[#1140F0]">
-      <div className="bg-[#14171E] border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <div className="flex items-start gap-3 sm:gap-4 mb-6">
-            <button
-              onClick={() => navigate('/tours')}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors flex-shrink-0"
-            >
-              <ArrowLeft className="h-5 w-5 text-gray-400" />
-            </button>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2 truncate text-white">{tour.name}</h1>
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-400">
-                <span className="flex items-center gap-1.5">
-                  <Music2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                  <span className="truncate">{tour.artist_name}</span>
+      <div className="max-w-7xl mx-auto px-3 sm:px-5 py-4">
+        {/* Header */}
+        <div className="flex items-start gap-3 mb-3">
+          <button onClick={() => navigate('/tours')} className="p-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 shrink-0"><ArrowLeft className="w-5 h-5" /></button>
+          <div className="min-w-0 flex-1">
+            <div className="font-label text-[10px] tracking-[0.2em] uppercase text-[#CFE4FF]">Tour</div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight truncate">{tour.name}</h1>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/80 mt-1">
+              {tour.artist_name && <span className="inline-flex items-center gap-1.5"><Music2 className="w-4 h-4" />{tour.artist_name}</span>}
+              {(tour.start_date || tour.end_date) && (
+                <span className="inline-flex items-center gap-1.5"><Calendar className="w-4 h-4" />
+                  {parseLocalDate(tour.start_date)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – {parseLocalDate(tour.end_date)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                  <span className="truncate">
-                    {parseLocalDate(tour.start_date)?.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })} - {parseLocalDate(tour.end_date)?.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}
-                  </span>
-                </span>
-                <div className="relative">
-                  <button
-                    onClick={toggleStatusMenu}
-                    className={`px-3 py-1 rounded-xl text-xs font-medium hover:opacity-80 transition-opacity ${getTourStatusColor(tour.status)}`}
-                  >
-                    {tour.status}
-                  </button>
-                  {statusMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 bg-[#14171E] border border-gray-700 rounded-xl shadow-xl z-10 min-w-[140px]">
-                      {statusOptions.map((status) => (
-                        <button
-                          key={status}
-                          onClick={(e) => updateTourStatus(status, e)}
-                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-800 transition-colors first:rounded-t-xl last:rounded-b-xl ${
-                            status === tour.status ? 'bg-gray-800' : ''
-                          }`}
-                        >
-                          <span className={`inline-block px-2 py-0.5 rounded-lg text-xs font-medium ${getTourStatusColor(status)}`}>
-                            {status}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[#1140F0] border border-gray-800 rounded-2xl p-4 hover:border-blue-500/50 transition-colors">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-blue-500/10 rounded-xl">
-                  <Calendar className="h-5 w-5 text-blue-400" />
-                </div>
-                <div className="text-3xl font-bold text-white">{tour.dates?.length || 0}</div>
-              </div>
-              <div className="text-sm text-gray-400">Total Shows</div>
-            </div>
-
-            <div className="bg-[#1140F0] border border-gray-800 rounded-2xl p-4 hover:border-green-500/50 transition-colors">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-green-500/10 rounded-xl">
-                  <DollarSign className="h-5 w-5 text-green-400" />
-                </div>
-                <div className="text-xl sm:text-2xl font-bold text-white truncate">
-                  {formatCurrency(tour.projected_revenue || 0)}
-                </div>
-              </div>
-              <div className="text-sm text-gray-400">Projected Revenue</div>
-            </div>
-
-            <div className="bg-[#1140F0] border border-gray-800 rounded-2xl p-4 hover:border-orange-500/50 transition-colors">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-orange-500/10 rounded-xl">
-                  <TrendingDown className="h-5 w-5 text-orange-400" />
-                </div>
-                <div className="text-xl sm:text-2xl font-bold text-white truncate">
-                  {formatCurrency(tour.total_costs || 0)}
-                </div>
-              </div>
-              <div className="text-sm text-gray-400">Total Costs</div>
-            </div>
-
-            <div className="bg-[#1140F0] border border-gray-800 rounded-2xl p-4 hover:border-[#8FD3FF]/50 transition-colors col-span-2 sm:col-span-2 lg:col-span-1">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-green-500/10 rounded-xl">
-                  <TrendingUp className="h-5 w-5 text-green-400" />
-                </div>
-                <div className={`text-xl sm:text-2xl font-bold truncate ${
-                  (tour.net_profit || 0) >= 0 ? 'text-[#8FD3FF]' : 'text-red-400'
-                }`}>
-                  {(tour.net_profit || 0) >= 0 ? '+' : ''}{formatCurrency(tour.net_profit || 0)}
-                </div>
-              </div>
-              <div className="text-sm text-gray-400">Net Profit</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {calculateSettlementTotals() && (
-          <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-4 sm:p-6 mb-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-xl font-bold text-white">Settlement Overview</h3>
-                <p className="text-sm text-gray-400 mt-1">
-                  {calculateSettlementTotals()!.settled_count} of {tour?.dates?.length || 0} shows settled
-                </p>
-              </div>
-              <span className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-xl text-sm font-medium">
-                Settled Events
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Revenue Comparison */}
-              <div className="p-4 bg-green-500/10 rounded-xl border border-green-500/30">
-                <div className="text-sm font-semibold text-green-400 mb-3">Revenue</div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-400">Projected:</span>
-                    <span className="text-sm font-bold text-gray-300">
-                      {formatCurrency(calculateSettlementTotals()!.projected_revenue)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-400">Actual:</span>
-                    <span className="text-sm font-bold text-green-400">
-                      {formatCurrency(calculateSettlementTotals()!.actual_revenue)}
-                    </span>
-                  </div>
-                  <div className="pt-2 border-t border-green-500/30">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-semibold text-gray-300">Variance:</span>
-                      <span className={`text-sm font-bold ${
-                        calculateSettlementTotals()!.variance_revenue >= 0 ? 'text-green-400' : 'text-red-400'
-                      }`}>
-                        {calculateSettlementTotals()!.variance_revenue >= 0 ? '+' : ''}
-                        {formatCurrency(calculateSettlementTotals()!.variance_revenue)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Expenses Comparison */}
-              <div className="p-4 bg-orange-500/10 rounded-xl border border-orange-500/30">
-                <div className="text-sm font-semibold text-orange-400 mb-3">Expenses</div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-400">Projected:</span>
-                    <span className="text-sm font-bold text-gray-300">
-                      {formatCurrency(calculateSettlementTotals()!.projected_expenses)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-400">Actual:</span>
-                    <span className="text-sm font-bold text-orange-400">
-                      {formatCurrency(calculateSettlementTotals()!.actual_expenses)}
-                    </span>
-                  </div>
-                  <div className="pt-2 border-t border-orange-500/30">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-semibold text-gray-300">Variance:</span>
-                      <span className={`text-sm font-bold ${
-                        calculateSettlementTotals()!.variance_expenses <= 0 ? 'text-green-400' : 'text-red-400'
-                      }`}>
-                        {calculateSettlementTotals()!.variance_expenses >= 0 ? '+' : ''}
-                        {formatCurrency(calculateSettlementTotals()!.variance_expenses)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Profit Comparison */}
-              <div className="p-4 bg-purple-500/10 rounded-xl border border-purple-500/30">
-                <div className="text-sm font-semibold text-purple-400 mb-3">Net Profit</div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-400">Projected:</span>
-                    <span className="text-sm font-bold text-gray-300">
-                      {formatCurrency(calculateSettlementTotals()!.projected_profit)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-400">Actual:</span>
-                    <span className={`text-sm font-bold ${
-                      calculateSettlementTotals()!.actual_profit >= 0 ? 'text-[#8FD3FF]' : 'text-red-400'
-                    }`}>
-                      {formatCurrency(calculateSettlementTotals()!.actual_profit)}
-                    </span>
-                  </div>
-                  <div className="pt-2 border-t border-purple-500/30">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-semibold text-gray-300">Variance:</span>
-                      <span className={`text-sm font-bold ${
-                        calculateSettlementTotals()!.variance_profit >= 0 ? 'text-green-400' : 'text-red-400'
-                      }`}>
-                        {calculateSettlementTotals()!.variance_profit >= 0 ? '+' : ''}
-                        {formatCurrency(calculateSettlementTotals()!.variance_profit)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Overall Performance Indicator */}
-            <div className="mt-4 p-4 bg-[#1140F0] border border-gray-800 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-semibold text-white">Overall Performance</div>
-                  <div className="text-xs text-gray-400 mt-1">
-                    Settled shows performing {calculateSettlementTotals()!.variance_profit >= 0 ? 'better' : 'worse'} than projected
-                  </div>
-                </div>
-                <div className={`text-2xl font-bold ${
-                  calculateSettlementTotals()!.variance_profit >= 0 ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {((calculateSettlementTotals()!.actual_profit / Math.max(calculateSettlementTotals()!.projected_profit, 1)) * 100).toFixed(1)}%
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="bg-[#14171E] border border-gray-800 rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-white">Tour Dates</h3>
-            <button
-              onClick={() => setShowAddShow(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-xl font-bold text-sm transition-colors"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Add Show</span>
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {tour.dates && tour.dates.length > 0 ? (
-              tour.dates.map((show, index) => {
-                const isCancelled = show.status === 'cancelled';
-                return (
-                  <div
-                    key={show.offer_id}
-                    className={`p-4 bg-[#1140F0] border border-gray-800 rounded-xl hover:border-[#8FD3FF]/50 transition-all cursor-pointer ${
-                      isCancelled ? 'opacity-40 hover:opacity-60' : ''
-                    }`}
-                    onClick={() => navigate(`/offers/${show.offer_id}`)}
-                  >
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#8FD3FF] to-[#6FB8F2] text-[#04214D] rounded-xl flex flex-col items-center justify-center flex-shrink-0 font-bold">
-                      {(() => {
-                        const eventDate = parseLocalDate(show.event_date);
-                        return eventDate ? (
-                          <>
-                            <div className="text-xs">
-                              {eventDate.toLocaleDateString('en-US', { month: 'short' })}
-                            </div>
-                            <div className="text-xl font-bold">
-                              {eventDate.getDate()}
-                            </div>
-                          </>
-                        ) : (
-                          <div className="text-xs">Invalid</div>
-                        );
-                      })()}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h4 className="font-bold text-white text-base truncate">{show.venue_name}</h4>
-                        <span className="text-xs px-2.5 py-1 rounded-xl bg-gray-700/50 text-gray-300 border border-gray-600/30 font-medium whitespace-nowrap">
-                          {show.status}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
-                        <span className="flex items-center gap-1.5">
-                          <MapPin className="h-4 w-4" />
-                          {show.city}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <Users className="h-4 w-4" />
-                          {show.capacity}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="hidden sm:flex items-center gap-6 text-right">
-                      <div>
-                        <div className="text-xs text-gray-500 mb-1">Revenue</div>
-                        <div className="text-base font-bold text-green-400">
-                          {formatCurrency(show.gross_potential || 0)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 mb-1">Costs</div>
-                        <div className="text-base font-bold text-orange-400">
-                          {formatCurrency(show.total_expenses || 0)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 mb-1">Profit</div>
-                        <div className={`text-base font-bold ${
-                          (show.net_profit || 0) >= 0 ? 'text-[#8FD3FF]' : 'text-red-400'
-                        }`}>
-                          {formatCurrency(show.net_profit || 0)}
-                        </div>
-                      </div>
-                    </div>
-
-                    <ChevronRight className="h-5 w-5 text-gray-600 hidden sm:block flex-shrink-0" />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3 mt-4 sm:hidden">
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">Revenue</div>
-                      <div className="text-sm font-bold text-green-400 truncate">
-                        {formatCurrency(show.gross_potential || 0)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">Costs</div>
-                      <div className="text-sm font-bold text-orange-400 truncate">
-                        {formatCurrency(show.total_expenses || 0)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">Profit</div>
-                      <div className={`text-sm font-bold truncate ${
-                        (show.net_profit || 0) >= 0 ? 'text-[#8FD3FF]' : 'text-red-400'
-                      }`}>
-                        {formatCurrency(show.net_profit || 0)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-            ) : (
-              <div className="text-center py-12 text-gray-400">
-                <Calendar className="h-12 w-12 mx-auto mb-3 text-gray-600" />
-                <p>No shows added yet</p>
-                <button
-                  onClick={() => setShowAddShow(true)}
-                  className="mt-2 text-[#8FD3FF] hover:text-[#6FB8F2] font-medium"
-                >
-                  Add your first show
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {showAddShow && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#14171E] border border-gray-800 rounded-2xl max-w-4xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-white">Add Show to Tour</h2>
-                <button
-                  onClick={() => setShowAddShow(false)}
-                  className="p-2 hover:bg-gray-800 rounded-lg text-2xl leading-none text-gray-400"
-                >
-                  ×
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {availableOffers.length > 0 ? (
-                  availableOffers.map((offer) => (
-                    <div
-                      key={offer.id}
-                      className="p-4 bg-[#1140F0] border border-gray-800 rounded-xl hover:border-[#8FD3FF]/50 cursor-pointer transition-all"
-                      onClick={() => addShowToTour(offer.id)}
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-white text-sm sm:text-base truncate">{offer.show.venue_name}</h4>
-                          <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-400 mt-1">
-                            <span>{(() => {
-                              const eventDate = parseLocalDate(offer.show.event_date);
-                              return eventDate ? eventDate.toLocaleDateString() : 'Invalid date';
-                            })()}</span>
-                            <span>{offer.show.capacity} capacity</span>
-                          </div>
-                        </div>
-                        <div className="text-left sm:text-right">
-                          <div className="text-xs sm:text-sm text-gray-400">Projected Profit</div>
-                          <div className="text-lg sm:text-xl font-bold text-[#8FD3FF]">
-                            ${Math.round(offer.calculations.netProfit / 1000)}K
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-12 text-gray-400">
-                    <p>No available offers</p>
-                    <button
-                      onClick={() => navigate('/offers/create')}
-                      className="mt-4 text-[#8FD3FF] hover:text-[#6FB8F2] font-medium"
-                    >
-                      Create a new offer first
-                    </button>
+              )}
+              <span className="relative">
+                <button onClick={(e) => { e.stopPropagation(); setStatusOpen((v) => !v); }} className="crt-tab on" style={{ padding: '3px 10px' }}>{tour.status}</button>
+                {statusOpen && (
+                  <div className="absolute left-0 top-full mt-1 bg-[#14171E] border border-[#2A3040] rounded-xl z-20 min-w-[140px] py-1">
+                    {statusOptions.map((s) => (
+                      <button key={s} onClick={() => setStatus(s)} className={`block w-full text-left px-3 py-1.5 text-sm hover:bg-white/5 ${s === tour.status ? 'text-[#8FD3FF]' : 'text-gray-300'}`} style={{ textTransform: 'none', letterSpacing: 0 }}>{s}</button>
+                    ))}
                   </div>
                 )}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Money */}
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-2 mb-3">
+          {tiles.map((t) => (
+            <div key={t.label} className="bg-[#14171E] border border-[#2A3040] rounded-2xl px-3 py-2.5">
+              <div className="font-label text-[10px] tracking-[0.16em] uppercase" style={{ color: t.color }}>{t.label}</div>
+              <div className={`text-xl font-bold ${t.v < 0 ? 'text-red-400' : 'text-white'}`}>{t.v === 0 ? '$0' : short$(t.v)}</div>
+              <div className="text-[11px] text-gray-500 leading-tight">{t.sub}</div>
+            </div>
+          ))}
+          <div className="col-span-2 md:col-span-1 rounded-2xl px-3 py-2.5 border-2" style={{ background: '#0B0D12', borderColor: m.pl >= 0 ? '#4ADE80' : '#F0605A', boxShadow: `0 0 22px ${m.pl >= 0 ? 'rgba(74,222,128,0.25)' : 'rgba(240,96,90,0.25)'}` }}>
+            <div className="font-label text-[10px] tracking-[0.16em] uppercase text-white">Tour P/L</div>
+            <div className={`text-2xl font-bold ${m.pl >= 0 ? 'text-green-400' : 'text-red-400'}`}>{money$(m.pl)}</div>
+            <div className="text-[11px] text-gray-500 leading-tight">made − tour costs</div>
+          </div>
+        </div>
+        <div className="text-[12px] text-white/80 mb-3">
+          In the pipeline, not closed yet: <b className="text-white">{money$(m.pipeline)}</b> across {m.counts.lead + m.counts.contacted + m.counts.talking + m.counts.hold + m.counts.offer_sent} venues.
+          {m.closed !== 0 && <> If every confirmed show hits its projection, P/L would be <b className="text-white">{money$(m.pl + m.closed)}</b>.</>}
+        </div>
+
+        {/* Globe + timeline */}
+        <div className="bg-[#14171E] border border-[#2A3040] rounded-2xl overflow-hidden mb-3">
+          <div className="grid lg:grid-cols-[1fr_300px]">
+            <div className="relative bg-[radial-gradient(ellipse_at_center,#0B2FB8_0%,#0B0D12_70%)]">
+              <div className="absolute top-3 left-3 z-10 font-label text-[10px] tracking-[0.2em] uppercase text-[#8FD3FF] flex items-center gap-1.5"><Globe2 className="w-3.5 h-3.5" /> The route</div>
+              <Suspense fallback={<div className="h-[420px] flex items-center justify-center text-gray-500"><Loader2 className="w-5 h-5 animate-spin" /></div>}>
+                <TourGlobe cards={cards.filter((c) => c.stage !== 'dead')} nextKey={next?.key ?? null} selectedKey={selected} onSelect={pick} height={typeof window !== 'undefined' && window.innerWidth < 640 ? 340 : 420} />
+              </Suspense>
+              {!cards.some((c) => c.lat != null) && (
+                <div className="absolute inset-x-0 bottom-4 text-center text-sm text-gray-400">Add a venue with a city and it lands on the globe.</div>
+              )}
+            </div>
+            <div className="border-t lg:border-t-0 lg:border-l border-[#2A3040] p-3 space-y-3">
+              {sel ? (
+                <div className="crt-panel" key={sel.key}>
+                  <div className="font-label text-[10px] tracking-[0.16em] uppercase" style={{ color: STAGE[sel.stage].color }}>{STAGE[sel.stage].label}</div>
+                  <div className="text-lg font-bold text-white leading-tight">{sel.city}</div>
+                  <div className="text-sm text-gray-400">{sel.venue}</div>
+                  <div className="text-sm text-gray-300 mt-1">{sel.date ? parseLocalDate(sel.date)!.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'No date yet'}</div>
+                  {sel.money != null && <div className={`text-sm mt-1 ${sel.money < 0 ? 'text-red-400' : 'text-white'}`}>{sel.moneyKind === 'actual' ? 'Made' : sel.moneyKind === 'projected' ? 'Projected' : 'Guess'}: <b>{money$(sel.money)}</b></div>}
+                  {sel.next && <div className="text-sm text-gray-300 mt-1"><span className="text-gray-500">Next:</span> {sel.next}</div>}
+                  {sel.contact && <div className="text-xs text-gray-500 mt-1 break-words">{sel.contact}</div>}
+                  <button onClick={() => setDrawer({ card: sel })} className="mt-2 text-sm bg-[#8FD3FF] text-[#04214D] rounded-lg px-3 py-1.5 font-semibold" style={{ textTransform: 'none', letterSpacing: 0 }}>Open</button>
+                </div>
+              ) : (
+                <div className="text-sm text-gray-400">Tap a city on the globe, the line or a card.</div>
+              )}
+              <div className="space-y-1 pt-2 border-t border-[#2A3040]">
+                {STAGES.filter((s) => s.key !== 'dead').map((s) => (
+                  <div key={s.key} className="flex items-center justify-between text-[12px]">
+                    <span className="inline-flex items-center gap-2 text-gray-300"><span className="w-2.5 h-2.5 rounded-full" style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }} />{s.label}</span>
+                    <span className="text-gray-500">{m.counts[s.key]}</span>
+                  </div>
+                ))}
               </div>
+            </div>
+          </div>
+          <div className="border-t border-[#2A3040] px-3 sm:px-4 pt-3 pb-3">
+            <TourTimeline cards={cards} nextKey={next?.key ?? null} selectedKey={selected} onSelect={pick} start={tour.start_date} end={tour.end_date} />
+          </div>
+        </div>
+
+        {/* Pipeline */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <h2 className="text-lg font-bold text-white">Pipeline</h2>
+          <div className="flex gap-2">
+            <button onClick={() => setShowAddOffer(true)} className="text-sm text-white border border-white/30 hover:bg-white/10 rounded-xl px-3 py-2 inline-flex items-center gap-1.5" style={{ textTransform: 'none', letterSpacing: 0 }}><Link2 className="w-4 h-4" /> Add an existing offer</button>
+            <button onClick={() => setDrawer({ card: null, stage: 'lead' })} className="text-sm bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-xl px-3 py-2 font-bold inline-flex items-center gap-1.5"><Plus className="w-4 h-4" /> Venue</button>
+          </div>
+        </div>
+        <PipelineBoard
+          cards={cards}
+          selectedKey={selected}
+          onOpen={(c) => { pick(c.key); setDrawer({ card: c }); }}
+          onMove={moveCard}
+          onAdd={(stage) => setDrawer({ card: null, stage: stage as LeadStage })}
+        />
+
+        {/* Tour costs */}
+        <div className="bg-[#14171E] border border-[#2A3040] rounded-2xl p-4 mt-4">
+          <div className="flex items-baseline justify-between mb-2">
+            <h2 className="text-lg font-bold text-white">Tour costs</h2>
+            <span className="text-sm text-gray-400">Total <b className="text-white">{money$(m.tourCosts)}</b></span>
+          </div>
+          <p className="text-[12px] text-gray-500 mb-3">Costs that belong to the whole run, not one show — van, flights, crew, tour ads. They come off the tour P/L.</p>
+          <div className="space-y-1.5 mb-3">
+            {costs.map((c) => (
+              <div key={c.id} className="flex items-center gap-2 bg-[#0B0D12] rounded-lg px-3 py-2">
+                <span className="text-white flex-1 truncate">{c.label}</span>
+                <span className="text-gray-300">{money$(Number(c.amount))}</span>
+                <button onClick={() => removeCost(c.id)} className="text-gray-600 hover:text-red-300 p-1" title="Remove"><Trash2 className="w-4 h-4" /></button>
+              </div>
+            ))}
+            {!costs.length && <div className="text-sm text-gray-500">None yet.</div>}
+          </div>
+          <div className="flex gap-2">
+            <input value={newCost.label} onChange={(e) => setNewCost({ ...newCost, label: e.target.value })} placeholder="Sprinter van rental" className="flex-1 bg-[#0B0D12] border border-[#2A3040] rounded-lg px-3 py-2 text-white outline-none focus:border-[#8FD3FF]" style={{ textTransform: 'none', letterSpacing: 0 }} />
+            <input value={newCost.amount} onChange={(e) => setNewCost({ ...newCost, amount: e.target.value })} placeholder="$" inputMode="decimal" className="w-28 bg-[#0B0D12] border border-[#2A3040] rounded-lg px-3 py-2 text-white outline-none focus:border-[#8FD3FF]" onKeyDown={(e) => { if (e.key === 'Enter') addCost(); }} />
+            <button onClick={addCost} className="bg-[#8FD3FF] text-[#04214D] rounded-lg px-3 font-bold"><Plus className="w-4 h-4" /></button>
+          </div>
+        </div>
+      </div>
+
+      {toast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-[#14171E] border border-[#F2B640]/60 text-white rounded-xl px-4 py-3 shadow-2xl max-w-md w-[92%] flex items-center gap-3">
+          <span className="text-sm flex-1">{toast.text}</span>
+          {toast.link && <button onClick={() => navigate(toast.link!.to)} className="text-sm text-[#8FD3FF] font-semibold shrink-0" style={{ textTransform: 'none', letterSpacing: 0 }}>{toast.link.label}</button>}
+        </div>
+      )}
+
+      {drawer && (
+        <LeadDrawer
+          key={drawer.card?.key ?? 'new'}
+          card={drawer.card}
+          initialStage={drawer.stage}
+          tourId={tour.id}
+          artist={tour.artist_name || ''}
+          onClose={() => setDrawer(null)}
+          onSave={saveLead}
+          onDelete={deleteLead}
+        />
+      )}
+
+      {showAddOffer && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setShowAddOffer(false)}>
+          <div className="bg-[#14171E] border border-[#2A3040] rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-4" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-xl font-bold text-white mb-1">Add an existing offer</h2>
+            <p className="text-sm text-gray-400 mb-3">Offers not on any tour yet.</p>
+            <div className="space-y-2">
+              {available.length ? available.map((o) => (
+                <button key={o.id} onClick={() => addExistingOffer(o.id)} className="w-full text-left bg-[#0B0D12] border border-[#2A3040] hover:border-[#8FD3FF]/60 rounded-xl px-3 py-2.5 flex items-center justify-between gap-3" style={{ textTransform: 'none', letterSpacing: 0 }}>
+                  <span className="min-w-0">
+                    <span className="block text-white font-semibold truncate">{o.show?.artist_name} · {o.show?.venue_name}</span>
+                    <span className="block text-xs text-gray-400">{o.show?.event_date ? parseLocalDate(o.show.event_date)?.toLocaleDateString() : 'No date'} · {o.status || 'planning'}</span>
+                  </span>
+                  <span className="text-sm text-[#8FD3FF] shrink-0">{o.calculations?.netProfit != null ? short$(o.calculations.netProfit) : ''}</span>
+                </button>
+              )) : <div className="text-sm text-gray-400">Every offer is already on a tour.</div>}
             </div>
           </div>
         </div>

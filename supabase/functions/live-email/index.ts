@@ -56,8 +56,8 @@ async function send(e: Episode, l: Lead, s: Step) {
       from: { email: FROM_EMAIL, name: FROM_NAME },
       reply_to: { email: REPLY_TO, name: 'Jose Huaroco' },
       subject: s.subject(e),
-      content: [{ type: 'text/plain', value: plain(html) }, { type: 'text/html', value: html }],
-      tracking_settings: { subscription_tracking: { enable: true } },
+      content: [{ type: 'text/plain', value: plain(html) + '\n\nUnsubscribe: [unsubscribe]' }, { type: 'text/html', value: html }],
+      tracking_settings: { subscription_tracking: { enable: true, substitution_tag: '[unsubscribe]' } },
       categories: ['live', `live-${e.episode}`, `live-${e.episode}-${s.key}`],
     }),
   });

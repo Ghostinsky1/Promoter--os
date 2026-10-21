@@ -59,7 +59,7 @@ const html = `<!doctype html>
     </td></tr>
     <tr><td style="padding:18px 30px;background:#0B0D12;border-top:1px solid #2A3040;font-size:11px;color:#6C7A90;line-height:1.7;">
       You're getting this because you signed up at promoteros.com.<br>
-      <a href="${SITE}" style="color:#8FD3FF;text-decoration:none;">PROMOTEROS.COM</a> &nbsp;·&nbsp; <%asm_global_unsubscribe_raw_url%>
+      <a href="${SITE}" style="color:#8FD3FF;text-decoration:none;">PROMOTEROS.COM</a> &nbsp;·&nbsp; <a href="[unsubscribe]" style="color:#6C7A90;">Unsubscribe</a>
     </td></tr>
   </table>
 </td></tr></table>
@@ -93,8 +93,8 @@ async function send(to: string, subject: string) {
       from: { email: FROM_EMAIL, name: FROM_NAME },
       reply_to: { email: REPLY_TO, name: 'Jose Huaroco' },
       subject,
-      content: [{ type: 'text/plain', value: text }, { type: 'text/html', value: html }],
-      tracking_settings: { subscription_tracking: { enable: true } },
+      content: [{ type: 'text/plain', value: text + '\n\nUnsubscribe: [unsubscribe]' }, { type: 'text/html', value: html }],
+      tracking_settings: { subscription_tracking: { enable: true, substitution_tag: '[unsubscribe]' } },
       categories: ['broadcast', CAMPAIGN],
     }),
   });

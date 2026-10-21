@@ -60,7 +60,7 @@ function shell(o: { kicker: string; title: string; body: string; cta?: { text: s
     </td></tr>
     <tr><td style="padding:18px 30px;background:#0B0D12;border-top:1px solid #2A3040;font-size:11px;color:#6C7A90;line-height:1.7;">
       You're getting this because you registered for Before You Send the Deposit at promoteros.com/live.<br>
-      <a href="${SITE}" style="color:#8FD3FF;text-decoration:none;">PROMOTEROS.COM</a> &nbsp;·&nbsp; <%asm_global_unsubscribe_raw_url%>
+      <a href="${SITE}" style="color:#8FD3FF;text-decoration:none;">PROMOTEROS.COM</a> &nbsp;·&nbsp; <a href="[unsubscribe]" style="color:#6C7A90;">Unsubscribe</a>
     </td></tr>
   </table>
 </td></tr></table>

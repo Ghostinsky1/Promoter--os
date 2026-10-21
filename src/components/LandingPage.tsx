@@ -1,6 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { BotDemo } from './landing/BotDemo';
+import { HeroPreview } from './landing/HeroPreview';
 import { Mascot } from './ask/Mascot';
 
 const HeroGlobe = lazy(() => import('./landing/HeroGlobe'));
@@ -28,39 +29,13 @@ function PowerOn() {
   if (!on) return null;
   return <div className="pos-poweron" aria-hidden="true"><i /></div>;
 }
-import {
-  CheckCircle2, X, FileText, DollarSign, Sparkles, Calendar,
-  Upload, BarChart3, Clock, TrendingUp, Award, Target,
-  Star, Music, Mic, Guitar, Ticket, Radio, Disc, Users, ChevronDown, MessageSquare, Zap
-} from 'lucide-react';
+import { CheckCircle2, X, FileText, DollarSign, Sparkles, Upload, BarChart3, ChevronDown, MessageSquare, Zap } from 'lucide-react';
 
 export function LandingPage() {
   const navigate = useNavigate();
   const wantsGlobe = useWantsGlobe();
-  const [dealScore, setDealScore] = useState(0);
-  const [progressWidth, setProgressWidth] = useState(0);
   const [visibleSteps, setVisibleSteps] = useState<Set<number>>(new Set());
   const stepsRef = useRef<(HTMLDivElement | null)[]>([]);
-
-  useEffect(() => {
-    const scoreTimer = setTimeout(() => {
-      let current = 0;
-      const interval = setInterval(() => {
-        current += 1;
-        setDealScore(current);
-        if (current >= 87) clearInterval(interval);
-      }, 15);
-    }, 500);
-
-    const progressTimer = setTimeout(() => {
-      setProgressWidth(75);
-    }, 800);
-
-    return () => {
-      clearTimeout(scoreTimer);
-      clearTimeout(progressTimer);
-    };
-  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -121,7 +96,7 @@ export function LandingPage() {
       </nav>
 
       <PowerOn />
-      <section className="pt-10 md:pt-16 pb-8 md:pb-16 px-4 md:px-6 relative overflow-hidden">
+      <section className="pt-10 md:pt-16 pb-40 md:pb-56 px-4 md:px-6 relative overflow-hidden">
         {/* The globe from the app, spinning behind the words. */}
         {wantsGlobe && (
           <div className="absolute inset-0 animate-[fadeIn_1.6s_ease-out_0.3s_both]" aria-hidden="true">
@@ -181,128 +156,16 @@ export function LandingPage() {
             </div>
           </div>
 
-          <div className="mt-8 md:mt-12 relative animate-[fadeIn_1s_ease-out_0.8s_both]">
-            <div className="relative rounded-2xl md:rounded-3xl overflow-hidden border-2 md:border-4 border-gray-800 shadow-2xl hover:shadow-[#8FD3FF]/20 hover:shadow-3xl transition-shadow duration-500">
-              <div className="bg-[#14171E] p-3 sm:p-6 md:p-8">
-                <div className="bg-[#22262F] rounded-xl md:rounded-2xl shadow-xl p-3 sm:p-6 md:p-8 border border-gray-800">
-                  <div className="flex items-center justify-between mb-4 md:mb-6">
-                    <div className="flex items-center gap-2 md:gap-3">
-                      <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-red-500"></div>
-                      <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-yellow-500"></div>
-                      <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-green-500"></div>
-                    </div>
-                    <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-[#8FD3FF]/10 rounded-lg border border-[#8FD3FF]/30">
-                      <Sparkles className="h-2.5 w-2.5 md:h-3 md:w-3 text-[#8FD3FF]" />
-                      <span className="text-[10px] md:text-xs font-semibold text-[#8FD3FF]">AI ANALYSIS</span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4">
-                    <div className="lg:col-span-7 space-y-2 md:space-y-3">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div className="flex items-center gap-2 md:gap-3">
-                          <Music className="h-4 w-4 md:h-5 md:w-5 text-[#8FD3FF] flex-shrink-0" />
-                          <div>
-                            <h3 className="text-white font-bold text-xs md:text-sm">The Midnight - Summer Tour 2025</h3>
-                            <p className="text-[#A8B2C1] text-[10px] md:text-xs">The Wiltern, Los Angeles</p>
-                          </div>
-                        </div>
-                        <div className="px-2 md:px-3 py-0.5 md:py-1 bg-green-500/20 rounded-full">
-                          <span className="text-green-400 text-[10px] md:text-xs font-semibold">CONFIRMED</span>
-                        </div>
-                      </div>
-
-                      <div className="bg-[#14171E] rounded-lg md:rounded-xl p-3 md:p-4 border border-gray-700">
-                        <div className="grid grid-cols-3 gap-2 md:gap-3 mb-3 md:mb-4">
-                          <div>
-                            <p className="text-[#A8B2C1] text-[10px] md:text-xs mb-1">Deal Type</p>
-                            <p className="text-white font-semibold text-xs md:text-sm">Guarantee vs %</p>
-                          </div>
-                          <div>
-                            <p className="text-[#A8B2C1] text-[10px] md:text-xs mb-1">Capacity</p>
-                            <p className="text-white font-semibold text-xs md:text-sm">1,850</p>
-                          </div>
-                          <div>
-                            <p className="text-[#A8B2C1] text-[10px] md:text-xs mb-1">Avg Ticket</p>
-                            <p className="text-white font-semibold text-xs md:text-sm">$45.00</p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1.5 md:space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-[#A8B2C1] text-[10px] md:text-xs">Projected Revenue</span>
-                            <span className="text-white font-semibold text-xs md:text-sm">$83,250</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-[#A8B2C1] text-[10px] md:text-xs">Total Expenses</span>
-                            <span className="text-white font-semibold text-xs md:text-sm">$62,400</span>
-                          </div>
-                          <div className="h-px bg-gray-700 my-1.5 md:my-2"></div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-white font-bold text-xs md:text-sm">Net Profit</span>
-                            <span className="text-[#8FD3FF] font-bold text-base md:text-lg">$20,850</span>
-                          </div>
-                          <div className="w-full bg-gray-700 rounded-full h-1.5 md:h-2 mt-1.5 md:mt-2 overflow-hidden">
-                            <div
-                              className="bg-[#8FD3FF] h-1.5 md:h-2 rounded-full transition-all duration-1000 ease-out"
-                              style={{ width: `${progressWidth}%` }}
-                            ></div>
-                          </div>
-                          <p className="text-[#A8B2C1] text-[10px] md:text-xs">75% to break-even</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="lg:col-span-5 space-y-2 md:space-y-3">
-                      <div className="bg-gradient-to-br from-[#8FD3FF]/20 to-[#8FD3FF]/5 rounded-lg md:rounded-xl p-3 md:p-4 border-2 border-[#8FD3FF]/40 animate-[pulse_2s_ease-in-out_infinite]">
-                        <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
-                          <Target className="h-3 w-3 md:h-4 md:w-4 text-[#8FD3FF]" />
-                          <span className="text-[#8FD3FF] font-bold text-[10px] md:text-xs">DEAL SCORE</span>
-                        </div>
-                        <div className="flex items-end gap-1.5 md:gap-2 mb-2">
-                          <span className="text-3xl md:text-5xl font-bold text-[#8FD3FF] transition-all duration-300">
-                            {dealScore}
-                          </span>
-                          <span className="text-[#A8B2C1] text-xs md:text-sm mb-1 md:mb-2">/100</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 bg-[#8FD3FF] rounded-lg animate-[bounce_1s_ease-in-out_2s]">
-                          <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-[#04214D]" />
-                          <span className="text-[#04214D] font-bold text-xs md:text-sm">STRONG BUY</span>
-                        </div>
-                      </div>
-
-                      <div className="bg-[#14171E] rounded-lg md:rounded-xl p-3 md:p-4 border border-gray-700 space-y-2 md:space-y-3">
-                        <div className="flex items-center gap-1.5 md:gap-2">
-                          <Award className="h-3 w-3 md:h-4 md:w-4 text-[#8FD3FF]" />
-                          <span className="text-white font-semibold text-[10px] md:text-xs">AI Insights</span>
-                        </div>
-                        <div className="space-y-1.5 md:space-y-2">
-                          <div className="flex items-start gap-1.5 md:gap-2">
-                            <CheckCircle2 className="h-2.5 w-2.5 md:h-3 md:w-3 text-green-400 mt-0.5 flex-shrink-0" />
-                            <p className="text-[#A8B2C1] text-[10px] md:text-xs">This venue has 92% sell-through rate</p>
-                          </div>
-                          <div className="flex items-start gap-1.5 md:gap-2">
-                            <CheckCircle2 className="h-2.5 w-2.5 md:h-3 md:w-3 text-green-400 mt-0.5 flex-shrink-0" />
-                            <p className="text-[#A8B2C1] text-[10px] md:text-xs">Strong profit margin at 25%</p>
-                          </div>
-                          <div className="flex items-start gap-1.5 md:gap-2">
-                            <Clock className="h-2.5 w-2.5 md:h-3 md:w-3 text-yellow-400 mt-0.5 flex-shrink-0" />
-                            <p className="text-[#A8B2C1] text-[10px] md:text-xs">Similar shows avg 78% capacity</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="absolute inset-0 bg-[#8FD3FF]/10 blur-3xl -z-10 rounded-full"></div>
-          </div>
         </div>
       </section>
 
+      {/* The scored offer: sits on the globe, hangs into the dark. */}
+      <div className="relative z-20 px-4 sm:px-6 -mt-32 md:-mt-44 -mb-28 md:-mb-36 animate-[fadeIn_1s_ease-out_0.9s_both]">
+        <HeroPreview />
+      </div>
+
       {/* The little TV, doing a deal. */}
-      <section id="the-tv" className="py-16 md:py-20 px-4 sm:px-6 bg-[#08090D] relative overflow-hidden">
+      <section id="the-tv" className="pt-40 md:pt-52 pb-16 md:pb-20 px-4 sm:px-6 bg-[#08090D] relative overflow-hidden">
         <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'linear-gradient(rgba(143,211,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(143,211,255,.06) 1px, transparent 1px)', backgroundSize: '74px 74px' }} />
         <div className="max-w-7xl mx-auto relative">
           <div className="text-center mb-8">

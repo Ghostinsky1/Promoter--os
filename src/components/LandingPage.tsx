@@ -1,5 +1,33 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { BotDemo } from './landing/BotDemo';
+import { Mascot } from './ask/Mascot';
+
+const HeroGlobe = lazy(() => import('./landing/HeroGlobe'));
+
+/** The globe is heavy; only desktops that aren't asking for less motion get it. */
+function useWantsGlobe() {
+  const [ok, setOk] = useState(false);
+  useEffect(() => {
+    const wide = window.matchMedia('(min-width: 768px)').matches;
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (wide && !calm) { const t = window.setTimeout(() => setOk(true), 400); return () => clearTimeout(t); }
+  }, []);
+  return ok;
+}
+
+/** The TV turning on: a white line, then the picture. Once per visit. */
+function PowerOn() {
+  const [on, setOn] = useState(() => { try { return !sessionStorage.getItem('pos_poweron'); } catch { return true; } });
+  useEffect(() => {
+    if (!on) return;
+    try { sessionStorage.setItem('pos_poweron', '1'); } catch { /* ignore */ }
+    const t = window.setTimeout(() => setOn(false), 900);
+    return () => clearTimeout(t);
+  }, [on]);
+  if (!on) return null;
+  return <div className="pos-poweron" aria-hidden="true"><i /></div>;
+}
 import {
   CheckCircle2, X, FileText, DollarSign, Sparkles, Calendar,
   Upload, BarChart3, Clock, TrendingUp, Award, Target,
@@ -8,6 +36,7 @@ import {
 
 export function LandingPage() {
   const navigate = useNavigate();
+  const wantsGlobe = useWantsGlobe();
   const [dealScore, setDealScore] = useState(0);
   const [progressWidth, setProgressWidth] = useState(0);
   const [visibleSteps, setVisibleSteps] = useState<Set<number>>(new Set());
@@ -91,83 +120,60 @@ export function LandingPage() {
         </div>
       </nav>
 
-      <section className="pt-8 md:pt-16 pb-8 md:pb-16 px-4 md:px-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-0 animate-[fadeIn_2s_ease-out_0.5s_forwards]">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `
-              linear-gradient(to right, rgba(196, 255, 13, 0.1) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(196, 255, 13, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '80px 80px',
-            maskImage: 'radial-gradient(ellipse 80% 50% at 50% 40%, black 0%, transparent 80%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 80% 50% at 50% 40%, black 0%, transparent 80%)'
-          }}></div>
-          <div className="absolute inset-0" style={{
-            background: 'radial-gradient(ellipse 60% 40% at 50% 35%, rgba(196, 255, 13, 0.03), transparent 70%)'
-          }}></div>
-
-          <Mic className="absolute top-[15%] left-[10%] w-16 h-16 md:w-24 md:h-24 text-[#8FD3FF] opacity-5 animate-[float_6s_ease-in-out_infinite]" style={{ animationDelay: '0s' }} />
-          <Guitar className="absolute top-[25%] right-[15%] w-20 h-20 md:w-32 md:h-32 text-[#8FD3FF] opacity-5 animate-[float_8s_ease-in-out_infinite] rotate-12" style={{ animationDelay: '1s' }} />
-          <Ticket className="absolute top-[45%] left-[8%] w-14 h-14 md:w-20 md:h-20 text-[#8FD3FF] opacity-5 animate-[float_7s_ease-in-out_infinite] -rotate-12" style={{ animationDelay: '2s' }} />
-          <Music className="absolute top-[60%] right-[12%] w-16 h-16 md:w-24 md:h-24 text-[#8FD3FF] opacity-5 animate-[float_9s_ease-in-out_infinite]" style={{ animationDelay: '0.5s' }} />
-          <Radio className="absolute top-[35%] right-[8%] w-12 h-12 md:w-16 md:h-16 text-[#8FD3FF] opacity-5 animate-[float_7s_ease-in-out_infinite] rotate-45" style={{ animationDelay: '1.5s' }} />
-          <Disc className="absolute top-[20%] left-[20%] w-14 h-14 md:w-20 md:h-20 text-[#8FD3FF] opacity-5 animate-[float_10s_ease-in-out_infinite]" style={{ animationDelay: '2.5s' }} />
-          <Users className="absolute top-[50%] left-[15%] w-16 h-16 md:w-24 md:h-24 text-[#8FD3FF] opacity-5 animate-[float_8s_ease-in-out_infinite] -rotate-6" style={{ animationDelay: '3s' }} />
-          <Star className="absolute top-[10%] right-[25%] w-12 h-12 md:w-16 md:h-16 text-[#8FD3FF] opacity-5 animate-[float_6s_ease-in-out_infinite] rotate-12" style={{ animationDelay: '1s' }} />
-          <DollarSign className="absolute top-[55%] right-[20%] w-14 h-14 md:w-20 md:h-20 text-[#8FD3FF] opacity-5 animate-[float_7.5s_ease-in-out_infinite]" style={{ animationDelay: '2s' }} />
-        </div>
+      <PowerOn />
+      <section className="pt-10 md:pt-16 pb-8 md:pb-16 px-4 md:px-6 relative overflow-hidden">
+        {/* The globe from the app, spinning behind the words. */}
+        {wantsGlobe && (
+          <div className="absolute inset-0 animate-[fadeIn_1.6s_ease-out_0.3s_both]" aria-hidden="true">
+            <Suspense fallback={null}>
+              <HeroGlobe className="absolute left-1/2 -translate-x-1/2 -top-[8%] w-[1100px] max-w-none h-[1100px] opacity-85" />
+            </Suspense>
+            <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 55% 60% at 50% 42%, rgba(17,64,240,0.05) 0%, rgba(17,64,240,0.7) 70%, #1140F0 100%)' }} />
+          </div>
+        )}
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-block mb-8 px-6 py-3 bg-[#22262F] rounded-full border border-gray-800 animate-[fadeIn_0.6s_ease-out]">
-              <span className="text-[#8FD3FF] font-semibold text-sm">
-                Built By Promoters, For Promoters
-              </span>
+            <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 bg-[#0B0D12]/80 rounded-full border border-[#2A3040] animate-[fadeIn_0.6s_ease-out]">
+              <Mascot mood="idle" size={22} />
+              <span className="text-[#8FD3FF] font-semibold text-xs tracking-[0.14em] uppercase font-label">Built by promoters, for promoters</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-6 text-white leading-tight animate-[fadeIn_0.8s_ease-out_0.2s_both]">
-              Know Your{' '}
-              <span
-                className="inline-block bg-gradient-to-r from-[#8FD3FF] via-[#BFE6FF] to-[#8FD3FF] bg-clip-text text-transparent animate-[shimmer_3s_ease-in-out_infinite]"
-                style={{
-                  backgroundSize: '200% auto',
-                }}
-              >
-                Profit
-              </span>
-              {' '}Before You Book the Show.
+            <h1 className="text-[2.1rem] sm:text-5xl md:text-[4.4rem] mb-5 text-white leading-[0.98] pos-glitch-in">
+              The promoter's{' '}
+              <span className="inline-block bg-gradient-to-r from-[#8FD3FF] via-[#BFE6FF] to-[#8FD3FF] bg-clip-text text-transparent animate-[shimmer_3s_ease-in-out_infinite]" style={{ backgroundSize: '200% auto' }}>second brain.</span>
             </h1>
 
-            <p className="text-base sm:text-lg text-[#A8B2C1] mb-8 max-w-3xl mx-auto leading-relaxed animate-[fadeIn_0.8s_ease-out_0.4s_both]">
-              Create professional offers in minutes, track every dollar from estimate to settlement, and stop guessing if a deal makes sense.
+            <p className="text-base sm:text-lg text-white/85 mb-7 max-w-2xl mx-auto leading-relaxed animate-[fadeIn_0.8s_ease-out_0.4s_both]">
+              Offers in a minute, the math on every deal, settlements that add up, and your whole tour on one map — with a little TV that reads your cost sheets and tells you if the night survives.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 animate-[fadeIn_0.8s_ease-out_0.6s_both]">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6 animate-[fadeIn_0.8s_ease-out_0.6s_both]">
               <button
                 onClick={() => navigate('/signup')}
-                className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] text-lg px-10 py-7 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95"
+                className="bg-[#8FD3FF] text-[#04214D] hover:bg-[#6FB8F2] text-base px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95"
               >
-                Start Free Trial →
+                Start free trial →
               </button>
               <button
-                onClick={() => navigate('/login')}
-                className="border-2 border-gray-700 text-white hover:bg-[#22262F] text-lg px-10 py-7 rounded-2xl transition-all hover:scale-105 active:scale-95"
+                onClick={() => document.getElementById('the-tv')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                className="border border-white/40 bg-[#0B0D12]/60 text-white hover:bg-[#22262F] text-base px-8 py-4 rounded-2xl transition-all hover:scale-105 active:scale-95"
               >
-                See How It Works
+                Watch it read a deal
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-[#A8B2C1]">
+            <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-white/80">
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 text-[#8FD3FF]" />
                 <span>7-day free trial</span>
               </div>
-              <span className="text-gray-600">•</span>
+              <span className="text-white/40">•</span>
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 text-[#8FD3FF]" />
                 <span>Try it on your next deal</span>
               </div>
-              <span className="text-gray-600">•</span>
+              <span className="text-white/40">•</span>
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 text-[#8FD3FF]" />
                 <span>Cancel anytime</span>
@@ -292,6 +298,19 @@ export function LandingPage() {
             </div>
             <div className="absolute inset-0 bg-[#8FD3FF]/10 blur-3xl -z-10 rounded-full"></div>
           </div>
+        </div>
+      </section>
+
+      {/* The little TV, doing a deal. */}
+      <section id="the-tv" className="py-16 md:py-20 px-4 sm:px-6 bg-[#08090D] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'linear-gradient(rgba(143,211,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(143,211,255,.06) 1px, transparent 1px)', backgroundSize: '74px 74px' }} />
+        <div className="max-w-7xl mx-auto relative">
+          <div className="text-center mb-8">
+            <div className="font-label text-[10px] tracking-[0.2em] uppercase text-[#8FD3FF] mb-2">Meet the little TV</div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl text-white mb-3 pos-glitch-in">Tell it the show. It tells you the night.</h2>
+            <p className="text-white/70 max-w-2xl mx-auto">One line in, the bad-night read out: half house, 70%, sellout, and the ticket number where the money becomes yours. Then it writes the offer.</p>
+          </div>
+          <BotDemo />
         </div>
       </section>
 

@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Globe from 'globe.gl';
 import * as THREE from 'three';
 import { feature } from 'topojson-client';
 import { polygonToCells } from 'h3-js';
 import countriesTopo from 'world-atlas/countries-110m.json';
-import { STAGE, route, lastShow, canonicalCity, isBooked, isPast, money$, type Card } from '../../lib/tourPipeline';
+import { STAGE, route, lastShow, canonicalCity, isBooked, isPast, money$, short$, type Card } from '../../lib/tourPipeline';
 import { parseLocalDate } from '../../lib/dateHelpers';
 
 const GRAY = '#9AA4B5';
@@ -84,8 +84,7 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
       if (isBooked(c.stage)) { sp.shows++; sp.city = name; if (!isPast(c)) { sp.upcoming++; sp.key = c.key; } } else sp.leads++;
       spots.set(k, sp);
     }
-    // Pills next to each city, sized in pixels so they stay readable at any zoom. Two cities
-    // close together get one pill above the dot and one below, so they never cover each other.
+    // Pills, sized in pixels so they stay readable at any zoom.
     // Pills sit to the right of their dot. When two cities are close, the western one flips
     // to the left of its dot, so the two pills point away from each other.
     const list = [...spots.values()].sort((a, b) => a.lng - b.lng);
@@ -93,7 +92,8 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
     for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
       if (Math.abs(list[i].lat - list[j].lat) < 2.5 && Math.abs(list[i].lng - list[j].lng) < 7) left.add(list[i].key);
     }
-    const labels = list.map((x) => ({ ...x, left: left.has(x.key) }));
+    // Cities with real shows get a callout to the edge (below); pills are for lead-only cities.
+    const labels = list.filter((x) => !x.shows).map((x) => ({ ...x, left: left.has(x.key) }));
     g.pointsData(placed)
       .pointLat('lat').pointLng('lng')
       .pointColor(colorOf)
@@ -141,7 +141,117 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
     }
   }, [placed, selectedKey, nextKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <div ref={el} style={{ height, width: '100%', cursor: 'grab' }} aria-label="Tour route on a globe" />;
+  // ───────── callouts: every real show, a line from its dot to a card at the edge ─────────
+  const shows = useMemo(() => route(placed, true), [placed]);
+  const wrap = useRef<HTMLDivElement>(null);
+  const svg = useRef<SVGSVGElement>(null);
+  const cardEls = useRef<Map<string, HTMLDivElement>>(new Map());
+  const lineEls = useRef<Map<string, SVGPathElement>>(new Map());
+  const [wide, setWide] = useState(true);
+  useEffect(() => {
+    const check = () => setWide((wrap.current?.clientWidth ?? 1000) >= 640);
+    check();
+    const ro = new ResizeObserver(check); if (wrap.current) ro.observe(wrap.current);
+    return () => ro.disconnect();
+  }, []);
+  useEffect(() => {
+    const g = globe.current; if (!g || !wide) return;
+    let raf = 0;
+    const W = () => wrap.current?.clientWidth ?? 0;
+    const CARD_W = 168, ROW = 42, PAD = 14;
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      const w = W(); if (!w) return;
+      const cam = g.camera().position;
+      const pov = g.pointOfView();
+      type P = { key: string; x: number; y: number; vis: boolean; side: 'L' | 'R' };
+      const pts: P[] = shows.map((c) => {
+        const sc = g.getScreenCoords(c.lat, c.lng, 0.02);
+        const p = g.getCoords(c.lat, c.lng, 0.02);
+        const len = Math.hypot(p.x, p.y, p.z) || 1;
+        const facing = (p.x / len) * (cam.x - p.x) + (p.y / len) * (cam.y - p.y) + (p.z / len) * (cam.z - p.z) > 0;
+        const dl = ((c.lng! - pov.lng + 540) % 360) - 180; // east or west of where we're looking
+        return { key: c.key, x: sc.x, y: sc.y, vis: facing && sc.x > -40 && sc.x < w + 40 && sc.y > -40 && sc.y < height + 40, side: dl < 0 ? 'L' : 'R' };
+      });
+      for (const side of ['L', 'R'] as const) {
+        const col = pts.filter((p) => p.vis && p.side === side).sort((a, b) => a.y - b.y);
+        const avail = height - PAD * 2;
+        const rowH = Math.min(ROW, Math.max(24, Math.floor(avail / Math.max(col.length, 1))));
+        const ys = col.map((p) => p.y - rowH / 2);
+        for (let i = 1; i < ys.length; i++) ys[i] = Math.max(ys[i], ys[i - 1] + rowH);
+        for (let i = ys.length - 1; i >= 0; i--) ys[i] = Math.min(ys[i], (i === ys.length - 1 ? height - PAD : ys[i + 1]) - rowH);
+        for (let i = 1; i < ys.length; i++) ys[i] = Math.max(ys[i], ys[i - 1] + rowH, PAD);
+        col.forEach((p, i) => {
+          const el = cardEls.current.get(p.key); const ln = lineEls.current.get(p.key);
+          if (!el || !ln) return;
+          const top = Math.max(PAD, ys[i]);
+          el.style.display = 'block';
+          el.style.top = `${top}px`;
+          el.style.height = `${rowH - 6}px`;
+          el.style.left = side === 'L' ? `${PAD}px` : '';
+          el.style.right = side === 'R' ? `${PAD}px` : '';
+          const cy = top + (rowH - 6) / 2;
+          const edge = side === 'L' ? PAD + CARD_W : w - PAD - CARD_W;
+          const elbow = side === 'L' ? edge + 18 : edge - 18;
+          ln.setAttribute('d', `M${p.x},${p.y} L${elbow},${cy} L${edge},${cy}`);
+          ln.style.display = 'block';
+        });
+      }
+      for (const p of pts) if (!p.vis) { cardEls.current.get(p.key)?.style.setProperty('display', 'none'); lineEls.current.get(p.key)?.style.setProperty('display', 'none'); }
+    };
+    tick();
+    return () => cancelAnimationFrame(raf);
+  }, [shows, wide, height]);
+
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  return (
+    <div ref={wrap} style={{ position: 'relative', height, width: '100%' }}>
+      <div ref={el} style={{ height, width: '100%', cursor: 'grab' }} aria-label="Tour route on a globe" />
+      {wide && (
+        <>
+          <svg ref={svg} style={{ position: 'absolute', inset: 0, width: '100%', height, pointerEvents: 'none' }}>
+            {shows.map((c) => {
+              const col = c.key === nextKey ? '#8FD3FF' : isPast(c) ? GRAY : STAGE[c.stage].color;
+              return <path key={c.key} ref={(r) => { if (r) lineEls.current.set(c.key, r); else lineEls.current.delete(c.key); }} fill="none" stroke={col} strokeWidth={c.key === nextKey ? 1.6 : 1} strokeOpacity={isPast(c) ? 0.45 : 0.8} style={{ display: 'none' }} />;
+            })}
+          </svg>
+          {shows.map((c) => {
+            const past = isPast(c), isNext = c.key === nextKey, on = c.key === selectedKey;
+            const col = isNext ? '#8FD3FF' : past ? GRAY : STAGE[c.stage].color;
+            const d = parseLocalDate(c.date!)!;
+            const days = Math.round((d.getTime() - today.getTime()) / 86_400_000);
+            return (
+              <div
+                key={c.key}
+                ref={(r) => { if (r) cardEls.current.set(c.key, r); else cardEls.current.delete(c.key); }}
+                onClick={(e) => { e.stopPropagation(); onSelect(c.key); }}
+                title={`${c.artist ? c.artist + ' · ' : ''}${c.venue} — ${STAGE[c.stage].label}`}
+                style={{
+                  position: 'absolute', display: 'none', width: 168, cursor: 'pointer', overflow: 'hidden',
+                  background: on ? 'rgba(143,211,255,0.14)' : 'rgba(11,13,18,0.88)', border: `1px solid ${on || isNext ? col : 'rgba(42,48,64,0.9)'}`,
+                  borderLeft: `3px solid ${col}`, borderRadius: 8, padding: '3px 8px', boxSizing: 'border-box',
+                  textTransform: 'none', letterSpacing: 0, opacity: past ? 0.75 : 1,
+                  boxShadow: isNext ? '0 0 14px rgba(143,211,255,0.35)' : 'none',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6 }}>
+                  <span style={{ font: '700 11px Saira Condensed, system-ui', letterSpacing: '.1em', textTransform: 'uppercase', color: past ? GRAY : col, whiteSpace: 'nowrap' }}>
+                    {d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                  </span>
+                  <span style={{ font: '600 10px Saira Condensed, system-ui', color: isNext ? '#8FD3FF' : past ? GRAY : '#A8B2C1', whiteSpace: 'nowrap' }}>
+                    {isNext ? `NEXT · ${days}d` : past ? (c.moneyKind === 'actual' && c.money != null ? (c.money >= 0 ? `+${short$(c.money)}` : `−${short$(Math.abs(c.money))}`) : 'played') : days === 0 ? 'tonight' : `${days}d`}
+                  </span>
+                </div>
+                <div style={{ font: '600 12px Saira Condensed, system-ui', color: past ? '#C8D6EB' : '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.15 }}>
+                  {canonicalCity(c.city) || c.venue}{c.artist ? <span style={{ color: '#8FD3FF' }}> · {c.artist}</span> : <span style={{ color: '#A8B2C1' }}> · {c.venue}</span>}
+                </div>
+              </div>
+            );
+          })}
+        </>
+      )}
+    </div>
+  );
 }
 
 /** Hover card: the event, the date, and whether it made money. */

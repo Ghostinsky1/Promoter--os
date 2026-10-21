@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { parseLocalDate } from '../../lib/dateHelpers';
-import { STAGE, route, isBooked, isPast, short$, type Card } from '../../lib/tourPipeline';
+import { STAGE, route, isBooked, isPast, type Card } from '../../lib/tourPipeline';
 
 /**
  * The run as a line: every dated show from first to last, a dot per show in its stage color,
@@ -26,7 +26,6 @@ export function TourTimeline({ cards, nextKey, selectedKey, onSelect, start, end
   const months: { label: string; at: number }[] = [];
   const m = new Date(lo); m.setDate(1); m.setMonth(m.getMonth() + 1);
   while (m.getTime() <= hi) { months.push({ label: m.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(), at: pct(m.getTime()) }); m.setMonth(m.getMonth() + 1); }
-  const next = shows.find((c) => c.key === nextKey);
 
   return (
     <div className="select-none">
@@ -70,23 +69,6 @@ export function TourTimeline({ cards, nextKey, selectedKey, onSelect, start, end
           );
         })}
       </div>
-      {!next && shows.length > 0 && (() => {
-        const last = [...shows].reverse().find((c) => parseLocalDate(c.date!)! <= today) ?? shows[shows.length - 1];
-        return (
-          <button onClick={() => onSelect(last.key)} className="mt-1 w-full text-left bg-[#0B0D12] border border-[#2A3040] rounded-xl px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-0.5" style={{ textTransform: 'none', letterSpacing: 0 }}>
-            <span className="font-label text-[10px] tracking-[0.18em] text-gray-400 shrink-0">NOTHING COMING UP</span>
-            <span className="text-gray-300 text-sm min-w-0">Last show: <span className="text-white">{last.city || last.venue}</span> · {parseLocalDate(last.date!)!.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}. Add a dated venue and it lights up as NEXT.</span>
-          </button>
-        );
-      })()}
-      {next && (
-        <button onClick={() => onSelect(next.key)} className="mt-1 w-full text-left bg-[#0B0D12] border border-[#8FD3FF]/40 rounded-xl px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-0.5" style={{ textTransform: 'none', letterSpacing: 0 }}>
-          <span className="font-label text-[10px] tracking-[0.18em] text-[#8FD3FF] shrink-0">NEXT</span>
-          <span className="text-white font-semibold min-w-0">{next.city} · {next.venue}</span>
-          <span className="text-gray-400 text-sm shrink-0">{parseLocalDate(next.date!)!.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · in {Math.max(0, Math.round((parseLocalDate(next.date!)!.getTime() - today.getTime()) / 86_400_000))} days</span>
-          <span className="sm:ml-auto text-xs shrink-0" style={{ color: STAGE[next.stage].color }}>{STAGE[next.stage].label}{next.money != null ? ` · ${short$(next.money)}` : ''}</span>
-        </button>
-      )}
     </div>
   );
 }

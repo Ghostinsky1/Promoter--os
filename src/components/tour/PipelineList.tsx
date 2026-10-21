@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, Plus, ChevronDown, FileText } from 'lucide-react';
+import { Search, Plus, ChevronDown, ChevronRight, FileText } from 'lucide-react';
 import { parseLocalDate } from '../../lib/dateHelpers';
 import { STAGE, STAGES, isBooked, isPast, short$, canonicalCity, type Card, type Stage } from '../../lib/tourPipeline';
 
@@ -21,6 +21,8 @@ const FILTERS: { key: Filter; label: string; hint: string }[] = [
 const GROUP: Record<Exclude<Filter, 'all' | 'nodate'>, Stage[]> = {
   todo: ['lead', 'hold'], live: ['contacted', 'talking', 'offer_sent'], locked: ['confirmed', 'settled'], dead: ['dead'],
 };
+/** Early leads — nothing sent, or one email out — fold under their date so the booked rooms stand out. */
+const EARLY: Stage[] = ['lead', 'contacted'];
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -31,6 +33,8 @@ export function PipelineList({ cards, selectedKey, onOpen, onMove, onAdd, onMake
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
   const [menu, setMenu] = useState<string | null>(null);
+  const [showPlayed, setShowPlayed] = useState(false);
+  const [opened, setOpened] = useState<Set<string>>(new Set());
   useEffect(() => {
     if (!menu) return;
     const close = () => setMenu(null);
@@ -55,13 +59,19 @@ export function PipelineList({ cards, selectedKey, onOpen, onMove, onAdd, onMake
       .sort((a, b) => ((a.date ?? '9999') + a.city).localeCompare((b.date ?? '9999') + b.city) || a.venue.localeCompare(b.venue));
   }, [cards, filter, q]);
 
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const todayKey = today.toISOString().slice(0, 10);
+  // On "All" the list starts at today: what already happened folds into one line on top.
+  const folding = filter === 'all' && !q.trim();
+  const played = useMemo(() => (folding ? shown.filter((c) => c.date && c.date < todayKey) : []), [shown, folding, todayKey]);
+  const madeSoFar = played.reduce((s, c) => s + (c.moneyKind === 'actual' ? c.money ?? 0 : 0), 0);
   const groups = useMemo(() => {
     const by = new Map<string, Card[]>();
-    for (const c of shown) { const k = c.date ?? 'nodate'; by.set(k, [...(by.get(k) || []), c]); }
+    for (const c of (folding && !showPlayed ? shown.filter((c) => !played.includes(c)) : shown)) { const k = c.date ?? 'nodate'; by.set(k, [...(by.get(k) || []), c]); }
     return [...by.entries()];
-  }, [shown]);
+  }, [shown, folding, showPlayed, played]);
+  const toggle = (k: string) => setOpened((o) => { const n = new Set(o); if (n.has(k)) n.delete(k); else n.add(k); return n; });
 
-  const today = new Date(); today.setHours(0, 0, 0, 0);
   const chip = 'px-2.5 py-1 rounded-lg text-xs font-semibold border';
 
   return (
@@ -82,6 +92,16 @@ export function PipelineList({ cards, selectedKey, onOpen, onMove, onAdd, onMake
       </div>
       <p className="text-[11px] text-white/70 mb-2">Click a status pill to move a venue. Click the row to open it. <b className="text-white">Your move</b> = nothing sent yet or on hold. <b className="text-white">Waiting on them</b> = they have our email or offer.</p>
 
+      {played.length > 0 && (
+        <button onClick={() => setShowPlayed((v) => !v)}
+          className="w-full mb-3 flex items-center gap-2 rounded-lg border border-[#2A3040] bg-[#0B0D12] px-3 py-2 text-left text-sm hover:border-gray-500" style={{ textTransform: 'none', letterSpacing: 0 }}>
+          {showPlayed ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+          <span className="text-white font-semibold">{played.length} played</span>
+          <span className="text-gray-400">{parseLocalDate(played[0].date!)!.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} – {parseLocalDate(played[played.length - 1].date!)!.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+          {madeSoFar !== 0 && <span className={`ml-auto font-semibold ${madeSoFar >= 0 ? 'text-green-400' : 'text-red-400'}`}>made {short$(madeSoFar)}</span>}
+          <span className={`text-xs text-gray-500 ${madeSoFar !== 0 ? '' : 'ml-auto'}`}>{showPlayed ? 'hide' : 'show'}</span>
+        </button>
+      )}
       {groups.length === 0 ? (
         <div className="bg-[#14171E] border border-dashed border-[#2A3040] rounded-xl p-6 text-center text-sm text-gray-400">
           {cards.length ? 'Nothing here. Pick another chip or clear the search.' : <>No venues yet. <button onClick={onAdd} className="text-[#8FD3FF] underline" style={{ textTransform: 'none', letterSpacing: 0 }}>Add the first one</button>.</>}
@@ -91,6 +111,13 @@ export function PipelineList({ cards, selectedKey, onOpen, onMove, onAdd, onMake
         const cities = [...new Set(rows.map((r) => canonicalCity(r.city)).filter(Boolean))];
         const past = d ? d < today : false;
         const locked = rows.some((r) => isBooked(r.stage));
+        // Booked rooms and live talks show in full; early leads fold into one line unless opened.
+        const fold = folding && !past && d != null;
+        const early = fold ? rows.filter((r) => EARLY.includes(r.stage) && !r.offer) : [];
+        const full = fold ? rows.filter((r) => !early.includes(r)) : rows;
+        const open = opened.has(date);
+        const visible = open ? rows : full;
+        const earlyCities = [...new Set(early.map((r) => canonicalCity(r.city)).filter(Boolean))];
         return (
           <section key={date} className={`grid grid-cols-[72px_1fr] sm:grid-cols-[96px_1fr] gap-3 border-t-2 ${locked && !past ? 'border-[#4ADE80]' : past ? 'border-[#3A4152]' : 'border-white/70'} pt-2.5 mb-3`}>
             <div className={`leading-none ${past ? 'text-gray-500' : 'text-white'}`}>
@@ -109,7 +136,7 @@ export function PipelineList({ cards, selectedKey, onOpen, onMove, onAdd, onMake
               )}
             </div>
             <div className="space-y-1.5 min-w-0">
-              {rows.map((c) => {
+              {visible.map((c) => {
                 const on = c.key === selectedKey;
                 const dead = c.stage === 'dead';
                 const options: Stage[] = c.offer
@@ -162,6 +189,17 @@ export function PipelineList({ cards, selectedKey, onOpen, onMove, onAdd, onMake
                   </article>
                 );
               })}
+              {early.length > 0 && (
+                <button onClick={() => toggle(date)}
+                  className={`w-full text-left rounded-lg border border-dashed px-3 py-1.5 text-[12px] flex items-center gap-2 ${open ? 'border-[#2A3040] text-gray-400' : 'border-[#F2B640]/40 text-gray-300 hover:border-[#F2B640]'}`}
+                  style={{ textTransform: 'none', letterSpacing: 0 }}>
+                  {open ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  {open ? 'Fold the leads back up' : <>
+                    <b className="text-white">{full.length ? `+${early.length} more` : early.length} venue{early.length === 1 ? '' : 's'} we're talking to</b>
+                    <span className="text-gray-500 truncate">{full.length ? '' : 'nothing locked yet · '}{earlyCities.join(' · ')}</span>
+                  </>}
+                </button>
+              )}
             </div>
           </section>
         );

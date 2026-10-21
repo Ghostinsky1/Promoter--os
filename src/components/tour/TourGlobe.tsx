@@ -16,8 +16,12 @@ const GRAY = '#9AA4B5';
  * Drag to spin, scroll / pinch to zoom, tap a dot to open its card.
  * Loaded lazily — three.js is heavy and only the pages that show it need it.
  */
-export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, height = 420 }: {
+export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, height = 420, showLeads = false, maxCards = 6 }: {
   cards: Card[]; nextKey: string | null; selectedKey: string | null; onSelect: (key: string) => void; height?: number;
+  /** Name the lead-only cities with pills. Off by default: with a hundred leads it's a wall. */
+  showLeads?: boolean;
+  /** How many upcoming booked shows get a card with a date and a line to the edge. */
+  maxCards?: number;
 }) {
   const el = useRef<HTMLDivElement>(null);
   const globe = useRef<any>(null);
@@ -25,6 +29,8 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
   const placed = useMemo(() => cards.filter((c) => c.lat != null && c.lng != null), [cards]);
   // The line runs through the real shows; leads are dots only.
   const path = useMemo(() => route(placed, true), [placed]);
+  // What's coming, in order — the cards and the camera follow this, not the whole history.
+  const upcoming = useMemo(() => path.filter((c) => !isPast(c)), [path]);
 
   // Build once.
   useEffect(() => {
@@ -93,11 +99,11 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
       if (Math.abs(list[i].lat - list[j].lat) < 2.5 && Math.abs(list[i].lng - list[j].lng) < 7) left.add(list[i].key);
     }
     // Cities with real shows get a callout to the edge (below); pills are for lead-only cities.
-    const labels = list.filter((x) => !x.shows).map((x) => ({ ...x, left: left.has(x.key) }));
+    const labels = showLeads ? list.filter((x) => !x.shows).map((x) => ({ ...x, left: left.has(x.key) })) : [];
     g.pointsData(placed)
       .pointLat('lat').pointLng('lng')
       .pointColor(colorOf)
-      .pointRadius((c: Card) => (c.key === selectedKey || c.key === nextKey ? 1.05 : isPast(c) ? 0.5 : isBooked(c.stage) ? 0.75 : 0.45))
+      .pointRadius((c: Card) => (c.key === selectedKey || c.key === nextKey ? 1.05 : isPast(c) ? 0.45 : isBooked(c.stage) ? 0.75 : showLeads ? 0.45 : 0.3))
       .pointLabel(tip);
     g.arcsData(arcs).arcColor('color');
     g.htmlElementsData(labels).htmlLat('lat').htmlLng('lng').htmlAltitude(0.02).htmlTransitionDuration(0)
@@ -117,7 +123,7 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
       });
     const next = placed.find((c) => c.key === nextKey);
     g.ringsData(next ? [next] : []).ringLat('lat').ringLng('lng').ringColor(() => (t: number) => `rgba(143,211,255,${1 - t})`);
-  }, [placed, path, nextKey, selectedKey]);
+  }, [placed, path, nextKey, selectedKey, showLeads]);
 
   // Fly to the next show when the globe first has dots, and to a card when one is picked.
   useEffect(() => {
@@ -130,7 +136,7 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
       // real route fits. Grab it to spin it yourself.
       const n = placed.find((c) => c.key === nextKey) ?? lastShow(placed) ?? placed[0];
       const lat = n.lat!, lng = n.lng!;
-      const fit = path.length > 1 ? path : placed;
+      const fit = upcoming.length > 1 ? upcoming : path.length > 1 ? path : placed;
       const spread = Math.max(...fit.map((c) => Math.hypot(c.lat! - lat, (c.lng! - lng) * Math.cos((lat * Math.PI) / 180))));
       const altitude = Math.min(1.1, Math.max(0.5, 0.15 + spread / 16));
       setTimeout(() => {
@@ -141,8 +147,14 @@ export default function TourGlobe({ cards, nextKey, selectedKey, onSelect, heigh
     }
   }, [placed, selectedKey, nextKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ───────── callouts: every real show, a line from its dot to a card at the edge ─────────
-  const shows = useMemo(() => route(placed, true), [placed]);
+  // ───────── callouts: the next few booked shows, a line from the dot to a card at the edge ─────────
+  // Played shows stay as gray dots (hover for the money); the picked show always gets a card.
+  const shows = useMemo(() => {
+    const list = upcoming.slice(0, maxCards);
+    const sel = selectedKey ? path.find((c) => c.key === selectedKey) : null;
+    if (sel && !list.includes(sel)) list.push(sel);
+    return list;
+  }, [upcoming, path, maxCards, selectedKey]);
   const wrap = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
   const cardEls = useRef<Map<string, HTMLDivElement>>(new Map());

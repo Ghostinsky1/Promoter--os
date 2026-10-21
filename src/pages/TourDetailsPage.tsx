@@ -1,10 +1,10 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, Music2, Plus, Trash2, Globe2, Loader2, Link2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Music2, Plus, Trash2, Globe2, Loader2, Link2, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { parseLocalDate } from '../lib/dateHelpers';
 import {
-  STAGES, STAGE, buildCards, money, nextShow, geocode, short$, money$,
+  STAGES, STAGE, buildCards, money, nextShow, route, isPast, isBooked, geocode, short$, money$,
   type Card, type Stage, type TourLead, type TourCost, type LeadStage,
 } from '../lib/tourPipeline';
 import { PipelineBoard } from '../components/tour/PipelineBoard';
@@ -37,6 +37,7 @@ export function TourDetailsPage() {
   const [offerGeo, setOfferGeo] = useState<Record<string, { lat: number; lng: number }>>({});
   const [statusOpen, setStatusOpen] = useState(false);
   const [newCost, setNewCost] = useState({ label: '', amount: '' });
+  const [showLeads, setShowLeads] = useState(false);
   const [view, setView] = useState<'dates' | 'board'>(() => { try { return (localStorage.getItem('pos_pipeline_view') as any) || 'dates'; } catch { return 'dates'; } });
   const switchView = (v: 'dates' | 'board') => { setView(v); try { localStorage.setItem('pos_pipeline_view', v); } catch { /* ignore */ } };
 
@@ -93,6 +94,10 @@ export function TourDetailsPage() {
   const cards = useMemo(() => rawCards.map((c) => (c.lat == null && offerGeo[c.key] ? { ...c, ...offerGeo[c.key] } : c)), [rawCards, offerGeo]);
   const m = useMemo(() => money(cards, costs), [cards, costs]);
   const next = useMemo(() => nextShow(cards), [cards]);
+  // The booked shows after the next one — the "then" in the strip up top.
+  const upcomingBooked = useMemo(() => route(cards, true).filter((c) => !isPast(c)), [cards]);
+  const then = useMemo(() => upcomingBooked.filter((c) => c.key !== next?.key).slice(0, 3), [upcomingBooked, next]);
+  const lookingCount = useMemo(() => cards.filter((c) => c.stage !== 'dead' && !isBooked(c.stage)).length, [cards]);
   const sel = cards.find((c) => c.key === selected) ?? null;
   const offMap = cards.filter((c) => c.stage !== 'dead' && c.lat == null && geoTried[c.key]);
   const [fix, setFix] = useState<{ key: string; value: string; busy?: boolean; err?: string } | null>(null);
@@ -191,12 +196,11 @@ export function TourDetailsPage() {
   if (!tour) return <div className="min-h-screen bg-[#1140F0] flex items-center justify-center text-white">Tour not found</div>;
 
   const tiles = [
-    { label: 'Made', sub: `${m.counts.settled} settled · actual`, v: m.made, color: '#4ADE80' },
-    { label: 'Closed', sub: `${m.counts.confirmed} confirmed · projected`, v: m.closed, color: '#8FD3FF' },
-    { label: 'Trying to close', sub: `${m.counts.talking + m.counts.hold + m.counts.offer_sent} talking / hold / sent`, v: m.tryingToClose, color: '#F2B640' },
-    { label: 'Early leads', sub: `${m.counts.lead + m.counts.contacted} to contact / contacted · your guesses`, v: m.earlyLeads, color: '#93A2B8' },
-    { label: 'Tour costs', sub: `${costs.length} line${costs.length === 1 ? '' : 's'}`, v: -m.tourCosts, color: '#F0605A' },
+    { label: 'Made', sub: `${m.counts.settled} played and settled`, v: m.made, color: '#4ADE80' },
+    { label: 'Booked', sub: `${m.counts.confirmed} confirmed · projected`, v: m.closed, color: '#8FD3FF' },
+    { label: 'In the pipeline', sub: `${m.counts.talking + m.counts.hold + m.counts.offer_sent + m.counts.lead + m.counts.contacted} venues · not closed`, v: m.pipeline, color: '#F2B640' },
   ];
+  const nextDays = next?.date ? Math.max(0, Math.round((parseLocalDate(next.date)!.getTime() - new Date(new Date().setHours(0, 0, 0, 0)).getTime()) / 86_400_000)) : null;
   const statusOptions = ['planning', 'booking', 'confirmed', 'active', 'completed', 'cancelled'];
 
   return (
@@ -229,24 +233,54 @@ export function TourDetailsPage() {
           </div>
         </div>
 
-        {/* Money */}
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5 sm:gap-2 mb-3">
+        {/* Next up: where you are on the run */}
+        <div className="bg-[#0B0D12] border border-[#8FD3FF]/40 rounded-2xl px-3 sm:px-4 py-3 mb-3 shadow-[0_0_24px_rgba(143,211,255,0.12)]">
+          {next ? (
+            <div className="grid lg:grid-cols-[1fr_auto] gap-x-6 gap-y-2 items-center">
+              <button onClick={() => { pick(next.key); setDrawer({ card: next }); }} className="text-left min-w-0 flex flex-wrap items-baseline gap-x-3 gap-y-0.5" style={{ textTransform: 'none', letterSpacing: 0 }}>
+                <span className="font-label text-[10px] tracking-[0.2em] text-[#8FD3FF] shrink-0">NEXT UP</span>
+                <span className="text-xl sm:text-2xl font-bold text-white leading-none">{next.city || next.venue}</span>
+                <span className="text-sm text-gray-300">{next.venue}{next.artist ? ` · ${next.artist}` : ''}</span>
+                <span className="text-sm text-white font-semibold">{parseLocalDate(next.date!)!.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                <span className="text-sm text-[#8FD3FF] font-semibold">{nextDays === 0 ? 'tonight' : `in ${nextDays} day${nextDays === 1 ? '' : 's'}`}</span>
+                <span className="text-xs font-mono uppercase tracking-[0.08em]" style={{ color: STAGE[next.stage].color }}>{STAGE[next.stage].label}{next.money != null ? ` · ${next.moneyKind === 'actual' ? 'made' : 'projected'} ${short$(next.money)}` : ''}</span>
+              </button>
+              {then.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5 text-[12px] min-w-0">
+                  <span className="font-label text-[10px] tracking-[0.18em] text-gray-500 mr-1">THEN</span>
+                  {then.map((c) => (
+                    <button key={c.key} onClick={() => pick(c.key)} className="inline-flex items-center gap-1 rounded-full border border-[#2A3040] bg-[#14171E] px-2.5 py-1 text-gray-200 hover:border-gray-500" style={{ textTransform: 'none', letterSpacing: 0 }}>
+                      <span className="text-gray-400">{parseLocalDate(c.date!)!.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span> {c.city || c.venue}
+                    </button>
+                  ))}
+                  <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-sm text-gray-300"><span className="font-label text-[10px] tracking-[0.2em] text-gray-500 mr-2">NEXT UP</span>Nothing booked ahead. Lock a venue below and it lands here.</div>
+          )}
+        </div>
+
+        {/* Money: four boxes, one line */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 sm:gap-2 mb-1.5">
           {tiles.map((t) => (
             <div key={t.label} className="bg-[#14171E] border border-[#2A3040] rounded-2xl px-3 py-2.5">
-              <div className="font-label text-[9px] sm:text-[10px] tracking-[0.14em] uppercase truncate" style={{ color: t.color }}>{t.label}</div>
-              <div className={`text-base sm:text-xl font-bold ${t.v < 0 ? 'text-red-400' : 'text-white'}`}>{t.v === 0 ? '$0' : short$(t.v)}</div>
-              <div className="text-[10px] sm:text-[11px] text-gray-500 leading-tight truncate">{t.sub}</div>
+              <div className="font-label text-[10px] tracking-[0.14em] uppercase truncate" style={{ color: t.color }}>{t.label}</div>
+              <div className={`text-xl font-bold ${t.v < 0 ? 'text-red-400' : 'text-white'}`}>{t.v === 0 ? '$0' : short$(t.v)}</div>
+              <div className="text-[11px] text-gray-500 leading-tight truncate">{t.sub}</div>
             </div>
           ))}
-          <div className="col-span-3 md:col-span-1 rounded-2xl px-3 py-2.5 border-2" style={{ background: '#0B0D12', borderColor: m.pl >= 0 ? '#4ADE80' : '#F0605A', boxShadow: `0 0 22px ${m.pl >= 0 ? 'rgba(74,222,128,0.25)' : 'rgba(240,96,90,0.25)'}` }}>
+          <div className="rounded-2xl px-3 py-2.5 border-2" style={{ background: '#0B0D12', borderColor: m.pl >= 0 ? '#4ADE80' : '#F0605A', boxShadow: `0 0 22px ${m.pl >= 0 ? 'rgba(74,222,128,0.25)' : 'rgba(240,96,90,0.25)'}` }}>
             <div className="font-label text-[10px] tracking-[0.16em] uppercase text-white">Tour P/L</div>
-            <div className={`text-2xl font-bold ${m.pl >= 0 ? 'text-green-400' : 'text-red-400'}`}>{money$(m.pl)}</div>
-            <div className="text-[11px] text-gray-500 leading-tight">made − tour costs</div>
+            <div className={`text-xl font-bold ${m.pl >= 0 ? 'text-green-400' : 'text-red-400'}`}>{money$(m.pl)}</div>
+            <div className="text-[11px] text-gray-500 leading-tight truncate">made − {short$(m.tourCosts)} tour costs</div>
           </div>
         </div>
-        <div className="text-[12px] text-white/80 mb-3">
-          In the pipeline, not closed yet: <b className="text-white">{money$(m.pipeline)}</b> across {m.counts.lead + m.counts.contacted + m.counts.talking + m.counts.hold + m.counts.offer_sent} venues.
-          {m.closed !== 0 && <> If every confirmed show hits its projection, P/L would be <b className="text-white">{money$(m.pl + m.closed)}</b>.</>}
+        <div className="text-[12px] text-white/75 mb-3">
+          {m.closed !== 0 && <>If every booked show hits its projection, P/L lands at <b className="text-white">{money$(m.pl + m.closed)}</b>. </>}
+          {m.earlyLeads !== 0 && <>Early leads carry <b className="text-white">{money$(m.earlyLeads)}</b> of guesses. </>}
+          <button onClick={() => document.getElementById('tour-costs')?.scrollIntoView({ behavior: 'smooth', block: 'center' })} className="underline text-white/70 hover:text-white" style={{ textTransform: 'none', letterSpacing: 0 }}>Tour costs: {money$(m.tourCosts)}</button>
         </div>
 
         {/* Globe + timeline */}
@@ -259,11 +293,18 @@ export function TourDetailsPage() {
                 <span className="inline-flex items-center gap-1 text-[#4ADE80]"><span className="w-2 h-2 rounded-full bg-[#4ADE80]" /> Coming</span>
                 <span className="inline-flex items-center gap-1 text-[#8FD3FF]"><span className="w-2 h-2 rounded-full bg-[#8FD3FF] animate-pulse" /> Next</span>
               </div>
+              {lookingCount > 0 && (
+                <button onClick={() => setShowLeads((v) => !v)}
+                  className={`absolute bottom-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] ${showLeads ? 'border-[#F2B640] bg-[#F2B640]/15 text-[#F2B640]' : 'border-white/25 bg-[#0B0D12]/80 text-gray-300 hover:border-white/50'}`}
+                  style={{ textTransform: 'none', letterSpacing: 0 }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#F2B640]" />{showLeads ? 'Hide' : 'Name'} the {lookingCount} venues we're talking to
+                </button>
+              )}
               {!next && cards.some((c) => c.lat != null) && (
                 <div className="absolute inset-x-0 bottom-4 z-10 text-center text-sm text-white/80">Nothing coming up on this tour — these are the cities you played. Add a venue with a date and it lights up.</div>
               )}
               <Suspense fallback={<div className="h-[420px] flex items-center justify-center text-gray-500"><Loader2 className="w-5 h-5 animate-spin" /></div>}>
-                <TourGlobe cards={cards.filter((c) => c.stage !== 'dead')} nextKey={next?.key ?? null} selectedKey={selected} onSelect={pick} height={typeof window !== 'undefined' && window.innerWidth < 640 ? 340 : 420} />
+                <TourGlobe cards={cards.filter((c) => c.stage !== 'dead')} nextKey={next?.key ?? null} selectedKey={selected} onSelect={pick} showLeads={showLeads} height={typeof window !== 'undefined' && window.innerWidth < 640 ? 340 : 420} />
               </Suspense>
               {!cards.some((c) => c.lat != null) && (
                 <div className="absolute inset-x-0 bottom-4 text-center text-sm text-gray-400">Add a venue with a city and it lands on the globe.</div>
@@ -282,7 +323,7 @@ export function TourDetailsPage() {
                   <button onClick={() => setDrawer({ card: sel })} className="mt-2 text-sm bg-[#8FD3FF] text-[#04214D] rounded-lg px-3 py-1.5 font-semibold" style={{ textTransform: 'none', letterSpacing: 0 }}>Open</button>
                 </div>
               ) : (
-                <div className="text-sm text-gray-400">Tap a city on the globe, the line or a card.</div>
+                <div className="text-sm text-gray-400">{upcomingBooked.length > 1 ? `The next ${Math.min(6, upcomingBooked.length)} booked shows have a card.` : upcomingBooked.length === 1 ? 'The one booked show ahead has a card.' : 'Nothing booked ahead yet.'} Gray dots are where you've played — hover one for what it made. Tap anything to open it.</div>
               )}
               <div className="space-y-1 pt-2 border-t border-[#2A3040]">
                 {STAGES.filter((s) => s.key !== 'dead').map((s) => (
@@ -324,10 +365,10 @@ export function TourDetailsPage() {
         {/* Pipeline */}
         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-3">
-            <h2 className="text-lg font-bold text-white">Pipeline</h2>
+            <div><h2 className="text-lg font-bold text-white leading-tight">Pipeline</h2><div className="text-[11px] text-gray-400">From today forward. Booked rooms show in full; leads fold under their date.</div></div>
             <div className="flex rounded-lg border border-white/30 overflow-hidden text-xs">
-              <button onClick={() => switchView('dates')} className={`px-2.5 py-1 ${view === 'dates' ? 'bg-white text-[#04214D] font-bold' : 'text-white hover:bg-white/10'}`} style={{ textTransform: 'none', letterSpacing: 0 }}>By date</button>
-              <button onClick={() => switchView('board')} className={`px-2.5 py-1 ${view === 'board' ? 'bg-white text-[#04214D] font-bold' : 'text-white hover:bg-white/10'}`} style={{ textTransform: 'none', letterSpacing: 0 }}>Board</button>
+              <button onClick={() => switchView('dates')} className={`px-2.5 py-1 whitespace-nowrap ${view === 'dates' ? 'bg-white text-[#04214D] font-bold' : 'text-white hover:bg-white/10'}`} style={{ textTransform: 'none', letterSpacing: 0 }}>By date</button>
+              <button onClick={() => switchView('board')} className={`px-2.5 py-1 whitespace-nowrap ${view === 'board' ? 'bg-white text-[#04214D] font-bold' : 'text-white hover:bg-white/10'}`} style={{ textTransform: 'none', letterSpacing: 0 }}>Board</button>
             </div>
           </div>
           <div className="flex gap-2">
@@ -361,7 +402,7 @@ export function TourDetailsPage() {
         {/* Tour costs */}
         <div className="bg-[#14171E] border border-[#2A3040] rounded-2xl p-4 mt-4">
           <div className="flex items-baseline justify-between mb-2">
-            <h2 className="text-lg font-bold text-white">Tour costs</h2>
+            <h2 id="tour-costs" className="text-lg font-bold text-white">Tour costs</h2>
             <span className="text-sm text-gray-400">Total <b className="text-white">{money$(m.tourCosts)}</b></span>
           </div>
           <p className="text-[12px] text-gray-500 mb-3">Costs that belong to the whole run, not one show — van, flights, crew, tour ads. They come off the tour P/L.</p>

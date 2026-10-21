@@ -343,9 +343,7 @@ export function LandingPage() {
           <div className="grid md:grid-cols-2 gap-6">
             <div className="p-8 bg-[#22262F] border border-gray-800 rounded-2xl hover:border-[#8FD3FF]/50 transition-all hover:scale-105 animate-[fadeIn_0.6s_ease-out]">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-[#8FD3FF]/10 rounded-xl">
-                  <CheckCircle2 className="h-6 w-6 text-[#8FD3FF]" />
-                </div>
+                <img src="/icons/pain-excel.webp" alt="" width={56} height={56} className="w-14 h-14 shrink-0" loading="lazy" />
                 <div>
                   <h3 className="text-xl font-bold mb-2 text-white">Stop rebuilding offers in Excel</h3>
                   <p className="text-[#A8B2C1]">
@@ -357,9 +355,7 @@ export function LandingPage() {
 
             <div className="p-8 bg-[#22262F] border border-gray-800 rounded-2xl hover:border-[#8FD3FF]/50 transition-all hover:scale-105 animate-[fadeIn_0.6s_ease-out_0.1s_both]">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-[#8FD3FF]/10 rounded-xl">
-                  <CheckCircle2 className="h-6 w-6 text-[#8FD3FF]" />
-                </div>
+                <img src="/icons/pain-profit.webp" alt="" width={56} height={56} className="w-14 h-14 shrink-0" loading="lazy" />
                 <div>
                   <h3 className="text-xl font-bold mb-2 text-white">Know real profit, not guesses</h3>
                   <p className="text-[#A8B2C1]">
@@ -371,9 +367,7 @@ export function LandingPage() {
 
             <div className="p-8 bg-[#22262F] border border-gray-800 rounded-2xl hover:border-[#8FD3FF]/50 transition-all hover:scale-105 animate-[fadeIn_0.6s_ease-out_0.2s_both]">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-[#8FD3FF]/10 rounded-xl">
-                  <CheckCircle2 className="h-6 w-6 text-[#8FD3FF]" />
-                </div>
+                <img src="/icons/pain-track.webp" alt="" width={56} height={56} className="w-14 h-14 shrink-0" loading="lazy" />
                 <div>
                   <h3 className="text-xl font-bold mb-2 text-white">Track what worked after every show</h3>
                   <p className="text-[#A8B2C1]">
@@ -385,9 +379,7 @@ export function LandingPage() {
 
             <div className="p-8 bg-[#22262F] border border-gray-800 rounded-2xl hover:border-[#8FD3FF]/50 transition-all hover:scale-105 animate-[fadeIn_0.6s_ease-out_0.3s_both]">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-[#8FD3FF]/10 rounded-xl">
-                  <CheckCircle2 className="h-6 w-6 text-[#8FD3FF]" />
-                </div>
+                <img src="/icons/pain-repeat.webp" alt="" width={56} height={56} className="w-14 h-14 shrink-0" loading="lazy" />
                 <div>
                   <h3 className="text-xl font-bold mb-2 text-white">See which deals are worth repeating</h3>
                   <p className="text-[#A8B2C1]">
@@ -426,9 +418,7 @@ export function LandingPage() {
               style={{ transitionDelay: '0ms' }}
             >
               <div className="flex-shrink-0">
-                <div className="w-14 h-14 bg-[#8FD3FF] rounded-xl flex items-center justify-center text-2xl font-bold text-[#04214D]">
-                  1
-                </div>
+                <div className="relative w-16 h-16"><img src="/icons/step-create.webp" alt="" width={64} height={64} className="w-16 h-16" loading="lazy" /><span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-md bg-[#8FD3FF] text-[#04214D] text-xs font-bold flex items-center justify-center">1</span></div>
               </div>
               <div className="flex-1 bg-[#22262F] border border-gray-800 rounded-xl p-5 hover:border-[#8FD3FF]/30 transition-colors">
                 <h3 className="text-xl font-bold text-white mb-2">Create the Offer</h3>
@@ -452,9 +442,7 @@ export function LandingPage() {
               style={{ transitionDelay: '100ms' }}
             >
               <div className="flex-shrink-0">
-                <div className="w-14 h-14 bg-[#8FD3FF] rounded-xl flex items-center justify-center text-2xl font-bold text-[#04214D]">
-                  2
-                </div>
+                <div className="relative w-16 h-16"><img src="/icons/step-send.webp" alt="" width={64} height={64} className="w-16 h-16" loading="lazy" /><span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-md bg-[#8FD3FF] text-[#04214D] text-xs font-bold flex items-center justify-center">2</span></div>
               </div>
               <div className="flex-1 bg-[#22262F] border border-gray-800 rounded-xl p-5 hover:border-[#8FD3FF]/30 transition-colors">
                 <h3 className="text-xl font-bold text-white mb-2">Send It</h3>
@@ -478,9 +466,7 @@ export function LandingPage() {
               style={{ transitionDelay: '200ms' }}
             >
               <div className="flex-shrink-0">
-                <div className="w-14 h-14 bg-[#8FD3FF] rounded-xl flex items-center justify-center text-2xl font-bold text-[#04214D]">
-                  3
-                </div>
+                <div className="relative w-16 h-16"><img src="/icons/step-run.webp" alt="" width={64} height={64} className="w-16 h-16" loading="lazy" /><span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-md bg-[#8FD3FF] text-[#04214D] text-xs font-bold flex items-center justify-center">3</span></div>
               </div>
               <div className="flex-1 bg-[#22262F] border border-gray-800 rounded-xl p-5 hover:border-[#8FD3FF]/30 transition-colors">
                 <h3 className="text-xl font-bold text-white mb-2">Run the Show</h3>
@@ -504,9 +490,7 @@ export function LandingPage() {
               style={{ transitionDelay: '300ms' }}
             >
               <div className="flex-shrink-0">
-                <div className="w-14 h-14 bg-[#8FD3FF] rounded-xl flex items-center justify-center text-2xl font-bold text-[#04214D]">
-                  4
-                </div>
+                <div className="relative w-16 h-16"><img src="/icons/step-settle.webp" alt="" width={64} height={64} className="w-16 h-16" loading="lazy" /><span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-md bg-[#8FD3FF] text-[#04214D] text-xs font-bold flex items-center justify-center">4</span></div>
               </div>
               <div className="flex-1 bg-[#22262F] border border-gray-800 rounded-xl p-5 hover:border-[#8FD3FF]/30 transition-colors">
                 <h3 className="text-xl font-bold text-white mb-2">Settle & Learn</h3>
@@ -530,9 +514,7 @@ export function LandingPage() {
               style={{ transitionDelay: '400ms' }}
             >
               <div className="flex-shrink-0">
-                <div className="w-14 h-14 bg-[#8FD3FF] rounded-xl flex items-center justify-center text-2xl font-bold text-[#04214D]">
-                  5
-                </div>
+                <div className="relative w-16 h-16"><img src="/icons/step-score.webp" alt="" width={64} height={64} className="w-16 h-16" loading="lazy" /><span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-md bg-[#8FD3FF] text-[#04214D] text-xs font-bold flex items-center justify-center">5</span></div>
               </div>
               <div className="flex-1 bg-[#22262F] border border-gray-800 rounded-xl p-5 hover:border-[#8FD3FF]/30 transition-colors relative">
                 <div className="absolute top-3 right-3">
@@ -607,9 +589,7 @@ export function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-6">
             <div className="p-6 bg-[#22262F] border border-gray-800 rounded-2xl hover:border-[#8FD3FF]/50 transition-all">
-              <div className="w-12 h-12 bg-[#8FD3FF]/10 rounded-xl flex items-center justify-center mb-4">
-                <FileText className="h-6 w-6 text-[#8FD3FF]" />
-              </div>
+              <img src="/icons/feat-offers.webp" alt="" width={64} height={64} className="w-16 h-16 mb-3 -ml-1" loading="lazy" />
               <h3 className="text-xl font-bold mb-2 text-white">Create Offers in 10 Minutes</h3>
               <p className="text-[#A8B2C1] text-sm">
                 Professional offer sheets with 4 deal structures. Everything auto-calculated.
@@ -617,9 +597,7 @@ export function LandingPage() {
             </div>
 
             <div className="p-6 bg-[#22262F] border border-gray-800 rounded-2xl hover:border-[#8FD3FF]/50 transition-all">
-              <div className="w-12 h-12 bg-[#8FD3FF]/10 rounded-xl flex items-center justify-center mb-4">
-                <DollarSign className="h-6 w-6 text-[#8FD3FF]" />
-              </div>
+              <img src="/icons/feat-settle.webp" alt="" width={64} height={64} className="w-16 h-16 mb-3 -ml-1" loading="lazy" />
               <h3 className="text-xl font-bold mb-2 text-white">Settlement Tracking</h3>
               <p className="text-[#A8B2C1] text-sm">
                 Compare projected vs actual. Learn from every show.
@@ -628,9 +606,7 @@ export function LandingPage() {
 
             <div className="p-6 bg-gradient-to-br from-[#8FD3FF]/10 to-[#8FD3FF]/5 border-2 border-[#8FD3FF]/50 rounded-2xl">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-[#8FD3FF] rounded-xl flex items-center justify-center">
-                  <Sparkles className="h-6 w-6 text-[#04214D]" />
-                </div>
+                <img src="/icons/feat-analyze.webp" alt="" width={64} height={64} className="w-16 h-16 -ml-1" loading="lazy" />
                 <span className="px-3 py-1 bg-[#8FD3FF] text-[#04214D] text-xs font-bold rounded-full">
                   PRO
                 </span>
@@ -643,9 +619,7 @@ export function LandingPage() {
 
             <div className="p-6 bg-gradient-to-br from-[#8FD3FF]/10 to-[#8FD3FF]/5 border-2 border-[#8FD3FF]/50 rounded-2xl">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-[#8FD3FF] rounded-xl flex items-center justify-center">
-                  <Calendar className="h-6 w-6 text-[#04214D]" />
-                </div>
+                <img src="/icons/feat-tours.webp" alt="" width={64} height={64} className="w-16 h-16 -ml-1" loading="lazy" />
                 <span className="px-3 py-1 bg-[#8FD3FF] text-[#04214D] text-xs font-bold rounded-full">
                   PRO
                 </span>
@@ -657,9 +631,7 @@ export function LandingPage() {
             </div>
 
             <div className="p-6 bg-[#22262F] border border-gray-800 rounded-2xl hover:border-[#8FD3FF]/50 transition-all">
-              <div className="w-12 h-12 bg-[#8FD3FF]/10 rounded-xl flex items-center justify-center mb-4">
-                <Upload className="h-6 w-6 text-[#8FD3FF]" />
-              </div>
+              <img src="/icons/feat-import.webp" alt="" width={64} height={64} className="w-16 h-16 mb-3 -ml-1" loading="lazy" />
               <h3 className="text-xl font-bold mb-2 text-white">Import From Anywhere</h3>
               <p className="text-[#A8B2C1] text-sm">
                 Upload CSV, Excel, or PDF. Auto-parse everything.
@@ -667,9 +639,7 @@ export function LandingPage() {
             </div>
 
             <div className="p-6 bg-[#22262F] border border-gray-800 rounded-2xl hover:border-[#8FD3FF]/50 transition-all">
-              <div className="w-12 h-12 bg-[#8FD3FF]/10 rounded-xl flex items-center justify-center mb-4">
-                <BarChart3 className="h-6 w-6 text-[#8FD3FF]" />
-              </div>
+              <img src="/icons/feat-calendar.webp" alt="" width={64} height={64} className="w-16 h-16 mb-3 -ml-1" loading="lazy" />
               <h3 className="text-xl font-bold mb-2 text-white">Dashboard + Calendar</h3>
               <p className="text-[#A8B2C1] text-sm">
                 See all shows at a glance. Filter by status, venue, artist.

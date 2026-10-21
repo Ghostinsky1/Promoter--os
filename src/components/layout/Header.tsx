@@ -14,16 +14,16 @@ export function Header() {
   const navigate = useNavigate();
 
   const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/offers', label: 'My Offers', icon: FileText },
-    { href: '/tours', label: 'Tours', icon: Music },
-    { href: '/venues', label: 'Venues', icon: MapPin },
-    { href: '/templates', label: 'Templates', icon: Layers },
-    { href: '/artist-fee', label: 'Artist Fee', icon: Calculator },
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, img: 'nav-dashboard' },
+    { href: '/offers', label: 'My Offers', icon: FileText, img: 'nav-offers' },
+    { href: '/tours', label: 'Tours', icon: Music, img: 'nav-tours' },
+    { href: '/venues', label: 'Venues', icon: MapPin, img: 'nav-venues' },
+    { href: '/templates', label: 'Templates', icon: Layers, img: 'nav-templates' },
+    { href: '/artist-fee', label: 'Artist Fee', icon: Calculator, img: 'nav-artist-fee' },
     // Settings and Subscription also sit in the account menu, so the top bar skips them.
     { href: '/settings', label: 'Settings', icon: Settings, mobileOnly: true },
     { href: '/subscription', label: 'Subscription', icon: CreditCard, mobileOnly: true },
-    { href: '/help', label: 'Help', icon: HelpCircle }
+    { href: '/help', label: 'Help', icon: HelpCircle, img: 'nav-help' }
   ];
 
   const isActive = (href: string) => {
@@ -112,7 +112,7 @@ export function Header() {
                             : 'text-[#A8B2C1] hover:bg-[#22262F] hover:text-white'
                         }`}
                       >
-                        <Icon className="h-4 w-4" />
+                        {item.img ? <img src={`/icons/${item.img}.webp`} alt="" width={22} height={22} className={`w-[22px] h-[22px] ${isActive(item.href) ? '' : 'opacity-80'}`} /> : <Icon className="h-4 w-4" />}
                         <span>{item.label}</span>
                       </Link>
                     );
@@ -230,7 +230,7 @@ export function Header() {
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Icon className="h-5 w-5" />
+                    {item.img ? <img src={`/icons/${item.img}.webp`} alt="" width={26} height={26} className="w-[26px] h-[26px]" /> : <Icon className="h-5 w-5" />}
                     <span>{item.label}</span>
                   </Link>
                 );

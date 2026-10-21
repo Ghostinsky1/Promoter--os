@@ -10,7 +10,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
  * "run" is safe to call by anyone: it only ever sends a step that is already due, and every
  * (lead, step) pair is written once thanks to a unique index, so it can never double-send.
  *
- * Secrets: SENDGRID_API_KEY. Optional: SENDGRID_FROM_EMAIL, SENDGRID_FROM_NAME.
+ * Secrets: SENDGRID_API_KEY.
  */
 
 const supabase = createClient(
@@ -18,8 +18,9 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
 );
 const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY');
-const FROM_EMAIL = Deno.env.get('SENDGRID_FROM_EMAIL') ?? 'support@promoteros.com';
-const FROM_NAME = Deno.env.get('SENDGRID_FROM_NAME') ?? 'PROMOTER OS';
+// Every email the app sends comes from promoteros.com (domain authenticated in SendGrid). Not overridable by a secret on purpose.
+const FROM_EMAIL = 'support@promoteros.com';
+const FROM_NAME = 'PROMOTER OS';
 const REPLY_TO = 'jhuaroco@gozaentertainment.com';
 
 const SITE = 'https://promoteros.com';

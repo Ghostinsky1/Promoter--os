@@ -84,42 +84,114 @@ export function BotDemo() {
     return () => { alive = false; timers.forEach(clearTimeout); };
   }, [started, run, script]);
 
+  const steps = [
+    { n: 1, label: 'You type the show', on: started && shown === 0, done: shown >= 1 },
+    { n: 2, label: 'It reads the bad night', on: shown >= 1 && shown < 4, done: shown >= 4 },
+    { n: 3, label: 'It writes the offer', on: shown >= 4, done: false },
+  ];
+  const rows = [
+    { l: 'Half house', v: read.r.at50.profit, sub: `${Math.round(SHOW.cap / 2)} sold` },
+    { l: '70% sold', v: read.r.at70.profit, sub: `${Math.round(SHOW.cap * 0.7)} sold` },
+    { l: 'Sellout', v: read.r.atFull.profit, sub: `${SHOW.cap} sold` },
+  ];
+
   return (
     <div ref={box} className="max-w-3xl mx-auto">
+      {/* what you're watching */}
+      <div className="grid grid-cols-3 gap-1.5 mb-3">
+        {steps.map((st) => (
+          <div key={st.n} className={`rounded-lg border px-2.5 py-2 flex items-center gap-2 transition-colors ${st.on ? 'border-[#8FD3FF] bg-[#8FD3FF]/10' : st.done ? 'border-green-700/50 bg-green-900/10' : 'border-[#2A3040] bg-[#14171E]'}`}>
+            <span className={`w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0 ${st.on ? 'bg-[#8FD3FF] text-[#04214D]' : st.done ? 'bg-green-500 text-[#04214D]' : 'bg-[#2A3040] text-gray-400'}`}>{st.done ? '✓' : st.n}</span>
+            <span className={`text-[11px] sm:text-xs font-semibold leading-tight ${st.on ? 'text-white' : st.done ? 'text-green-300' : 'text-gray-400'}`} style={{ textTransform: 'none', letterSpacing: 0 }}>{st.label}</span>
+          </div>
+        ))}
+      </div>
+
       <div className="bg-[#14171E] border border-[#2A3040] rounded-2xl overflow-hidden shadow-2xl">
         <div className="flex items-center gap-3 px-4 py-3 border-b border-[#2A3040] bg-[#0B0D12]">
           <Mascot mood={mood} size={44} powerOn />
           <div className="min-w-0">
             <div className="text-white font-bold text-sm leading-tight">The little TV</div>
-            <div className="text-[11px] text-gray-400">lives inside Promoter OS · reads cost sheets, writes offers, settles shows</div>
+            <div className="text-[11px] text-gray-400" style={{ textTransform: 'none', letterSpacing: 0 }}>
+              {mood === 'listening' ? 'Listening…' : mood === 'thinking' ? 'Running the bad night…' : mood === 'reading' ? 'Counting tickets…' : mood === 'happy' ? 'Done. Your move.' : 'Lives inside Promoter OS'}
+            </div>
           </div>
-          <span className="ml-auto font-label text-[9px] tracking-[0.18em] uppercase px-2 py-1 rounded-full border" style={{ color: mood === 'idle' ? '#9AA4B5' : '#8FD3FF', borderColor: mood === 'idle' ? '#2A3040' : 'rgba(143,211,255,.5)' }}>{mood}</span>
+          <span className="ml-auto inline-flex items-center gap-1.5 font-label text-[9px] tracking-[0.18em] uppercase px-2 py-1 rounded-full border" style={{ color: mood === 'idle' ? '#9AA4B5' : '#8FD3FF', borderColor: mood === 'idle' ? '#2A3040' : 'rgba(143,211,255,.5)' }}>
+            <span className={`w-1.5 h-1.5 rounded-full ${mood === 'idle' ? 'bg-gray-500' : 'bg-[#8FD3FF] animate-pulse'}`} />{mood === 'idle' ? 'standby' : mood}
+          </span>
         </div>
-        <div className="p-4 space-y-3 min-h-[260px]" style={{ textTransform: 'none', letterSpacing: 0 }}>
-          {/* you */}
-          <div className="flex justify-end">
-            <div className="max-w-[88%] bg-[#1140F0] text-white rounded-2xl rounded-br-md px-4 py-2.5 text-[15px] leading-snug">
-              {typed || <span className="opacity-40">…</span>}{typed && typed.length < script[0].text.length && <span className="inline-block w-[2px] h-[1em] bg-white ml-0.5 align-middle animate-pulse" />}
+
+        <div className="p-4 space-y-4 min-h-[300px]" style={{ textTransform: 'none', letterSpacing: 0 }}>
+          {/* 1 · you */}
+          <div className="flex flex-col items-end">
+            <div className="font-label text-[9px] tracking-[0.18em] uppercase text-gray-500 mb-1">You · one line</div>
+            <div className="max-w-[90%] bg-[#1140F0] text-white rounded-2xl rounded-br-md px-4 py-2.5 text-[15px] leading-snug">
+              {typed || <span className="opacity-40">type the show…</span>}{typed && typed.length < script[0].text.length && <span className="inline-block w-[2px] h-[1em] bg-white ml-0.5 align-middle animate-pulse" />}
             </div>
           </div>
-          {/* bot */}
-          {script.slice(1, Math.max(0, shown)).map((m, i) => (
-            <div key={i} className="flex gap-2 items-end">
-              <div className="w-6 shrink-0"><Mascot mood="idle" size={24} /></div>
-              <div className="max-w-[88%] bg-[#0B0D12] border border-[#2A3040] rounded-2xl rounded-bl-md px-4 py-2.5 text-[15px] leading-snug text-gray-100 crt-panel" style={m.color ? { borderColor: m.color + '66' } : undefined}>
-                {m.color ? <><b style={{ color: m.color }}>{m.text.split('.')[0]}.</b>{m.text.slice(m.text.indexOf('.') + 1)}</> : m.text}
-              </div>
-            </div>
-          ))}
-          {shown >= 1 && shown < 4 && (
-            <div className="flex gap-2 items-end">
-              <div className="w-6 shrink-0" />
-              <div className="bg-[#0B0D12] border border-[#2A3040] rounded-2xl rounded-bl-md px-4 py-2.5 text-gray-500 text-sm">
-                <span className="animate-pulse">thinking…</span>
+
+          {/* 2 · the TV */}
+          {shown >= 1 && (
+            <div className="flex gap-2 items-start">
+              <div className="w-7 shrink-0 pt-5"><Mascot mood={shown < 4 ? 'thinking' : 'happy'} size={28} /></div>
+              <div className="min-w-0 flex-1">
+                <div className="font-label text-[9px] tracking-[0.18em] uppercase text-gray-500 mb-1">The TV · the bad-night read</div>
+                <div className="bg-[#0B0D12] border rounded-2xl rounded-tl-md overflow-hidden crt-panel" style={{ borderColor: verdictColor + '66' }}>
+                  {/* verdict */}
+                  <div className="px-4 py-2.5 flex items-center gap-3 border-b border-[#2A3040]">
+                    <span className="font-label text-[11px] tracking-[0.18em] uppercase px-2 py-1 rounded-md font-bold" style={{ background: verdictColor + '22', color: verdictColor, border: `1px solid ${verdictColor}66` }}>{read.r.verdict}</span>
+                    <span className="text-sm text-gray-200">{verdictLine.slice(verdictLine.indexOf('.') + 2)}</span>
+                  </div>
+                  {/* three nights */}
+                  <div className="grid grid-cols-3 divide-x divide-[#2A3040]">
+                    {rows.map((r, i) => {
+                      const live = shown >= 2;
+                      return (
+                        <div key={r.l} className="px-3 py-2.5 text-center">
+                          <div className="font-label text-[9px] tracking-[0.14em] uppercase text-gray-500">{r.l}</div>
+                          <div className={`text-base sm:text-lg font-bold transition-opacity ${live ? 'opacity-100' : 'opacity-0'} ${r.v < 0 ? 'text-red-400' : 'text-green-400'}`} style={{ transitionDelay: `${i * 180}ms` }}>{money(r.v)}</div>
+                          <div className="text-[10px] text-gray-500">{r.sub}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* break-even */}
+                  <div className={`px-4 py-2.5 border-t border-[#2A3040] text-sm transition-opacity ${shown >= 3 ? 'opacity-100' : 'opacity-0'}`}>
+                    {read.r.breakEvenTickets >= 0 ? (
+                      <>
+                        <span className="text-gray-400">Nothing is yours until </span>
+                        <b className="text-white">ticket {read.r.breakEvenTickets.toLocaleString()}</b>
+                        <span className="text-gray-400"> of {SHOW.cap}. Every ticket after that is profit.</span>
+                        <div className="mt-1.5 h-1.5 rounded-full bg-[#22262F] overflow-hidden relative">
+                          <div className="absolute inset-y-0 left-0 bg-red-500/60" style={{ width: `${(read.r.breakEvenTickets / SHOW.cap) * 100}%` }} />
+                          <div className="absolute inset-y-0 bg-green-500/80" style={{ left: `${(read.r.breakEvenTickets / SHOW.cap) * 100}%`, right: 0 }} />
+                        </div>
+                      </>
+                    ) : 'A full house does not cover the costs. Renegotiate the fee first.'}
+                  </div>
+                </div>
               </div>
             </div>
           )}
+
+          {/* 3 · the offer */}
+          {shown >= 4 && (
+            <div className="flex gap-2 items-start">
+              <div className="w-7 shrink-0 pt-5"><Mascot mood="happy" size={28} /></div>
+              <div className="min-w-0">
+                <div className="font-label text-[9px] tracking-[0.18em] uppercase text-gray-500 mb-1">The TV · next</div>
+                <div className="bg-[#0B0D12] border border-[#2A3040] rounded-2xl rounded-tl-md px-4 py-2.5 text-[15px] text-gray-100 crt-panel">
+                  Want the offer written up? One tap and it's a PDF with the deal, the tiers and every cost line.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {shown >= 1 && shown < 4 && (
+            <div className="pl-9 text-[12px] text-gray-500 inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#8FD3FF] animate-pulse" /> {shown === 1 ? 'Running the room at half, 70% and full…' : shown === 2 ? 'Finding the ticket where it turns…' : 'Almost there…'}</div>
+          )}
         </div>
+
         <div className="px-4 py-3 border-t border-[#2A3040] bg-[#0B0D12] flex flex-wrap items-center gap-2">
           <button onClick={() => navigate('/signup')} className={`bg-[#8FD3FF] hover:bg-[#6FB8F2] text-[#04214D] rounded-xl px-4 py-2.5 font-bold inline-flex items-center gap-2 text-sm transition-opacity ${done ? 'opacity-100' : 'opacity-60'}`}>
             <Zap className="w-4 h-4" /> Try it on your next deal

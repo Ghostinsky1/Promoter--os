@@ -1,8 +1,8 @@
 import { calculateFromOffer } from '../../lib/calculations';
 import { survivalRead } from '../../lib/downside';
 
-/** The one show every landing-page demo talks about. Real math, so the numbers agree everywhere. */
-export const SHOW = { artist: 'Flores Negras', venue: 'Mississippi Underground', city: 'St. Louis', date: '2026-11-20', cap: 800, price: 20, fee: 4000, costs: 3200, ads: 800 };
+/** The one show every landing-page demo talks about — made-up artist and room on purpose. Real math, so the numbers agree everywhere. */
+export const SHOW = { artist: 'DJ Niebla', venue: 'Club Vértigo', city: 'Kansas City', date: '2026-11-07', cap: 800, price: 20, fee: 4000, costs: 3200, ads: 800 };
 
 const DEFAULTS = {
   mode: 'estimate', status: 'planning', deal_type: 'flat_fee', artist_percentage: 100,

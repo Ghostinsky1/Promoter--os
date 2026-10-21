@@ -3,12 +3,12 @@ import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 
 // Sends transactional email through SendGrid on behalf of a signed-in PROMOTER OS user.
 // Secrets required (Supabase → Edge Functions → Secrets): SENDGRID_API_KEY
-// Optional: SENDGRID_FROM_EMAIL (default support@gozaentertainment.com), SENDGRID_FROM_NAME
+// Optional: SENDGRID_FROM_EMAIL (default support@promoteros.com), SENDGRID_FROM_NAME
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
 const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY');
-const FROM_EMAIL = Deno.env.get('SENDGRID_FROM_EMAIL') ?? 'support@gozaentertainment.com';
-const FROM_NAME = Deno.env.get('SENDGRID_FROM_NAME') ?? 'PROMOTER OS · Goza Entertainment';
+const FROM_EMAIL = Deno.env.get('SENDGRID_FROM_EMAIL') ?? 'support@promoteros.com';
+const FROM_NAME = Deno.env.get('SENDGRID_FROM_NAME') ?? 'PROMOTER OS';
 
 const MAX_ATTACHMENT_BYTES = 8 * 1024 * 1024; // SendGrid caps total message size at ~30MB
 const MAX_RECIPIENTS = 10;

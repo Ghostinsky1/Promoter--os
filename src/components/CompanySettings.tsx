@@ -456,7 +456,7 @@ export function CompanySettings() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="jhuaroco@gozaentertainment.com"
+                  placeholder="you@yourcompany.com"
                   className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all"
                 />
               </div>
@@ -480,7 +480,7 @@ export function CompanySettings() {
                   type="url"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
-                  placeholder="https://gozaentertainment.com"
+                  placeholder="https://yourcompany.com"
                   className="w-full px-4 py-3 bg-[#0B0D12] border border-gray-700 text-white placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8FD3FF] focus:border-[#8FD3FF] transition-all"
                 />
               </div>

@@ -953,7 +953,7 @@ export const tools: Tool[] = [
   {
     name: "email_offer",
     title: "Email offer",
-    description: "Emails the offer PDF from support@gozaentertainment.com on behalf of the signed-in promoter (replies go to the promoter's company email). Defaults: recipient = headliner's contact_email on the lineup, artist-safe PDF attached, promoter CC'd. ALWAYS confirm recipient, subject and message with the user before calling this — it sends a real email.",
+    description: "Emails the offer PDF from support@promoteros.com on behalf of the signed-in promoter (replies go to the promoter's company email). Defaults: recipient = headliner's contact_email on the lineup, artist-safe PDF attached, promoter CC'd. ALWAYS confirm recipient, subject and message with the user before calling this — it sends a real email.",
     inputSchema: {
       type: "object",
       properties: {

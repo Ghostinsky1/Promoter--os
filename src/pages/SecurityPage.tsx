@@ -196,7 +196,7 @@ export default function SecurityPage() {
               If you discover a security vulnerability, please report it responsibly:
             </p>
             <p className="text-white font-semibold">
-              Email: support@gozaentertainment.com
+              Email: support@promoteros.com
             </p>
             <p className="mt-4 text-sm">
               We take all security reports seriously and will respond promptly. We appreciate

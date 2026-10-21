@@ -173,7 +173,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">Contact Information</h2>
             <p>
-              If you have questions about these Terms, please contact us at support@gozaentertainment.com
+              If you have questions about these Terms, please contact us at support@promoteros.com
             </p>
           </section>
         </div>

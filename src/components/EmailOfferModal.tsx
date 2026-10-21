@@ -90,7 +90,7 @@ export function EmailOfferModal({ offer, companySettings, artists, costsOnly, on
             <p className="font-label text-[11px] tracking-[0.2em] text-[#8FD3FF] uppercase mb-1">[ Email ]</p>
             <h2 className="text-xl sm:text-2xl font-bold text-white">Send this offer</h2>
             <p className="text-gray-400 text-sm mt-1">
-              Sent from support@gozaentertainment.com · replies go to {replyTo || 'your account email'}
+              Sent from support@promoteros.com · replies go to {replyTo || 'your account email'}
             </p>
           </div>
           <button className="text-gray-400 hover:text-white transition-colors" onClick={onClose} aria-label="Close">

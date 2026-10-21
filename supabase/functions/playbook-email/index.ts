@@ -18,7 +18,7 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
 );
 const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY');
-const FROM_EMAIL = Deno.env.get('SENDGRID_FROM_EMAIL') ?? 'support@gozaentertainment.com';
+const FROM_EMAIL = Deno.env.get('SENDGRID_FROM_EMAIL') ?? 'support@promoteros.com';
 const FROM_NAME = Deno.env.get('SENDGRID_FROM_NAME') ?? 'PROMOTER OS';
 const REPLY_TO = 'jhuaroco@gozaentertainment.com';
 

@@ -176,7 +176,7 @@ export default function FAQPage() {
             Can't find the answer you're looking for? Our support team is here to help.
           </p>
           <a
-            href="mailto:support@gozaentertainment.com"
+            href="mailto:support@promoteros.com"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#8FD3FF] text-[#04214D] font-semibold rounded-lg hover:bg-[#6FB8F2] transition-colors"
           >
             Contact Support

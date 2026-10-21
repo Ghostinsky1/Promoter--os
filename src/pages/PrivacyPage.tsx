@@ -123,7 +123,7 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-bold text-white mb-4">Contact Us</h2>
             <p>
               If you have questions about this Privacy Policy or how we handle your information,
-              please contact us at support@gozaentertainment.com
+              please contact us at support@promoteros.com
             </p>
           </section>
         </div>

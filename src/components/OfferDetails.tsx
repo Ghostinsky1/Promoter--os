@@ -452,7 +452,7 @@ export function OfferDetails() {
 
         {/* One tab at a time. Jose: "too much scrolling, look at all the dead
             space". The strip stays put while you edit: profit + the bad night. */}
-        <div className="sticky top-16 z-30 -mx-3 px-3 py-2 mb-3 bg-[#0B2FB8]/95 backdrop-blur border-b border-[#8FD3FF]/30 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+        <div className="sticky top-16 z-30 py-1.5 px-2 mb-3 rounded-xl bg-[#0B0D12]/90 backdrop-blur border border-[#2A3040] shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
           <div className="flex items-center justify-between gap-3">
             <div className="flex gap-2 overflow-x-auto -mx-1 px-1 py-1" style={{ scrollbarWidth: 'none' }}>
               {TABS.map((t) => (

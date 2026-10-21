@@ -244,7 +244,7 @@ body.crt-off #crt{display:none}
 .crt-tab:hover { color: #fff; border-color: rgba(143,211,255,.5); }
 .crt-tab.on { color: #fff; border-color: #8fd3ff; background: #0e1f5c; box-shadow: 0 0 0 1px rgba(143,211,255,.25), 0 0 18px rgba(143,211,255,.35), inset 0 0 22px rgba(17,64,240,.55); animation: crt-glitch .28s steps(4, end) 1; }
 .crt-tab-num { font-family: "Saira Condensed", "Arial Narrow", sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; color: #8fd3ff; }
-.crt-tab-bar { position: absolute; left: 10%; right: 10%; bottom: 0; height: 2px; background: #8fd3ff; box-shadow: 0 0 8px #8fd3ff; transform-origin: center; animation: crt-on .35s steps(6, end) 1; }
+.crt-tab-bar { position: absolute; left: 12px; right: 12px; bottom: 3px; height: 2px; border-radius: 2px; background: #8fd3ff; box-shadow: 0 0 6px #8fd3ff; transform-origin: center; animation: crt-on .35s steps(6, end) 1; }
 .crt-panel { position: relative; animation: crt-panel .32s steps(6, end) 1; }
 .crt-panel::before { content: ""; position: absolute; left: 0; right: 0; height: 14%; top: -12%; pointer-events: none; z-index: 5; background: linear-gradient(to bottom, transparent, rgba(143,211,255,.14), transparent); animation: crt-band .55s linear 1 forwards; }
 @media (prefers-reduced-motion: reduce) { .crt-tab.on, .crt-tab-bar, .crt-panel, .crt-panel::before { animation: none !important; } }

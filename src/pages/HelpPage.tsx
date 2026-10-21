@@ -80,7 +80,7 @@ export function HelpPage() {
         </div>
 
         {/* Section tabs */}
-        <div className="sticky top-16 z-20 -mx-3 px-3 py-2 mb-3 bg-[#0B2FB8]/95 backdrop-blur border-b border-[#8FD3FF]/30">
+        <div className="sticky top-16 z-20 py-1.5 px-2 mb-3 rounded-xl bg-[#0B0D12]/90 backdrop-blur border border-[#2A3040]">
           <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             {SECTIONS.map((s) => (
               <button key={s.id} onClick={() => go(s.id)} className={`crt-tab ${active === s.id ? 'on' : ''}`} style={{ padding: '7px 12px' }}>

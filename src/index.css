@@ -10,6 +10,9 @@
 
   html {
     scroll-behavior: smooth;
+    /* One notch smaller site-wide (Jose, Oct 21: "like a comic"). Every Tailwind size is in
+       rem, so this shrinks text, padding and gaps together. */
+    font-size: 15px;
   }
 
   /* ---- Goza brand type: Saira Condensed body, Archivo Black headlines, Chakra Petch labels ---- */
@@ -20,7 +23,7 @@
   body {
     @apply bg-[#1140F0] text-white;
     overflow-x: hidden;
-    font-size: 17px;
+    font-size: 1rem;
     /* subtle horizontal rule texture like the site */
     background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
     background-size: 100% 140px;
@@ -47,7 +50,7 @@
   button, a.btn, [role="button"] {
     font-family: 'Chakra Petch', 'Trebuchet MS', sans-serif !important;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
   }
 
   input, select, textarea {
@@ -236,7 +239,7 @@ body.crt-off #crt{display:none}
 @keyframes crt-on { 0% { transform: scaleX(.06); } 100% { transform: scaleX(1); } }
 @keyframes crt-panel { 0% { opacity: 0; transform: translateY(3px); } 30% { opacity: 1; transform: none; } 45% { opacity: .55; } 55% { opacity: 1; } 100% { opacity: 1; } }
 @keyframes crt-band { 0% { top: -12%; } 100% { top: 112%; } }
-.crt-tab { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; padding: 9px 14px; border-radius: 10px; background: #14171E; border: 1px solid #2A3040; color: rgba(255,255,255,.62); font-family: "Chakra Petch", "Trebuchet MS", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; transition: color .15s, border-color .15s, box-shadow .15s; }
+.crt-tab { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; padding: 7px 12px; border-radius: 9px; background: #14171E; border: 1px solid #2A3040; color: rgba(255,255,255,.62); font-family: "Chakra Petch", "Trebuchet MS", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; transition: color .15s, border-color .15s, box-shadow .15s; }
 .crt-tab::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(to bottom, rgba(0,0,0,.28) 0 1px, transparent 1px 3px); opacity: .5; }
 .crt-tab:hover { color: #fff; border-color: rgba(143,211,255,.5); }
 .crt-tab.on { color: #fff; border-color: #8fd3ff; background: #0e1f5c; box-shadow: 0 0 0 1px rgba(143,211,255,.25), 0 0 18px rgba(143,211,255,.35), inset 0 0 22px rgba(17,64,240,.55); animation: crt-glitch .28s steps(4, end) 1; }

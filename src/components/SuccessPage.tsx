@@ -37,7 +37,7 @@ export function SuccessPage() {
         .limit(1)
         .maybeSingle();
       // Starting a plan in the app bills today; the legacy signup had a trial — report the plan's monthly value.
-      const tier = org?.subscription_tier ?? 'starter';
+      const tier = org?.subscription_tier ?? 'pro';
       const value = tier === 'agency_scale' ? 297 : tier === 'pro' ? 99 : 39;
       track('StartTrial', {
         value,

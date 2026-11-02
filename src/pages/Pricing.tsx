@@ -41,21 +41,20 @@ export function Pricing() {
             Choose Your Plan
           </h1>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-4">
-            Select the perfect plan for your concert promotion business.
-            All plans include professional features to streamline your workflow.
+            One plan. Every offer, every settlement, every tour, and the AI that reads your deals.
           </p>
           <p className="text-lg text-[#8FD3FF] font-semibold">
             7-day free trial, no card needed
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid gap-8 max-w-xl mx-auto">
           {STRIPE_PRODUCTS.map((product, index) => (
             <PricingCard
               key={product.id}
               product={product}
               onSubscribe={handleSubscribe}
-              isPopular={index === 1}
+              isPopular={index === 0}
             />
           ))}
         </div>

@@ -136,7 +136,7 @@ export default function OAuthConsentPage() {
               <div className="text-sm">
                 <p className="text-[#FFB86B] font-semibold">The AI connector is on Pro and Agency Scale</p>
                 <p className="text-gray-400 mt-1">
-                  {plan?.name} is on the Starter plan, so this connection won't be able to read or change anything.{' '}
+                  {plan?.name} is on the free trial (or a legacy plan), so this connection won't be able to read or change anything.{' '}
                   <a href="/pricing" className="text-[#8FD3FF] underline">See plans</a>
                 </p>
               </div>

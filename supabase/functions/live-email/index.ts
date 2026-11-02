@@ -13,14 +13,14 @@ import { STEPS, END, H, plain, type Any, type Episode, type Lead, type Step } fr
  *   confirm  → right away: you're in, the link, homework (reply with your deal), 7-day trial
  *   story1-3 → one a day after registering (indoctrination), never inside the last 36 hours
  *   remind24 / morning / hour / live → the show-up sequence
- *   replay / day2 / last / final     → replay up for 72h + the registrant-only Pro deal
+ *   replay / day2 / last / final     → replay up for 72h + the 7-day Pro trial (no discounted month since Nov 2026)
  *
  * Every (episode, lead, step) is unique in live_emails, so "run" can be called by anyone,
  * any number of times, and never double-sends. Each step has a window; a step whose window
  * has passed is skipped, so a late cron never sends "we start in an hour" the next morning.
  * Deal emails skip anyone whose organization already pays (email_is_paying).
  *
- * Episode facts (start, deal end, deal label) live in public.live_episodes. The page's
+ * Episode facts (start, replay end = deal_ends_at) live in public.live_episodes. The page's
  * EVENT_START must match starts_at.
  *
  * Secrets: SENDGRID_API_KEY.

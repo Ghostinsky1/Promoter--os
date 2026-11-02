@@ -25,7 +25,7 @@ export async function createEmbeddedCheckout(priceId: string): Promise<string> {
       mode: 'subscription',
       ui_mode: 'embedded',
       return_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-      metadata: { tier: priceId === PRO_PRICE_ID ? 'pro' : 'starter' },
+      metadata: { tier: 'pro' },
     }),
   });
   if (!response.ok) {
@@ -54,7 +54,7 @@ export async function createCheckoutSession({ priceId, mode, successUrl, cancelU
       mode,
       success_url: successUrl,
       cancel_url: cancelUrl,
-      metadata: { tier: priceId === PRO_PRICE_ID ? 'pro' : 'starter' },
+      metadata: { tier: 'pro' },
     }),
   });
   if (!response.ok) {

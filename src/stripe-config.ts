@@ -11,32 +11,16 @@ export interface StripeProduct {
 
 export const STRIPE_PRODUCTS: StripeProduct[] = [
   {
-    id: 'prod_VGaRoeNJvg9HvX',
-    priceId: 'price_1UG3GwGeegvFIqACVrur7gDr',
-    name: 'Starter',
-    description: 'Professional offer generation and management tools',
-    price: 39.00,
-    currency: 'USD',
-    mode: 'subscription',
-    features: [
-      'Up to 10 active events',
-      '1 seat (single user)',
-      'Full Offer Builder (all 4 deal structures)',
-      'Professional PDF generation',
-      'Settlement tracking',
-      'Run of show management'
-    ]
-  },
-  {
     id: 'prod_VGaR1UwVJxWBa1',
     priceId: 'price_1UG3GxGeegvFIqACTTpeqq4n',
     name: 'Pro',
-    description: 'Advanced features for growing concert promoters',
+    description: 'Everything a working promoter needs — offers, the math, settlements, tours and the AI.',
     price: 99.00,
     currency: 'USD',
     mode: 'subscription',
     features: [
-      'Everything in Starter, plus:',
+      'Full Offer Builder (all deal structures) + PDFs',
+      'Settlements, deposits, run of show',
       'Unlimited events & offers',
       'Unlimited tours',
       'Tour Management tab',

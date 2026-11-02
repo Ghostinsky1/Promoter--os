@@ -43,19 +43,19 @@ export function PricingPage() {
             Choose Your Plan
           </h1>
           <p className="text-xl text-gray-600">
-            Start with the basics, unlock AI when you're ready
+            One plan, everything included
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid gap-8 max-w-xl mx-auto">
           {STRIPE_PRODUCTS.map((product, index) => (
             <div 
               key={product.id}
               className={`p-8 bg-white rounded-lg border-2 hover:shadow-xl transition-shadow ${
-                index === 1 ? 'border-purple-600 relative' : 'border-gray-200'
+                index === 0 ? 'border-purple-600 relative' : 'border-gray-200'
               }`}
             >
-              {index === 1 && (
+              {index === 0 && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                   <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
                     MOST POPULAR
@@ -70,7 +70,7 @@ export function PricingPage() {
 
               <div className="mb-6">
                 <div className="flex items-baseline gap-2">
-                  <span className={`text-5xl font-bold ${index === 1 ? 'text-purple-600' : ''}`}>
+                  <span className={`text-5xl font-bold ${index === 0 ? 'text-purple-600' : ''}`}>
                     ${product.price}
                   </span>
                   <span className="text-gray-600">/ month</span>
@@ -81,7 +81,7 @@ export function PricingPage() {
                 onClick={() => handleSubscribe(product.priceId)}
                 disabled={loadingPriceId === product.priceId}
                 className={`w-full mb-6 px-6 py-3 rounded-lg font-semibold transition-all ${
-                  index === 1
+                  index === 0
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg'
                     : 'bg-gray-900 text-white hover:bg-gray-800'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}

@@ -35,26 +35,18 @@ p{color:var(--ink)}b{color:#fff}
 <body>
 <div class="wrap">
   <div class="logo"><img src="/promoter-os-mark.png" alt=""><img src="/promoter-os-wordmark.png" alt="Promoter OS"></div>
-  <p class="lab">For everyone who registered · EP. 01</p>
-  <h1 id="h">First month of Pro <span class="sky">for $39.</span></h1>
+  <p class="lab">Before you send the deposit · EP. 01</p>
+  <h1 id="h">One plan. <span class="sky">Free for 7 days.</span></h1>
   <div class="win" id="box">
-    <p style="margin:0">Normally $99. Unlimited shows, drop a deal memo or a settlement and it builds the show, 400 AI credits a month, and the same screens from the live.</p>
-    <p id="ends" style="margin:12px 0 0"></p>
-    <p style="margin:12px 0 0"><b>Use the same email you registered with.</b> The $60 comes off automatically when you pick Pro.</p>
-    <a class="btn" id="new" href="/signup">I'm new — start here</a>
+    <p style="margin:0">There's no discounted month any more — Promoter OS Pro is <b>$99 a month</b> and it's the only plan. Unlimited shows, drop a deal memo or a settlement and it builds the show, 400 AI credits a month, and the same screens from the live.</p>
+    <p style="margin:12px 0 0"><b>Start with the 7-day trial.</b> No card. If it earns its keep on your next show, keep it.</p>
+    <a class="btn" id="new" href="/signup">I'm new — start free</a>
     <a class="btn ghost" href="/login?next=%2Fsubscription">I already have an account</a>
-    <p style="margin:14px 0 0;font-size:16px">New? Sign up, then go to <b>Subscription → Pro</b>.</p>
   </div>
 </div>
 <script>
-var ENDS=new Date('2026-10-30T19:00:00-05:00');
-var f=new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'});
 var q=new URLSearchParams(location.search), e=q.get('e');
 var keep=['utm_source','utm_medium','utm_campaign','utm_content'].filter(function(k){return q.get(k);}).map(function(k){return k+'='+encodeURIComponent(q.get(k));});
 document.getElementById('new').href='/signup?'+(e?'email='+encodeURIComponent(e)+'&':'')+keep.join('&');
-if(new Date()>=ENDS){
-  document.getElementById('h').innerHTML='This deal <span class="sky">ended.</span>';
-  document.getElementById('box').innerHTML='<p style="margin:0">It ended '+f.format(ENDS)+' CT. Promoter OS is still free for 7 days.</p><a class="btn" href="/signup">Start free</a><a class="btn ghost" href="/live/">Next live episode</a>';
-} else { document.getElementById('ends').innerHTML='Ends <b>'+f.format(ENDS)+' CT</b>.'; }
 </script>
 </body></html>

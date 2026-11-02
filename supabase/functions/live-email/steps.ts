@@ -16,7 +16,6 @@ export interface Lead { id: string; email: string; first_name: string | null; re
 const utm = (ep: string, step: string) => `utm_source=live&utm_medium=email&utm_campaign=bysd_${ep}&utm_content=${step}`;
 const JOIN = (ep: string, s: string) => `${SITE}/live/join/?${utm(ep, s)}`;
 const REPLAY = (ep: string, s: string) => `${SITE}/live/replay/?${utm(ep, s)}`;
-const DEAL = (ep: string, s: string, email: string) => `${SITE}/live/deal/?e=${encodeURIComponent(email)}&${utm(ep, s)}`;
 const TRIAL = (ep: string, s: string, email: string) => `${SITE}/signup?email=${encodeURIComponent(email)}&${utm(ep, s)}`;
 function gcal(e: Episode) {
   const start = new Date(e.starts_at), end = new Date(start.getTime() + e.minutes * 60_000);
@@ -251,12 +250,13 @@ export const STEPS: Step[] = [
       }),
     }),
   },
-  // ───────── replay + the deal ─────────
+  // ───────── replay (up for 72h) + the trial ─────────
+  // Nov 2026: no discounted month any more — Pro is $99 and the only plan; the pitch is the 7-day trial.
   {
     key: 'replay',
     at: (e) => T(e) + 15 * H, until: (e) => T(e) + 30 * H,
     when: (e, l) => R(l) < T(e) + e.minutes * 60_000,
-    subject: () => 'Replay is up (and something for you)',
+    subject: () => 'Replay is up',
     render: (e, n, email) => ({
       links: [],
       html: shell({
@@ -265,9 +265,9 @@ export const STEPS: Step[] = [
         body: P(hi(n)) +
           P(`Whether you made it last night or not — the replay is up until ${B(`${weekday(e.deal_ends_at!)} at ${time(e.deal_ends_at!)} CT`)}.`) +
           P(`One show, every number, in order: the offer, the deposit, what the venue really costs, the ticket ladder, break-even, the bad night, the settlement, and what you walked away with.`) +
-          box('For everyone who registered', `<div style="color:#fff;font-size:17px;font-weight:bold;">${esc(e.deal_label ?? '')}</div><div style="color:#93A2B8;margin-top:6px;">Promoter OS Pro: unlimited shows, drop a deal memo or a settlement and it builds the show, 400 AI credits a month, and the same screens from the live. Ends ${weekday(e.deal_ends_at!)} at ${time(e.deal_ends_at!)} CT.</div>`, '#F2B640'),
+          box('Run your own show the same way', `<div style="color:#fff;font-size:17px;font-weight:bold;">Promoter OS Pro — free for 7 days, then $99 a month</div><div style="color:#93A2B8;margin-top:6px;">Unlimited shows, drop a deal memo or a settlement and it builds the show, 400 AI credits a month, and the same screens from the live. No card to start.</div>`, '#F2B640'),
         cta: { text: 'Watch the replay', href: REPLAY(e.episode, 'replay') },
-        cta2: { text: 'Get Pro for $39', href: DEAL(e.episode, 'replay', email) },
+        cta2: { text: 'Start the 7-day trial', href: TRIAL(e.episode, 'replay', email) },
         ps: `P.S. If you sent me your deal and I didn't get to it on the live, reply to this and I'll run it for you.`,
       }),
     }),
@@ -287,8 +287,8 @@ export const STEPS: Step[] = [
           P(`The thing I hear most: "I already do this in a spreadsheet." Good — most of the good promoters I know do. The spreadsheet isn't the problem. It does the math you type.`) +
           P(`It doesn't ask what happens at half a house. It doesn't warn you a week out that the artist deposit is still unpaid. It doesn't build the offer the agent signs, and it's not open at 2 a.m. when the venue hands you their settlement sheet.`) +
           box('A real settlement', `<div style="color:#fff;font-size:17px;font-weight:bold;">Projected $3,175 · Actual $3,319</div><div style="color:#93A2B8;margin-top:4px;">Within $144 — because every cost was in before the offer went out.</div>`) +
-          P(`${esc(e.deal_label ?? '')} for everyone who registered, until ${weekday(e.deal_ends_at!)} at ${time(e.deal_ends_at!)} CT.`),
-        cta: { text: 'Get Pro for $39', href: DEAL(e.episode, 'day2', email) },
+          P(`Put your next show in Promoter OS and see it — free for 7 days, $99 a month after, no card to start.`),
+        cta: { text: 'Run my show free', href: TRIAL(e.episode, 'day2', email) },
         ps: `P.S. Replay's still up: <a href="${REPLAY(e.episode, 'day2')}" style="color:#8FD3FF;">watch it here</a>.`,
       }),
     }),
@@ -305,10 +305,10 @@ export const STEPS: Step[] = [
         kicker: `EP. ${e.episode.replace(/\D/g, '')} · Last day`,
         title: 'Comes down tonight',
         body: P(hi(n)) +
-          P(`Tonight at ${B(`${time(e.deal_ends_at!)} CT`)} two things end: the replay, and ${B(esc((e.deal_label ?? '').replace(/^F/, 'f')))}.`) +
-          P(`If you've got a show you're about to send a deposit on, this is the cheapest month you'll ever run it in Promoter OS.`),
-        cta: { text: 'Get Pro for $39', href: DEAL(e.episode, 'last', email) },
-        cta2: { text: 'Watch the replay', href: REPLAY(e.episode, 'last') },
+          P(`Tonight at ${B(`${time(e.deal_ends_at!)} CT`)} the replay comes down.`) +
+          P(`If you've got a show you're about to send a deposit on, put it in Promoter OS first. Seven days free, $99 a month after — and you'll know the break-even before the money leaves.`),
+        cta: { text: 'Watch the replay', href: REPLAY(e.episode, 'last') },
+        cta2: { text: 'Put my show in — free', href: TRIAL(e.episode, 'last', email) },
       }),
     }),
   },
@@ -323,8 +323,9 @@ export const STEPS: Step[] = [
       html: shell({
         kicker: 'Last call',
         title: 'One hour left',
-        body: P(hi(n)) + P(`At ${time(e.deal_ends_at!)} CT the $39 Pro month and the replay are gone. Next episode is in two weeks — the deal won't be.`),
-        cta: { text: 'Get Pro for $39', href: DEAL(e.episode, 'final', email) },
+        body: P(hi(n)) + P(`At ${time(e.deal_ends_at!)} CT the replay is gone. Next episode is in two weeks.`),
+        cta: { text: 'Watch the replay', href: REPLAY(e.episode, 'final') },
+        cta2: { text: 'Start the 7-day trial', href: TRIAL(e.episode, 'final', email) },
       }),
     }),
   },

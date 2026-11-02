@@ -30,9 +30,10 @@ export interface SubscriptionTier {
 }
 
 export const SUBSCRIPTION_TIERS: Record<string, SubscriptionTier> = {
+  // Legacy — no longer sold (Nov 2026). Kept so accounts that still carry it keep working.
   starter: {
     id: 'starter',
-    name: 'Starter',
+    name: 'Starter (legacy)',
     price: 39,
     maxOffers: 10,
     maxSeats: 1,
@@ -109,7 +110,7 @@ export const SUBSCRIPTION_TIERS: Record<string, SubscriptionTier> = {
 };
 
 export function getSubscriptionTier(tierId: string): SubscriptionTier {
-  return SUBSCRIPTION_TIERS[tierId] || SUBSCRIPTION_TIERS.starter;
+  return SUBSCRIPTION_TIERS[tierId] || SUBSCRIPTION_TIERS.pro;
 }
 
 export function hasFeature(tierId: string, feature: keyof SubscriptionFeatures): boolean {

@@ -667,51 +667,11 @@ export function LandingPage() {
 
       <section id="pricing" className="py-20 px-6 bg-[#14171E]">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            <div className="p-8 bg-[#22262F] border border-gray-800 rounded-2xl hover:border-gray-700 transition-all">
-              <div className="mb-6">
-                <h3 className="text-2xl font-bold mb-2 text-white">Starter</h3>
-                <div className="flex items-baseline gap-2 mb-6">
-                  <span className="text-5xl font-bold text-white">$49</span>
-                  <span className="text-[#A8B2C1]">/mo</span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => navigate('/signup')}
-                className="w-full mb-6 bg-gray-700 hover:bg-gray-600 text-white py-4 rounded-xl font-semibold transition-colors"
-              >
-                Start Trial
-              </button>
-
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-[#A8B2C1]">Up to 10 active events</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-[#A8B2C1]">1 seat</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <X className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-600">No AI</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <X className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-600">No tours</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <X className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-600">No AI connector</span>
-                </div>
-              </div>
-            </div>
-
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             <div className="p-8 bg-gradient-to-br from-[#8FD3FF]/20 to-[#8FD3FF]/5 border-2 border-[#8FD3FF] rounded-2xl relative transform scale-105 shadow-2xl shadow-[#8FD3FF]/20">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                 <div className="px-6 py-2 bg-[#8FD3FF] text-[#04214D] rounded-full font-bold text-sm">
-                  MOST POPULAR
+                  EVERYTHING YOU NEED
                 </div>
               </div>
 
@@ -810,11 +770,10 @@ export function LandingPage() {
               <thead className="bg-[#22262F]">
                 <tr>
                   <th className="px-6 py-4 text-left text-white font-bold border-b border-gray-800">Feature</th>
-                  <th className="px-6 py-4 text-center text-white font-bold border-b border-gray-800">Starter</th>
                   <th className="px-6 py-4 text-center text-white font-bold border-b border-gray-800 bg-[#8FD3FF]/10">
                     <div className="flex items-center justify-center gap-2">
                       <span>Pro</span>
-                      <span className="px-2 py-0.5 bg-[#8FD3FF] text-[#04214D] text-xs font-bold rounded">POPULAR</span>
+                      <span className="px-2 py-0.5 bg-[#8FD3FF] text-[#04214D] text-xs font-bold rounded">$99/MO</span>
                     </div>
                   </th>
                   <th className="px-6 py-4 text-center text-white font-bold border-b border-gray-800">Agency</th>
@@ -823,69 +782,56 @@ export function LandingPage() {
               <tbody>
                 <tr className="border-b border-gray-800">
                   <td className="px-6 py-4 text-[#A8B2C1]">Active Events</td>
-                  <td className="px-6 py-4 text-center text-white">10</td>
                   <td className="px-6 py-4 text-center text-white bg-[#8FD3FF]/5">Unlimited</td>
                   <td className="px-6 py-4 text-center text-white">Unlimited</td>
                 </tr>
                 <tr className="border-b border-gray-800">
                   <td className="px-6 py-4 text-[#A8B2C1]">Seats</td>
-                  <td className="px-6 py-4 text-center text-white">1</td>
                   <td className="px-6 py-4 text-center text-white bg-[#8FD3FF]/5">2</td>
                   <td className="px-6 py-4 text-center text-white">5+</td>
                 </tr>
                 <tr className="border-b border-gray-800">
                   <td className="px-6 py-4 text-[#A8B2C1]">Offer Builder + PDFs</td>
-                  <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                   <td className="px-6 py-4 text-center bg-[#8FD3FF]/5"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                   <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                 </tr>
                 <tr className="border-b border-gray-800">
                   <td className="px-6 py-4 text-[#A8B2C1]">Settlement Tracking</td>
-                  <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                   <td className="px-6 py-4 text-center bg-[#8FD3FF]/5"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                   <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                 </tr>
                 <tr className="border-b border-gray-800">
                   <td className="px-6 py-4 text-[#A8B2C1]">Dashboard + Calendar</td>
-                  <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                   <td className="px-6 py-4 text-center bg-[#8FD3FF]/5"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                   <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                 </tr>
                 <tr className="border-b border-gray-800">
                   <td className="px-6 py-4 text-[#A8B2C1]">Imports (CSV / PDF)</td>
-                  <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                   <td className="px-6 py-4 text-center bg-[#8FD3FF]/5"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                   <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                 </tr>
                 <tr className="border-b border-gray-800">
                   <td className="px-6 py-4 text-[#A8B2C1]">Tour Management</td>
-                  <td className="px-6 py-4 text-center"><X className="h-5 w-5 text-gray-600 mx-auto" /></td>
                   <td className="px-6 py-4 text-center bg-[#8FD3FF]/5"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                   <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                 </tr>
                 <tr className="border-b border-gray-800">
                   <td className="px-6 py-4 text-[#A8B2C1]">AI connector (Claude & other assistants)</td>
-                  <td className="px-6 py-4 text-center"><X className="h-5 w-5 text-gray-600 mx-auto" /></td>
                   <td className="px-6 py-4 text-center bg-[#8FD3FF]/5"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                   <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                 </tr>
                 <tr className="border-b border-gray-800">
                   <td className="px-6 py-4 text-[#A8B2C1]">AI Deal Analyzer</td>
-                  <td className="px-6 py-4 text-center"><X className="h-5 w-5 text-gray-600 mx-auto" /></td>
                   <td className="px-6 py-4 text-center bg-[#8FD3FF]/5"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                   <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                 </tr>
                 <tr className="border-b border-gray-800">
                   <td className="px-6 py-4 text-[#A8B2C1]">Advanced AI</td>
-                  <td className="px-6 py-4 text-center"><X className="h-5 w-5 text-gray-600 mx-auto" /></td>
                   <td className="px-6 py-4 text-center bg-[#8FD3FF]/5"><X className="h-5 w-5 text-gray-600 mx-auto" /></td>
                   <td className="px-6 py-4 text-center"><CheckCircle2 className="h-5 w-5 text-[#8FD3FF] mx-auto" /></td>
                 </tr>
                 <tr>
                   <td className="px-6 py-4 text-[#A8B2C1] font-semibold">Status</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="inline-block px-3 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full">Live</span>
-                  </td>
                   <td className="px-6 py-4 text-center bg-[#8FD3FF]/5">
                     <span className="inline-block px-3 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full">Live</span>
                   </td>

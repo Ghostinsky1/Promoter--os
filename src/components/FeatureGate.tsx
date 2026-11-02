@@ -45,7 +45,7 @@ export function FeatureGate({ feature, children, fallback, showUpgrade = true }:
           This feature is available on <span className="text-[#8FD3FF] font-semibold">Pro</span> and above.
         </p>
         <p className="text-gray-500 mb-8">
-          Current plan: <span className="text-white font-medium">{organization?.subscription_tier || 'Starter'}</span>
+          Current plan: <span className="text-white font-medium">{organization?.subscription_tier || 'Trial'}</span>
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

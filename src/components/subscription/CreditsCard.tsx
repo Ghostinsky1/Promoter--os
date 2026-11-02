@@ -57,7 +57,7 @@ export function CreditsCard() {
       <p className="text-xs text-gray-400 mb-4">
         A chat message is 1 credit, 2 with photos attached. A document scan is 3. Deal Score and Insights are your own math and never cost anything.
         {onTrial
-          ? ' Your trial came with 20. A plan gives you a monthly allowance: Starter 100, Pro 400, Agency 1,500.'
+          ? ' Your trial came with 20. A plan gives you a monthly allowance: Pro 400, Agency 1,500.'
           : ' Monthly credits reset each billing cycle; bought credits never expire and are used after them.'}
       </p>
 

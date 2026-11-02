@@ -5225,7 +5225,7 @@ BEGIN
   v_slug := v_base;
   WHILE EXISTS (SELECT 1 FROM organizations WHERE slug = v_slug) LOOP v_n := v_n + 1; v_slug := v_base || '-' || v_n; END LOOP;
   INSERT INTO organizations (name, slug, subscription_tier, subscription_status, max_offers, max_seats, trial_ends_at)
-  VALUES (v_name, v_slug, 'starter', 'trialing', 10, 1, now() + interval '14 days') RETURNING id INTO v_org_id;
+  VALUES (v_name, v_slug, 'pro', 'trialing', -1, 2, now() + interval '7 days') RETURNING id INTO v_org_id;
   INSERT INTO organization_members (organization_id, user_id, role, is_active) VALUES (v_org_id, p_user_id, 'owner', true) ON CONFLICT (organization_id, user_id) DO NOTHING;
   INSERT INTO company_settings (user_id, organization_id, company_name, contact_name, email)
   SELECT p_user_id, v_org_id, v_name, NULLIF(trim(coalesce(p_full_name, '')), ''), p_email
